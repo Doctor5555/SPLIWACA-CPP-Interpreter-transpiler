@@ -1,0 +1,143 @@
+workspace "SPLIWACA"
+	architecture "x64"
+	
+	configurations
+	{
+		"Debug",
+		"Release",
+		"Dist"
+	}
+	
+outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
+
+IncludeDir = {}
+IncludeDir["spdlog"] = "Spliwaca/vendor/spdlog/include"
+
+--startproject "Sandbox"
+
+--group "Dependencies"
+--	include "Supernova/vendor/GLFW"
+--	include "Supernova/vendor/Glad"
+--	include "Supernova/vendor/imgui"
+
+group ""
+
+project "Spliwaca"
+	location "Spliwaca"
+	kind "ConsoleApp"
+	language "C++"
+	cppdialect "C++17"
+	staticruntime "on"
+	
+	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
+	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
+	
+	pchheader "spch.h"
+	pchsource "Spliwaca/src/spch.cpp"
+	
+	files
+	{
+		"%{prj.name}/src/**.h",
+		"%{prj.name}/src/**.cpp"
+	}
+	
+	defines
+	{
+		"_CRT_SECURE_NO_WARNINGS"
+	}
+	
+	includedirs
+	{
+		"%{prj.name}/src",
+		"%{IncludeDir.spdlog}"
+	}
+	
+--[[	links
+	{
+		"GLFW",
+		"GLAD",
+		"imgui",
+		"opengl32.lib"
+	}]]
+	
+	filter "system:windows"
+		systemversion "latest"
+		
+--[[		defines
+		{
+			"SN_PLATFORM_WINDOWS",
+			"SN_BUILD_DLL",
+			"GLFW_INCLUDE_NONE"
+		}
+		
+		postbuildcommands
+		{
+			("{COPY} %{cfg.buildtarget.relpath} \"../bin/" .. outputdir .. "/Sandbox/\"")
+		}]]
+		
+	filter "configurations:Debug"
+		defines "SN_DEBUG"
+		runtime "Debug"
+		symbols "on"
+		
+	filter "configurations:Release"
+		defines "SN_RELEASE"
+		runtime "Release"
+		optimize "on"
+	
+	filter "configurations:Dist"
+		defines "SN_DIST"
+		runtime "Release"
+		optimize "on"
+		
+--[[
+project "Sandbox"
+	location "Sandbox"
+	kind "ConsoleApp"
+	language "C++"
+	cppdialect "C++17"
+	staticruntime "on"
+	
+	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
+	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
+	
+	files
+	{
+		"%{prj.name}/src/**.h",
+		"%{prj.name}/src/**.cpp"
+	}
+	
+	includedirs
+	{
+		"Supernova/src",
+		"%{IncludeDir.spdlog}",
+		"%{IncludeDir.glm}",
+		"Supernova/vendor"
+	}
+	
+	links
+	{
+		"Supernova"
+	}
+	
+	filter "system:windows"
+		cppdialect "C++17"
+		systemversion "latest"
+		
+		defines
+		{
+			"SN_PLATFORM_WINDOWS",
+		}
+		
+	filter "configurations:Debug"
+		defines "SN_DEBUG"
+		symbols "on"
+		
+	filter "configurations:Release"
+		defines "SN_RELEASE"
+		optimize "on"
+	
+	filter "configurations:Dist"
+		defines "SN_DIST"
+		optimize "on"
+]]

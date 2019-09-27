@@ -1,0 +1,3 @@
+[submodule "Spliwaca/vendor/spdlog"]
+	path = Spliwaca/vendor/spdlog
+	url = https://github.com/gabime/spdlog
