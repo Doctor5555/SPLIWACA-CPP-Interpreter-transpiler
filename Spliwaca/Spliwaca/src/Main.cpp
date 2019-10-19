@@ -1,6 +1,7 @@
 #include <cstdint>
 #include <string>
-#include "Lexer/Lexer.h"
+#include "Log.h"
+#include "Frontend/Lexer/Lexer.h"
 
 namespace Spliwaca
 {
@@ -10,7 +11,8 @@ namespace Spliwaca
 		//Transpiler(Parser(Lexer()));
 		//Interpreter(Parser(Lexer()));
 		//Parser(Lexer());
-		Lexer* lexer = Lexer::Create("a.splw");
+		Log::Init();
+		Lexer* lexer = Lexer::Create("c:/dev/epq\ spliwaca/test_script.splw");
 
 		return 0;
 	}

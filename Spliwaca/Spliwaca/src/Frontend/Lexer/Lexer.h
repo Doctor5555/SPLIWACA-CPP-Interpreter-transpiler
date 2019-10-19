@@ -8,6 +8,7 @@ namespace Spliwaca
 	{
 	public:
 		static Lexer* Create(std::string file);
+		~Lexer() = default;
 
 	private:
 		Lexer();

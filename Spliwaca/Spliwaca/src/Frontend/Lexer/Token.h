@@ -1,4 +1,5 @@
 #pragma once
+#include <string>
 
 namespace Spliwaca
 {
@@ -15,7 +16,7 @@ namespace Spliwaca
 		Keyword,
 		Identifier
 	};
-
+	
 	class Token
 	{
 	public:

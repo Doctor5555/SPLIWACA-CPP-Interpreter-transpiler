@@ -13,7 +13,7 @@ outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 IncludeDir = {}
 IncludeDir["spdlog"] = "Spliwaca/vendor/spdlog/include"
 
---startproject "Sandbox"
+startproject "Spliwaca"
 
 --group "Dependencies"
 --	include "Supernova/vendor/GLFW"
@@ -32,13 +32,13 @@ project "Spliwaca"
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
 	
-	--pchheader "spch.h"
-	--pchsource "Spliwaca/src/spch.cpp"
+	--pchheader "splwpch.h"
+	--pchsource "Spliwaca/src/splwpch.cpp"
 	
 	files
 	{
-		"%{prj.name}/src/**.h",
-		"%{prj.name}/src/**.cpp"
+		"c:/dev/EPQ Spliwaca/Spliwaca/Spliwaca/src/**.h",
+		"c:/dev/EPQ Spliwaca/Spliwaca/Spliwaca/src/**.cpp"
 	}
 	
 	defines

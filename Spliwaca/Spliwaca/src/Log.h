@@ -6,7 +6,8 @@
 #include "spdlog/spdlog.h"
 #include "spdlog/fmt/ostr.h"
 
-namespace Supernova {
+namespace Spliwaca
+{
 	class Log
 	{
 	public:
@@ -22,21 +23,15 @@ namespace Supernova {
 
 #ifdef SPLW_DEBUG
 
-// Client log macros			
-#define SN_TRACE(...)         ::Supernova::Log::GetClientLogger()->trace(__VA_ARGS__)
-#define SN_INFO(...)          ::Supernova::Log::GetClientLogger()->info(__VA_ARGS__)
-#define SN_WARN(...)          ::Supernova::Log::GetClientLogger()->warn(__VA_ARGS__)
-#define SN_ERROR(...)         ::Supernova::Log::GetClientLogger()->error(__VA_ARGS__)
-#define SN_CRITICAL(...)      ::Supernova::Log::GetClientLogger()->critical(__VA_ARGS__)
+// Log macros			
+#define SPLW_TRACE(...)         ::Spliwaca::Log::GetClientLogger()->trace(__VA_ARGS__)
+#define SPLW_INFO(...)          ::Spliwaca::Log::GetClientLogger()->info(__VA_ARGS__)
+#define SPLW_WARN(...)          ::Spliwaca::Log::GetClientLogger()->warn(__VA_ARGS__)
+#define SPLW_ERROR(...)         ::Spliwaca::Log::GetClientLogger()->error(__VA_ARGS__)
+#define SPLW_CRITICAL(...)      ::Spliwaca::Log::GetClientLogger()->critical(__VA_ARGS__)
 #else
-//Core log macros
-#define SN_CORE_TRACE(...)
-#define SN_CORE_INFO(...)     
-#define SN_CORE_WARN(...)     
-#define SN_CORE_ERROR(...)    
-#define SN_CORE_CRITICAL(...) 
 
-// Client log macros			
+// Log macros			
 #define SN_TRACE(...)         
 #define SN_INFO(...)          
 #define SN_WARN(...)          
