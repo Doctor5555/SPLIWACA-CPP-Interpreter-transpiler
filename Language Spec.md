@@ -11,6 +11,7 @@ Standardised Pseudo-Lang Implemented With(out) A Cool Acronym
 - Keywords, placeholders, or groups within square brackets (`[]`) are OPTIONAL, this means that they can be left out. Don't include the brackets. These also act as grouping brackets.
 - Placeholders and groups marked with an asterisk (`*`) are optionally repeatable
 - Placeholders and groups marked with an ellipsis (`...`) within the name are greedy repeated arguments - they consume everything after them
+- A backslash (`\`) before a special character as indicated above indicates that that character will instead be interpreted literally
 
 ### Commenting
 
@@ -34,6 +35,9 @@ Standardised Pseudo-Lang Implemented With(out) A Cool Acronym
       - `PRINT <string...>`
   - `CREATE <type or class> [WITH <arg>*]`
     - Returns an instance of `<type or class>`, instantiated with `<arg>*`
+    - When creating an instance of a custom structure, `<arg>*` expands to `(<member name> <value> )*`
+    - When creating an instance of a dictionary, `<arg>*` expands to `(<key>=<value>||)*`, with the `||` not being necessary for the final key-value pair
+    - When creating an instance of a list, groups of `<arg>*` separated by `||` will become a 2D list
   - `CAST <type> <expression>`
     - Casts the expression `<expression>` to the type `<type>` and returns it
   - `RAW <text...>`
@@ -71,11 +75,15 @@ Standardised Pseudo-Lang Implemented With(out) A Cool Acronym
   - `ANONP [<arg type> <arg name>]* -> <return type> AS <code> END PROCEDURE`
     - An anonymous procedure
     - Aliases:
-      - `ANONPROC [<arg type> <arg name>]* -> <return type> AS <code> END PROCEDURE`
-      - `ANONPROCEDURE [<arg type> <arg name>]* -> <return type> AS <code> END PROCEDURE`
-      - `ANONYMOUSP [<arg type> <arg name>]* -> <return type> AS <code> END PROCEDURE`
-      - `ANONYMOUSPROC [<arg type> <arg name>]* -> <return type> AS <code> END PROCEDURE`
-      - `ANONYMOUSPROCEDURE [<arg type> <arg name>]* -> <return type> AS <code> END PROCEDURE`
+      - `ANONPROC [<arg type> <arg name>]* AS <code> END PROCEDURE`
+      - `ANONPROCEDURE [<arg type> <arg name>]* AS <code> END PROCEDURE`
+      - `ANONYMOUSP [<arg type> <arg name>]* AS <code> END PROCEDURE`
+      - `ANONYMOUSPROC [<arg type> <arg name>]* AS <code> END PROCEDURE`
+      - `ANONYMOUSPROCEDURE [<arg type> <arg name>]* AS <code> END PROCEDURE`
+  - `STRUCT <name> AS <newline> [<arg type> <arg name> <newline>]* END STRUCT`
+    - A custom structure data type
+    - Aliases:
+      - `STRUCTURE AS <newline> [<arg type> <arg name> <newline>]* END STRUCTURE`
   - `SET <variable name> TO <expression...>`
     - Sets `<variable name>` to `<expression...>`
   - `FOR <variable name> OF <iterable expression> DO <code> END FOR`
@@ -203,6 +211,14 @@ Standardised Pseudo-Lang Implemented With(out) A Cool Acronym
 
 ### Boolean Operators
 
+- `AND`
+  - Tests if two expressions both evaluate to true
+  - Aliases:
+    - `&&`
+- `OR`
+  - Tests if at least one of two expressions both evaluate to true
+  - Aliases:
+    - `||`
 - `IS`
   - Tests if two variables are the same object
   - Aliases:
