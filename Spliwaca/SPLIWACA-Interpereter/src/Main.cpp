@@ -10,7 +10,8 @@ namespace Spliwaca
 		//Transpiler(Parser(Lexer()));
 		//Interpreter(Parser(Lexer()));
 		//Parser(Lexer());
-		Lexer("a.splw");
+		Lexer* lexer = Lexer::Create("a.splw");
+
 		return 0;
 	}
 }

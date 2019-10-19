@@ -2,12 +2,12 @@
 
 #ifndef LOG_H_SUPERNOVA_CORE_GUARD
 #define LOG_H_SUPERNOVA_CORE_GUARD
-#include "Core.h"
+
 #include "spdlog/spdlog.h"
 #include "spdlog/fmt/ostr.h"
 
 namespace Supernova {
-	class SN_API Log
+	class Log
 	{
 	public:
 		static void Init();
@@ -20,13 +20,7 @@ namespace Supernova {
 	};
 }
 
-#ifdef SN_DEBUG
-// Core log macros
-#define SN_CORE_TRACE(...)    ::Supernova::Log::GetCoreLogger()->trace(__VA_ARGS__)
-#define SN_CORE_INFO(...)     ::Supernova::Log::GetCoreLogger()->info(__VA_ARGS__)
-#define SN_CORE_WARN(...)     ::Supernova::Log::GetCoreLogger()->warn(__VA_ARGS__)
-#define SN_CORE_ERROR(...)    ::Supernova::Log::GetCoreLogger()->error(__VA_ARGS__)
-#define SN_CORE_CRITICAL(...) ::Supernova::Log::GetCoreLogger()->critical(__VA_ARGS__)
+#ifdef SPLW_DEBUG
 
 // Client log macros			
 #define SN_TRACE(...)         ::Supernova::Log::GetClientLogger()->trace(__VA_ARGS__)

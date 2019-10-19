@@ -1,6 +1,5 @@
 #pragma once
 #include "Token.h"
-#include "TokenList.h"
 #include <vector>
 
 namespace Spliwaca
@@ -8,7 +7,7 @@ namespace Spliwaca
 	class Lexer
 	{
 	public:
-		static Lexer Create(std::string file);
+		static Lexer* Create(std::string file);
 
 	private:
 		Lexer();

@@ -32,8 +32,8 @@ project "Spliwaca"
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
 	
-	pchheader "spch.h"
-	pchsource "Spliwaca/src/spch.cpp"
+	--pchheader "spch.h"
+	--pchsource "Spliwaca/src/spch.cpp"
 	
 	files
 	{
@@ -58,12 +58,12 @@ project "Spliwaca"
 		"GLAD",
 		"imgui",
 		"opengl32.lib"
-	}]]
+	}
 	
 	filter "system:windows"
 		systemversion "latest"
 		
---[[		defines
+		defines
 		{
 			"SN_PLATFORM_WINDOWS",
 			"SN_BUILD_DLL",
@@ -76,17 +76,17 @@ project "Spliwaca"
 		}]]
 		
 	filter "configurations:Debug"
-		defines "SN_DEBUG"
+		defines "SPLW_DEBUG"
 		runtime "Debug"
 		symbols "on"
 		
 	filter "configurations:Release"
-		defines "SN_RELEASE"
+		defines "SPLW_RELEASE"
 		runtime "Release"
 		optimize "on"
 	
 	filter "configurations:Dist"
-		defines "SN_DIST"
+		defines "SPLW_DIST"
 		runtime "Release"
 		optimize "on"
 		
