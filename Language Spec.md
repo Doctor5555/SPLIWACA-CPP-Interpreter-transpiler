@@ -1,5 +1,7 @@
 # SPLIWACA
 
+TODO: `,`-separated args, bracketing rules. Define more behaviour
+
 Standardised Pseudo-Lang Implemented With(out) A Cool Acronym
 
 ## Specification
@@ -35,9 +37,6 @@ Standardised Pseudo-Lang Implemented With(out) A Cool Acronym
       - `PRINT <string...>`
   - `CREATE <type or class> [WITH <arg>*]`
     - Returns an instance of `<type or class>`, instantiated with `<arg>*`
-    - When creating an instance of a custom structure, `<arg>*` expands to `(<member name> <value> )*`
-    - When creating an instance of a dictionary, `<arg>*` expands to `(<key>=<value>||)*`, with the `||` not being necessary for the final key-value pair
-    - When creating an instance of a list, groups of `<arg>*` separated by `||` will become a 2D list
   - `CAST <type> <expression>`
     - Casts the expression `<expression>` to the type `<type>` and returns it
   - `RAW <text...>`
@@ -56,23 +55,31 @@ Standardised Pseudo-Lang Implemented With(out) A Cool Acronym
 - Structures
   - `IF <expression> DO <code> [ELSE IF <expression> DO <code>]* [ELSE DO <code>] END IF`
     - This is just a standard if-else structure
-  - `FUNCTION <function name> [TAKES (<arg type> <arg name>)*] -> <return type> AS <code> RETURN <value>`
+  - `FUNCTION <function name> [TAKES (<arg type> <arg name>)*] RETURNS <return type> AS <code> RETURN <value>`
     - This defines a function
     - Aliases:
+      - `FUNC <name> [TAKES (<type> <arg>)*] RETURNS <rt> AS <code> RETURN <rv>`
+      - `FUNCTION <function name> [TAKES (<arg type> <arg name>)*] -> <return type> AS <code> RETURN <value>`
       - `FUNC <name> [TAKES (<type> <arg>)*] -> <rt> AS <code> RETURN <rv>`
   - `PROCEDURE <procedure name> [TAKES (<arg type> <arg name>)*] AS <code> END PROCEDURE`
     - This defines a procedure
     - Aliases:
       - `PROC <procedure name> [TAKES (<arg type> <arg name>)*] AS <code> END PROCEDURE`
-  - `ANONF [<arg type> <arg name>]* -> <return type> AS <code> RETURN <return value>`
+  - `ANONF [<arg type> <arg name>]* RETURNS <return type> AS <code> RETURN <return value>`
     - An anonymous function
     - Aliases:
+      - `ANONFUNC [<arg type> <arg name>]* RETURNS <return type> AS <code> RETURN <return value>`
+      - `ANONFUNCTION [<arg type> <arg name>]* RETURNS <return type> AS <code> RETURN <return value>`
+      - `ANONYMOUSF [<arg type> <arg name>]* RETURNS <return type> AS <code> RETURN <return value>`
+      - `ANONYMOUSFUNC [<arg type> <arg name>]* RETURNS <return type> AS <code> RETURN <return value>`
+      - `ANONYMOUSFUNCTION [<arg type> <arg name>]* RETURNS <return type> AS <code> RETURN <return value>`
+      - `ANONF [<arg type> <arg name>]* -> <return type> AS <code> RETURN <return value>`
       - `ANONFUNC [<arg type> <arg name>]* -> <return type> AS <code> RETURN <return value>`
       - `ANONFUNCTION [<arg type> <arg name>]* -> <return type> AS <code> RETURN <return value>`
       - `ANONYMOUSF [<arg type> <arg name>]* -> <return type> AS <code> RETURN <return value>`
       - `ANONYMOUSFUNC [<arg type> <arg name>]* -> <return type> AS <code> RETURN <return value>`
       - `ANONYMOUSFUNCTION [<arg type> <arg name>]* -> <return type> AS <code> RETURN <return value>`
-  - `ANONP [<arg type> <arg name>]* -> <return type> AS <code> END PROCEDURE`
+  - `ANONP [<arg type> <arg name>]* AS <code> END PROCEDURE`
     - An anonymous procedure
     - Aliases:
       - `ANONPROC [<arg type> <arg name>]* AS <code> END PROCEDURE`
@@ -80,16 +87,16 @@ Standardised Pseudo-Lang Implemented With(out) A Cool Acronym
       - `ANONYMOUSP [<arg type> <arg name>]* AS <code> END PROCEDURE`
       - `ANONYMOUSPROC [<arg type> <arg name>]* AS <code> END PROCEDURE`
       - `ANONYMOUSPROCEDURE [<arg type> <arg name>]* AS <code> END PROCEDURE`
-  - `STRUCT <name> AS <newline> [<arg type> <arg name> <newline>]* END STRUCT`
-    - A custom structure data type
-    - Aliases:
-      - `STRUCTURE AS <newline> [<arg type> <arg name> <newline>]* END STRUCTURE`
   - `SET <variable name> TO <expression...>`
     - Sets `<variable name>` to `<expression...>`
   - `FOR <variable name> OF <iterable expression> DO <code> END FOR`
     - This is a for-each loop
   - `WHILE <expression> DO <code> END WHILE`
     - This is a while loop
+  - `STRUCTURE <name> AS [<property type> <property name>]* END STRUCTURE`
+    - This is a data structure
+    - Aliases:
+      - `STRUCT <name> AS [<property type> <property name>]* END STRUCTURE`
 
 ### Literals, Types, and Constants
 
@@ -211,14 +218,6 @@ Standardised Pseudo-Lang Implemented With(out) A Cool Acronym
 
 ### Boolean Operators
 
-- `AND`
-  - Tests if two expressions both evaluate to true
-  - Aliases:
-    - `&&`
-- `OR`
-  - Tests if at least one of two expressions both evaluate to true
-  - Aliases:
-    - `||`
 - `IS`
   - Tests if two variables are the same object
   - Aliases:
@@ -272,8 +271,6 @@ Standardised Pseudo-Lang Implemented With(out) A Cool Acronym
     - Takes the power of one number to another
   - `/`
     - Divides one number by another
-  - `//`
-    - Divides one number by another and returns an integer
   - `+`
     - Adds two numbers
     - Also used to concatenate strings
@@ -308,12 +305,17 @@ Standardised Pseudo-Lang Implemented With(out) A Cool Acronym
   - `y.x`
 - Item `x` of `y`
   - `y[x]`
+  - Lists start at `0`
 
-### Miscellaneous
+### Grouping
 
-- If a variable is used before it's defined, the following failsafes will occur, in order:
-  - The interpreter will attempt to import a SPLW module with the same name as the variable, then perform the operation again with the variable set as the imported module
-  - The interpreter will attempt to import a native module with the same name as the variable, then perform the operation again with the variable set as the imported module
-  - The interpreter will attempt to install and import a native module with the same name as the variable, then perform the operation again with the variable set as the imported module
-  - The interpreter will treat the variable name as a bare word, and retry the operation
-  - If nothing previous works, then an error will be thrown
+- Objects can be grouped, for clarity, with brackets (`()`). This also terminates `CALL`'s argument consumption
+
+### Undefined variables
+
+- If an undefined variable is referenced, the following failsafes will occur, in order:
+  - The interpreter will attempt to import a SPLW module with the same name as the variable, and set the variable to the imported module
+  - The interpreter will attempt to import a native module with the same name as the variable, and set the variable to the imported module
+  - The interpreter will attempt to install and import a native module with the same name as the variable, and set the variable to the imported module
+  - The interpreter will treat the variable name as a bare word
+
