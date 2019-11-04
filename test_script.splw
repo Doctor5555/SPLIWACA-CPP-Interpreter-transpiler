@@ -1,0 +1,60 @@
+CALL ANONF TAKES int num -> str AS
+	SET rv TO ""
+	FOR i OF num DO
+		SET rv TO rv + "n"
+RETURN rv WITH 12
+
+SET b TO 12
+
+/*
+sdfygasduyf
+THIS IS A COMMENT!
+*/
+
+//SCOPES !!!!!!!!
+SET a TO CALL ANONF TAKES int num -> str AS
+	SET rv TO ""
+	FOR i OF num DO
+		SET rv TO rv + "n"
+RETURN rv WITH b
+
+FUNCTION getRandomNumber RETURNS str AS
+	SET rv TO CALL _INTERPRETER.random.random WITH 0, 100
+RETURN rv
+
+PROCEDURE setState12 TAKES int stateModification, int flags AS
+	IF flags == 64 DO
+		SET GLOBALS.regen TO stateModification
+	ELSE IF flags == 32 DO
+		SET GLOBALS.helth TO stateModification
+	END IF
+END PROCEDURE
+
+STRUCT vec3 AS
+	float x
+	float y
+	float z
+END STRUCT
+
+STRUCT quat AS
+	float x
+	float y
+	float z
+	float w
+END STRUCT
+
+STRUCT lightning AS
+	vec3 position
+	quat direction
+	REAL brightness
+	REAL damage_potential
+END STRUCT
+
+STRUCT blueElephant AS
+	INT alpha
+	STR beta
+	LIST gamma
+	lightning omega
+END STRUCT
+
+SET b TO CREATE blueElephant WITH 1, "2", [3, 4, 5], (CREATE lightning WITH (CREATE vec3 WITH 0, 0, 0), (CREATE quat WITH 0, 0, 0, 0), 10.63, 6365.342)

@@ -48,7 +48,7 @@ project "Spliwaca"
 	
 	includedirs
 	{
-		"%{prj.name}/src",
+		"C:/dev/EPQ Spliwaca/Spliwaca/Spliwaca/src",
 		"%{IncludeDir.spdlog}"
 	}
 	
