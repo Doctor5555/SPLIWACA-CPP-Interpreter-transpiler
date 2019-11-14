@@ -1,0 +1,1 @@
+Generate python from ast after semantic analysis, perhaps some basic optimisations performed in this part. Then hook into cython or other python compiler that will fully optimise and compile the code.

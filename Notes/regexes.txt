@@ -32,7 +32,7 @@ func+proc+struct = ((PROCEDURE|PROC) ([a-zA-Z_][a-zA-Z0-9_]*) (TAKES (([a-zA-Z_]
 if+loop+anonfp   = (IF (.*?) DO *?\n+?(((.|\n)*?\n)( |\t)*?(ELSE IF (.*?) DO *?\n+?((.|\n)*?\n)( |\t)*?)*?(ELSE DO *?\n+?((.|\n)*?\n)( |\t)*?)*?)(END IF))|(FOR ([a-zA-Z_][a-zA-Z0-9_]*) OF (.*?) DO *?\n+?((.|\n)*?)\n(\t| )*?END FOR)|(WHILE (.*?) DO *?\n+?((.|\n)*?)\n(\t| )*?END WHILE)|((SET ([a-zA-Z_][a-zA-Z0-9_]*) TO (CALL )?)|(CALL ))((ANON(YMOUS)?F(UNC(TION)?)? ((TAKES ([a-zA-Z_][a-zA-Z0-9_]*?) ([a-zA-Z_][a-zA-Z0-9_]*? )))?(RETURNS|->) ([a-zA-Z_][a-zA-Z0-9_]*) AS *?\n*?((.|\n)*?)\n(\t| )*?RETURN (.*?)( WITH (.*)))|(ANON(YMOUS)?P(ROC(EDURE)?)? ((TAKES ([a-zA-Z_][a-zA-Z0-9_]*?) ([a-zA-Z_][a-zA-Z0-9_]*? )))?AS *?\n*?((.|\n)*?)\n(\t| )*?END (PROCEDURE|PROC))( WITH (.*))?)
 create+cast+set+call = (SET ([a-zA-Z_][a-zA-Z0-9_]*(\[[0-9]*\])*) TO (((ANONP|ANONPROC|ANONPROCEDURE|ANONYMOUSP|ANONYMOUSPROC|ANONYMOUSPROCEDURE) (TAKES (([a-zA-Z_][a-zA-Z0-9_]*) ([a-zA-Z_][a-zA-Z0-9_]*) )+?)*?(AS) *?\n+((.|\n)*?)END (PROCEDURE|PROC))|ANON(YMOUS)?F(UNC(TION)?)? (\[(([a-zA-Z_][a-zA-Z0-9_]*) ([a-zA-Z_][a-zA-Z0-9_]*) )+?\])*?(\->|RETURNS) ([a-zA-Z_][a-zA-Z0-9_]*) (AS) *?\n+((.|\n)*?)(RETURN .*)|.*))|(CREATE ([a-zA-Z_][a-zA-Z0-9_]*) ?(WITH (.*))?)|(CAST ([a-zA-Z_][a-zA-Z0-9_]*) (.*)))
 output_variable   = \$[a-zA-Z_][a-zA-Z0-9_]*(\[[0-9]*\])*
-operators = (IS|≣|≡)|(!=|=/=|≠)|(NOT|!)|(=|==)|(<=|≤|⩽|≦|≯)|(>=|≥|⩾|≧|≮)|(<|≨|≱)|(>|≩|≰)|(AND|&&)|(OR|\|\|)|(*)|(**)|(/)|(DIVI)|(+)|(-)|(%)|(^)|(&)|(\|)|(<<)|(>>)
+operators = (IS|≣|≡)|(<<)|(>>)|(!=|=/=|≠)|(NOT|!)|(=|==)|(<=|≤|⩽|≦|≯)|(>=|≥|⩾|≧|≮)|(<|≨|≱)|(>|≩|≰)|(AND|&&)|(OR|\|\|)|(*)|(**)|(/)|(DIVI)|(+)|(-)|(%)|(^)|(&)|(\|)
 
 
 OTHER STUFF:

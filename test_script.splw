@@ -18,9 +18,29 @@ SET a TO CALL ANONF TAKES int num -> str AS
 		SET rv TO rv + "n"
 RETURN rv WITH b
 
-FUNCTION getRandomNumber RETURNS str AS
-	SET rv TO CALL _INTERPRETER.random.random WITH 0, 100
-RETURN rv
+FUNCTION MakeIfForWhileAnons -> Boolean:
+        list of integer indexes
+        FOR UnfinishedToken with type UncomfirmedExpression IN tokens DO
+            run regex
+            IF matches are present:
+                Create tokens - UnfinishedToken with type BooleanExpr for conditions, Call/Identifier etc. for anonf and p.
+                Add indexes of block bodies to indexes list
+			END IF
+		END FOR
+        IF indexes.length = 0 DO
+            return False
+		END IF
+        WHILE length of indexes is greater than 0 DO
+            reset indexes to empty
+            FOR index OF indexes DO
+                run regex over corresponding token
+                IF matches.length > 0 DO
+                    Create tokens - UnfinishedToken with type BooleanExpr for conditions, Call/Identifier etc. for anonf and p.
+                    Add indexes of block bodies to indexes list
+				END IF
+			END FOR
+		END WHILE
+RETURN True
 
 PROCEDURE setState12 TAKES int stateModification, int flags AS
 	IF flags == 64 DO
@@ -29,6 +49,10 @@ PROCEDURE setState12 TAKES int stateModification, int flags AS
 		SET GLOBALS.helth TO stateModification
 	END IF
 END PROCEDURE
+
+FUNCTION getRandomNumber RETURNS str AS
+	SET rv TO CALL _INTERPRETER.random.random WITH 0, 100
+RETURN rv
 
 STRUCT vec3 AS
 	float x

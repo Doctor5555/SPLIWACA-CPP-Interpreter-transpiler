@@ -40,6 +40,7 @@ namespace Spliwaca
 		AnonFunc, //
 		AnonProc, //
 		Struct, //
+		ReturnType, //
 		As, //
 		Takes, //
 		Return, //
@@ -104,6 +105,7 @@ namespace Spliwaca
 		case TokenType::AnonFunc: return "AnonFunc";
 		case TokenType::AnonProc: return "AnonProc";
 		case TokenType::Struct: return "Struct";
+		case TokenType::ReturnType: return "ReturnType";
 		case TokenType::As: return "As";
 		case TokenType::Return: return "Return";
 		case TokenType::EndProc: return "EndProc";

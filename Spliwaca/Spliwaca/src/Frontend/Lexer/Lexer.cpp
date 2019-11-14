@@ -18,26 +18,30 @@ namespace Spliwaca
 	{
 		bool success = true;
 		std::vector<std::shared_ptr<reMatch>> matches;
-		std::regex regex(re);
 
 		uint32_t i = 0;
 		while (success)
 		{
-			matches.push_back(std::shared_ptr<reMatch>());
+			std::regex regex(re);
+			matches.push_back(std::shared_ptr<reMatch>(new reMatch()));
 			std::smatch m;
+			SPLW_TRACE(i);
 			success = std::regex_search(string, m, regex);
-
-			matches[i]->prefix = m.prefix();
-			matches[i]->suffix = m.suffix();
-
-			for (uint32_t j = 0; j < m.length(); j++)
+			
+			if (success)
 			{
-				matches[i]->match.push_back(m[j]);
+				matches[i]->prefix = m.prefix();
+				matches[i]->suffix = m.suffix();
+
+				for (uint32_t j = 0; j < m.length(); j++)
+				{
+					matches[i]->match.push_back(m[j]);
+				}
+
+				string = matches[i]->suffix;
+
+				i++;
 			}
-
-			string = matches[i]->suffix;
-
-			i++;
 		}
 
 		return matches;
@@ -82,7 +86,9 @@ namespace Spliwaca
 	{
 		//SPLW_TRACE(m_Tokens->at(0)->GetContents());
 		StripComments();
-		//SPLW_TRACE(m_Tokens->at(0)->GetContents());
+		MakeFunctionsProceduresStructs();
+		SPLW_TRACE(m_Tokens->at(0)->GetContents());
+		SPLW_TRACE(m_Tokens->at(1)->GetContents());
 		return m_Tokens;
 	}
 
@@ -137,16 +143,19 @@ namespace Spliwaca
 						code);
 				for each (std::shared_ptr<reMatch> match in matches)
 				{
+					newTokens.push_back(std::make_shared<Token>(Token(TokenType::UnfinishedToken, match->prefix.c_str(), 0, 0)));
 					if (match->match[0][0] == 'F') //Function
 					{
 						//@TODO: Implement line numbers for tokens
 						/*FUNC*/newTokens.push_back(std::make_shared<Token>(Token(TokenType::Function, match->match[12].c_str(), 0, 0)));
 						/*x*/newTokens.push_back(std::make_shared<Token>(Token(TokenType::Identifier, match->match[13].c_str(), 0, 0)));
-						if (match->match[13] != "")
+						if (match->match[14] != "")
 						{
 							/*TAKES*/newTokens.push_back(std::make_shared<Token>(Token(TokenType::Takes, "TAKES", 0, 0)));
 							/*type x*/newTokens.push_back(std::make_shared<Token>(Token(TokenType::UnfinishedToken, match->match[15].c_str(), 0, 0)));
 						}
+						/*->*/newTokens.push_back(std::make_shared<Token>(Token(TokenType::ReturnType, match->match[18].c_str(), 0, 0)));
+						/*type*/newTokens.push_back(std::make_shared<Token>(Token(TokenType::UnfinishedToken, match->match[19].c_str(), 0, 0)));
 						/*AS*/newTokens.push_back(std::make_shared<Token>(Token(TokenType::As, "AS", 0, 0)));
 						/*body*/newTokens.push_back(std::make_shared<Token>(Token(TokenType::UnfinishedToken, match->match[20].c_str(), 0, 0)));
 						/*RETURN*/newTokens.push_back(std::make_shared<Token>(Token(TokenType::Return, "RETURN", 0, 0)));
@@ -154,11 +163,26 @@ namespace Spliwaca
 					}
 					else if (match->match[0][0] == 'P') //Procedure
 					{
-
+						//@TODO: Implement line numbers for tokens
+						/*PROC*/newTokens.push_back(std::make_shared<Token>(Token(TokenType::Procedure, match->match[1].c_str(), 0, 0)));
+						/*x*/newTokens.push_back(std::make_shared<Token>(Token(TokenType::Identifier, match->match[2].c_str(), 0, 0)));
+						if (match->match[3] != "")
+						{
+							/*TAKES*/newTokens.push_back(std::make_shared<Token>(Token(TokenType::Takes, "TAKES", 0, 0)));
+							/*type x*/newTokens.push_back(std::make_shared<Token>(Token(TokenType::UnfinishedToken, match->match[4].c_str(), 0, 0)));
+						}
+						/*AS*/newTokens.push_back(std::make_shared<Token>(Token(TokenType::As, "AS", 0, 0)));
+						/*body*/newTokens.push_back(std::make_shared<Token>(Token(TokenType::UnfinishedToken, match->match[20].c_str(), 0, 0)));
+						/*END*/newTokens.push_back(std::make_shared<Token>(Token(TokenType::EndProc, match->match[9].c_str(), 0, 0)));
 					}
 					else if (match->match[0][0] == 'S') //Struct
 					{
-
+						//@TODO: Implement line numbers for tokens
+						/*STRUCT*/newTokens.push_back(std::make_shared<Token>(Token(TokenType::Procedure, match->match[26].c_str(), 0, 0)));
+						/*x*/newTokens.push_back(std::make_shared<Token>(Token(TokenType::Identifier, match->match[27].c_str(), 0, 0)));
+						/*AS*/newTokens.push_back(std::make_shared<Token>(Token(TokenType::As, "AS", 0, 0)));
+						/*body*/newTokens.push_back(std::make_shared<Token>(Token(TokenType::UnfinishedToken, match->match[28].c_str(), 0, 0)));
+						/*END*/newTokens.push_back(std::make_shared<Token>(Token(TokenType::EndProc, match->match[34].c_str(), 0, 0)));
 					}
 					else
 					{
@@ -166,6 +190,12 @@ namespace Spliwaca
 						__debugbreak();
 					}
 				}
+				newTokens.push_back(std::make_shared<Token>(Token(TokenType::UnfinishedToken, matches.back()->suffix.c_str(), 0, 0)));
+				for each (std::shared_ptr<Token> token in newTokens)
+				{
+					m_Tokens->emplace(m_Tokens->begin() + i, token);
+				}
+				i += newTokens.size();
 			}
 			else
 				i++;
@@ -175,6 +205,11 @@ namespace Spliwaca
 
 	bool Lexer::MakeIfForWhileAnons()
 	{
+		std::vector<uint32_t> indexes;
+		for each (std::shared_ptr<Token> token in *m_Tokens)
+		{
+
+		}
 		return false;
 	}
 
