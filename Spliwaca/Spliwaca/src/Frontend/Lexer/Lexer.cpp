@@ -4,9 +4,12 @@
 #include "Log.h"
 #include <iostream>
 #include <map>
+#include <algorithm>
+#include "UtilFunctions.h"
 
 namespace Spliwaca
 {
+	/*
 	struct reMatch
 	{
 		std::string prefix;
@@ -46,6 +49,9 @@ namespace Spliwaca
 
 		return matches;
 	}
+	*/
+
+
 
 	std::shared_ptr<Lexer> Lexer::Create(std::string file)
 	{
@@ -57,16 +63,16 @@ namespace Spliwaca
 	{
 		std::ifstream file;
 		file.open(m_FileLocation);
-		std::string fileContents;
+		//char* fileContents;
 
 		if (file.is_open())
 		{
 			std::string line;
 			while (std::getline(file, line))
 			{
-				fileContents.append(line + "\n");
+				m_FileString.append(line+"\n");
 			}
-			SPLW_TRACE("File contents: {0}", fileContents);
+			//SPLW_TRACE("File contents: {0}", m_FileString);
 			//std::cout << fileContents << "\n";
 		}
 		else
@@ -76,29 +82,327 @@ namespace Spliwaca
 
 		file.close();
 
-		std::shared_ptr<Token> token;
-		token.reset(new Token(TokenType::UnfinishedToken, fileContents.c_str(), 0, 0));
+		//std::shared_ptr<Token> token;
+		//token.reset(new Token(TokenType::UnfinishedToken, fileContents.c_str(), 0, 0));
 
-		m_Tokens->push_back(token);
+		//m_Tokens->push_back(token);
 	}
 
 	std::shared_ptr<std::vector<std::shared_ptr<Token>>> Lexer::MakeTokens()
 	{
 		//SPLW_TRACE(m_Tokens->at(0)->GetContents());
-		StripComments();
-		MakeFunctionsProceduresStructs();
-		SPLW_TRACE(m_Tokens->at(0)->GetContents());
-		SPLW_TRACE(m_Tokens->at(1)->GetContents());
+		//StripComments();
+		//MakeFunctionsProceduresStructs();
+		std::vector<std::string> words = split(m_FileString);
+
+		std::string reconstruction = "";
+		for (int i = 0; i < words.size(); i++)
+		{
+			reconstruction.append(words[i]);
+		}
+		SPLW_INFO("Successful string reconstruction: {0}", reconstruction == m_FileString);
+		
+		uint32_t lineNumber = 0;
+		uint32_t columnNumber = 0;
+		int i = 0;
+		while (true)
+		{
+			std::string word = words[i];
+
+			if (word == "\n")
+			{
+				lineNumber += 1;
+				columnNumber = 0;
+			}
+			else
+				columnNumber += word.size();
+
+			if (s_KeywordDict.find(word) != s_KeywordDict.end() && word != "RAW" && word != "OUTPUT" && word != "/*" && word != "//")
+			{
+				//We have a keyword!
+				m_Tokens->push_back(std::make_shared<Token>(Token(s_KeywordDict.at(word), word.c_str(), lineNumber, columnNumber)));
+			}
+			else if (word == "\"")
+			{
+				//Consume to next double quote as string
+				uint32_t startLineNumber = lineNumber;
+				uint32_t startColumnNumber = columnNumber;
+				std::string str = "";
+				while (true)
+				{
+					i++;
+
+					if (words[i] == "\"")
+					{
+						columnNumber += 1;
+						break;
+					}
+					else
+					{
+						if (word == "\n")
+						{
+							lineNumber += 1;
+							columnNumber = 0;
+						}
+						else
+							columnNumber += word.size();
+						str.append(words[i]);
+					}
+				}
+				m_Tokens->push_back(std::make_shared<Token>(Token(TokenType::String, str.c_str(), startLineNumber, startColumnNumber)));
+
+			}
+			else if (word == "\'")
+			{
+				//Consume to next single quote as string
+				uint32_t startLineNumber = lineNumber;
+				uint32_t startColumnNumber = columnNumber;
+				std::string str = "";
+				while (true)
+				{
+					i++;
+
+					if (words[i] == "\'")
+					{
+						columnNumber++;
+						break;
+					}
+					else
+					{
+						if (word == "\n")
+						{
+							lineNumber += 1;
+							columnNumber = 0;
+						}
+						else
+							columnNumber += word.size();
+						str.append(words[i]);
+					}
+				}
+				m_Tokens->push_back(std::make_shared<Token>(Token(TokenType::String, str.c_str(), startLineNumber, startColumnNumber)));
+
+			}
+			else if (word == "RAW")
+			{
+				//Consume to next newline as RAW
+				uint32_t startLineNumber = lineNumber;
+				uint32_t startColumnNumber = columnNumber;
+				std::string str = "";
+				while (true)
+				{
+					i++;
+
+					if (words[i] == "\n")
+					{
+						i--;
+						break;
+					}
+					else
+					{
+						columnNumber += word.size();
+						str.append(words[i]);
+					}
+				}
+				m_Tokens->push_back(std::make_shared<Token>(Token(TokenType::Raw, str.c_str(), startLineNumber, startColumnNumber)));
+
+			}
+			else if (word == "OUTPUT")
+			{
+				m_Tokens->push_back(std::make_shared<Token>(Token(s_KeywordDict.at(word), word.c_str(), lineNumber, columnNumber)));
+				//Consume to next newline as RAW
+				i++;
+				uint32_t startLineNumber = lineNumber;
+				uint32_t startColumnNumber = columnNumber;
+				std::string str = "";
+				while (true)
+				{
+					i++;
+
+					if (words[i] == "\n")
+					{
+						i--;
+						break;
+					}
+					else
+					{
+						columnNumber += word.size();
+						str.append(words[i]);
+					}
+				}
+				m_Tokens->push_back(std::make_shared<Token>(Token(TokenType::Raw, str.c_str(), startLineNumber, startColumnNumber)));
+			}
+			else if (word == "/*")
+			{
+				//Consume to next */ as comment
+				uint32_t startLineNumber = lineNumber;
+				uint32_t startColumnNumber = columnNumber;
+				std::string str = "";
+				while (true)
+				{
+					i++;
+
+					if (words[i] == "*/")
+					{
+						columnNumber++;
+						break;
+					}
+					else
+					{
+						if (words[i] == "\n")
+						{
+							lineNumber += 1;
+							columnNumber = 0;
+						}
+						else
+							columnNumber += words[i].size();
+						str.append(words[i]);
+					}
+				}
+			}
+			else if (word == "//")
+			{
+				//Consume to next newline as comment
+				uint32_t startLineNumber = lineNumber;
+				uint32_t startColumnNumber = columnNumber;
+				std::string str = "";
+				while (true)
+				{
+					i++;
+
+					if (words[i] == "\n")
+					{
+						i--;
+						break;
+					}
+					else
+					{
+						columnNumber += word.size();
+						str.append(words[i]);
+					}
+				}
+			}
+			else if (word == " " || word == "\t" || word == "\f") // Whitespace
+			{
+			}
+			else
+			{
+				std::smatch m;
+				//Use regexes
+				if (std::regex_search(word, m, std::regex("[a-zA-Z_][a-zA-Z0-9_]*(\\.[a-zA-Z_][a-zA-Z0-9_]*)*")) && m[0] == word) // Matches identifier regex
+				{
+					//Matched
+					m_Tokens->push_back(std::make_shared<Token>(Token(TokenType::Identifier, word.c_str(), lineNumber, columnNumber)));
+				}
+				else if (std::regex_search(word, m, std::regex("[0-9]+(\\.[0-9]+)?i")) && m[0] == word) // Matches complex regex
+				{
+					m_Tokens->push_back(std::make_shared<Token>(Token(TokenType::Complex, word.c_str(), lineNumber, columnNumber)));
+				}
+				else if (std::regex_search(word, m, std::regex("[0-9]+\\.[0-9]+")) && m[0] == word) // Matches float regex
+				{
+					m_Tokens->push_back(std::make_shared<Token>(Token(TokenType::Float, word.c_str(), lineNumber, columnNumber)));
+				}
+				else if (std::regex_search(word, m, std::regex("[0-9]+")) && m[0] == word) // Matches int regex
+				{
+					m_Tokens->push_back(std::make_shared<Token>(Token(TokenType::Int, word.c_str(), lineNumber, columnNumber)));
+				}
+				else
+				{
+					//Error unexpected characters.
+					SPLW_CRITICAL("Lexical Error: Unexpected characters: {0}", word);
+					RegisterLexicalError(LexicalError(0, lineNumber, columnNumber, word.size()));
+				}
+			}
+
+			i++;
+
+			if (i >= words.size())
+			{
+				break;
+			}
+		}
+		//SPLW_TRACE(m_Tokens->at(0)->GetContents());
+		//SPLW_TRACE(m_Tokens->at(1)->GetContents());
+		//return m_Tokens;
 		return m_Tokens;
 	}
 
+	bool Lexer::charInStr(const std::string& s, char c)
+	{
+		for (char ch : s)
+		{
+			if (ch == c)
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+
+	std::vector<std::string> Lexer::split(const std::string& s)
+	{
+		std::string intermediate = "";
+		std::vector<std::string> tokens;
+		std::vector<char> splitChars = { ' ', '\n', '\t', '\f', '(', ')', '[', ']', '+', '-', '/', '*', '!', '=', '%', '^', '&', '|', '<', '>', ',', '"', '\'' };
+		std::vector<std::string> splitDuoStrings = { "/*", "*/", "//", "**", "??", "==", "!=", "<=", ">=", "<<", ">>", "<-", "->", "||" };
+		std::vector<std::string> splitTrioStrings = { "=/=" };
+
+		int i = 0;
+		while (true)
+		{
+			char c = s[i];
+			std::string duo = std::string(1, c); (i < s.size() - 1) ? duo.append(std::string(1, s[i + (int)1])) : duo.append("");
+			std::string trio = std::string(1, c); (i < s.size() - 1) ? trio.append(std::string(1, s[i + (int)1])) : trio.append(""); (i < s.size() - 2) ? trio.append(std::string(1, s[i + 2])) : trio.append("");
+			
+			if (itemInVect(splitTrioStrings, trio))
+			{
+				if (intermediate != "")
+					tokens.push_back(intermediate);
+				intermediate = std::string(1, c);
+				(i < s.size() - 1) ? intermediate.append(std::string(1, s[i + 1])) : intermediate.append("");
+				(i < s.size() - 2) ? intermediate.append(std::string(1, s[i + 2])) : intermediate.append("");
+				tokens.push_back(intermediate);
+				intermediate = "";
+				i += 2;
+			}
+			else if (itemInVect(splitDuoStrings, duo))
+			{
+				if (intermediate != "")
+					tokens.push_back(intermediate);
+				intermediate = std::string(1, c);
+				(i < s.size() - 1) ? intermediate.append(std::string(1, s[i + 1])) : intermediate.append("");
+				tokens.push_back(intermediate);
+				intermediate = "";
+				i++;
+			}
+			else if (itemInVect(splitChars, c))
+			{
+				if (intermediate != "")
+					tokens.push_back(intermediate);
+				intermediate = std::string(1, c);
+				tokens.push_back(intermediate);
+				intermediate = "";
+			}
+			else
+			{
+				intermediate.append(std::string(1, c));
+			}
+			i++;
+			if (i >= s.size())
+				break;
+		}
+		tokens.push_back(intermediate);
+		return tokens;
+	}
+
+	/*/
 	void Lexer::StripComments()
 	{
 		bool success = true;
 		std::string program = m_Tokens->at(0)->GetContents();
 		//SPLW_TRACE("Getting program string: {0}", program);
 		std::string strippedProgram = "";
-		std::regex re("/\\*(.|\n)*?\\*/|//.*");
+		std::regex re("/\\*(.|\n)*?\\*///|//.*");
+	/*
 		while (success)
 		{
 			std::smatch m;
@@ -125,6 +429,7 @@ namespace Spliwaca
 		m_Tokens->pop_back();
 		m_Tokens->push_back(token);
 	}
+	
 
 	bool Lexer::MakeFunctionsProceduresStructs()
 	{
@@ -146,63 +451,63 @@ namespace Spliwaca
 					newTokens.push_back(std::make_shared<Token>(Token(TokenType::UnfinishedToken, match->prefix.c_str(), 0, 0)));
 					if (match->match[0][0] == 'F') //Function
 					{
-						//@TODO: Implement line numbers for tokens
-						/*FUNC*/newTokens.push_back(std::make_shared<Token>(Token(TokenType::Function, match->match[12].c_str(), 0, 0)));
-						/*x*/newTokens.push_back(std::make_shared<Token>(Token(TokenType::Identifier, match->match[13].c_str(), 0, 0)));
-						if (match->match[14] != "")
-						{
-							/*TAKES*/newTokens.push_back(std::make_shared<Token>(Token(TokenType::Takes, "TAKES", 0, 0)));
-							/*type x*/newTokens.push_back(std::make_shared<Token>(Token(TokenType::UnfinishedToken, match->match[15].c_str(), 0, 0)));
-						}
-						/*->*/newTokens.push_back(std::make_shared<Token>(Token(TokenType::ReturnType, match->match[18].c_str(), 0, 0)));
-						/*type*/newTokens.push_back(std::make_shared<Token>(Token(TokenType::UnfinishedToken, match->match[19].c_str(), 0, 0)));
-						/*AS*/newTokens.push_back(std::make_shared<Token>(Token(TokenType::As, "AS", 0, 0)));
-						/*body*/newTokens.push_back(std::make_shared<Token>(Token(TokenType::UnfinishedToken, match->match[20].c_str(), 0, 0)));
-						/*RETURN*/newTokens.push_back(std::make_shared<Token>(Token(TokenType::Return, "RETURN", 0, 0)));
-						/*rv*/newTokens.push_back(std::make_shared<Token>(Token(TokenType::UnfinishedToken, match->match[24].c_str(), 0, 0)));
-					}
-					else if (match->match[0][0] == 'P') //Procedure
-					{
-						//@TODO: Implement line numbers for tokens
-						/*PROC*/newTokens.push_back(std::make_shared<Token>(Token(TokenType::Procedure, match->match[1].c_str(), 0, 0)));
-						/*x*/newTokens.push_back(std::make_shared<Token>(Token(TokenType::Identifier, match->match[2].c_str(), 0, 0)));
-						if (match->match[3] != "")
-						{
-							/*TAKES*/newTokens.push_back(std::make_shared<Token>(Token(TokenType::Takes, "TAKES", 0, 0)));
-							/*type x*/newTokens.push_back(std::make_shared<Token>(Token(TokenType::UnfinishedToken, match->match[4].c_str(), 0, 0)));
-						}
-						/*AS*/newTokens.push_back(std::make_shared<Token>(Token(TokenType::As, "AS", 0, 0)));
-						/*body*/newTokens.push_back(std::make_shared<Token>(Token(TokenType::UnfinishedToken, match->match[20].c_str(), 0, 0)));
-						/*END*/newTokens.push_back(std::make_shared<Token>(Token(TokenType::EndProc, match->match[9].c_str(), 0, 0)));
-					}
-					else if (match->match[0][0] == 'S') //Struct
-					{
-						//@TODO: Implement line numbers for tokens
-						/*STRUCT*/newTokens.push_back(std::make_shared<Token>(Token(TokenType::Procedure, match->match[26].c_str(), 0, 0)));
-						/*x*/newTokens.push_back(std::make_shared<Token>(Token(TokenType::Identifier, match->match[27].c_str(), 0, 0)));
-						/*AS*/newTokens.push_back(std::make_shared<Token>(Token(TokenType::As, "AS", 0, 0)));
-						/*body*/newTokens.push_back(std::make_shared<Token>(Token(TokenType::UnfinishedToken, match->match[28].c_str(), 0, 0)));
-						/*END*/newTokens.push_back(std::make_shared<Token>(Token(TokenType::EndProc, match->match[34].c_str(), 0, 0)));
-					}
-					else
-					{
-						SPLW_ERROR("Match does not appear to be function, procedure or struct! {0}", match->match[0]);
-						__debugbreak();
-					}
-				}
-				newTokens.push_back(std::make_shared<Token>(Token(TokenType::UnfinishedToken, matches.back()->suffix.c_str(), 0, 0)));
-				for each (std::shared_ptr<Token> token in newTokens)
-				{
-					m_Tokens->emplace(m_Tokens->begin() + i, token);
-				}
-				i += newTokens.size();
-			}
-			else
-				i++;
-		}
-		return success;
-	}
-
+						//@TODO: Implement line numbers for tokens*/
+						//*FUNC*/newTokens.push_back(std::make_shared<Token>(Token(TokenType::Function, match->match[12].c_str(), 0, 0)));
+						//*x*/newTokens.push_back(std::make_shared<Token>(Token(TokenType::Identifier, match->match[13].c_str(), 0, 0)));
+						//if (match->match[14] != "")
+						//{
+						//	/*TAKES*/newTokens.push_back(std::make_shared<Token>(Token(TokenType::Takes, "TAKES", 0, 0)));
+						//	/*type x*/newTokens.push_back(std::make_shared<Token>(Token(TokenType::UnfinishedToken, match->match[15].c_str(), 0, 0)));
+						//}
+						//*->*/newTokens.push_back(std::make_shared<Token>(Token(TokenType::ReturnType, match->match[18].c_str(), 0, 0)));
+						//*type*/newTokens.push_back(std::make_shared<Token>(Token(TokenType::UnfinishedToken, match->match[19].c_str(), 0, 0)));
+						//*AS*/newTokens.push_back(std::make_shared<Token>(Token(TokenType::As, "AS", 0, 0)));
+						//*body*/newTokens.push_back(std::make_shared<Token>(Token(TokenType::UnfinishedToken, match->match[20].c_str(), 0, 0)));
+						//*RETURN*/newTokens.push_back(std::make_shared<Token>(Token(TokenType::Return, "RETURN", 0, 0)));
+						//*rv*/newTokens.push_back(std::make_shared<Token>(Token(TokenType::UnfinishedToken, match->match[24].c_str(), 0, 0)));
+					//}
+					//else if (match->match[0][0] == 'P') //Procedure
+					//{
+					//	//@TODO: Implement line numbers for tokens
+					//	/*PROC*/newTokens.push_back(std::make_shared<Token>(Token(TokenType::Procedure, match->match[1].c_str(), 0, 0)));
+					//	/*x*/newTokens.push_back(std::make_shared<Token>(Token(TokenType::Identifier, match->match[2].c_str(), 0, 0)));
+					//	if (match->match[3] != "")
+					//	{
+					//		/*TAKES*/newTokens.push_back(std::make_shared<Token>(Token(TokenType::Takes, "TAKES", 0, 0)));
+					//		/*type x*/newTokens.push_back(std::make_shared<Token>(Token(TokenType::UnfinishedToken, match->match[4].c_str(), 0, 0)));
+					//	}
+					//	/*AS*/newTokens.push_back(std::make_shared<Token>(Token(TokenType::As, "AS", 0, 0)));
+					//	/*body*/newTokens.push_back(std::make_shared<Token>(Token(TokenType::UnfinishedToken, match->match[20].c_str(), 0, 0)));
+					//	/*END*/newTokens.push_back(std::make_shared<Token>(Token(TokenType::EndProc, match->match[9].c_str(), 0, 0)));
+					//}
+					//else if (match->match[0][0] == 'S') //Struct
+					//{
+					//	//@TODO: Implement line numbers for tokens
+					//	/*STRUCT*/newTokens.push_back(std::make_shared<Token>(Token(TokenType::Procedure, match->match[26].c_str(), 0, 0)));
+					//	/*x*/newTokens.push_back(std::make_shared<Token>(Token(TokenType::Identifier, match->match[27].c_str(), 0, 0)));
+					//	/*AS*/newTokens.push_back(std::make_shared<Token>(Token(TokenType::As, "AS", 0, 0)));
+					//	/*body*/newTokens.push_back(std::make_shared<Token>(Token(TokenType::UnfinishedToken, match->match[28].c_str(), 0, 0)));
+					//	/*END*/newTokens.push_back(std::make_shared<Token>(Token(TokenType::EndProc, match->match[34].c_str(), 0, 0)));
+					//}
+					//else
+					//{
+					//	SPLW_ERROR("Match does not appear to be function, procedure or struct! {0}", match->match[0]);
+					//	__debugbreak();
+					//}
+				//}
+				//newTokens.push_back(std::make_shared<Token>(Token(TokenType::UnfinishedToken, matches.back()->suffix.c_str(), 0, 0)));
+				//for each (std::shared_ptr<Token> token in newTokens)
+				//{
+				//	m_Tokens->emplace(m_Tokens->begin() + i, token);
+				//}
+				//i += newTokens.size();
+			//}
+			//else
+			//	i++;
+		//}
+		//return success;
+	//}
+/*
 	bool Lexer::MakeIfForWhileAnons()
 	{
 		std::vector<uint32_t> indexes;
@@ -242,4 +547,5 @@ namespace Spliwaca
 	{
 		return false;
 	}
+	*/
 }

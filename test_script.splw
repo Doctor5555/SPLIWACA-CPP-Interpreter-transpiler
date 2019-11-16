@@ -1,3 +1,6 @@
+
+
+
 CALL ANONF TAKES int num -> str AS
 	SET rv TO ""
 	FOR i OF num DO
@@ -12,12 +15,13 @@ THIS IS A COMMENT!
 */
 
 //SCOPES !!!!!!!!
-SET a TO CALL ANONF TAKES int num -> str AS
+SET a TO CALL ANONF <- int num -> str AS
 	SET rv TO ""
 	FOR i OF num DO
 		SET rv TO rv + "n"
 RETURN rv WITH b
 
+/*
 FUNCTION MakeIfForWhileAnons -> Boolean:
         list of integer indexes
         FOR UnfinishedToken with type UncomfirmedExpression IN tokens DO
@@ -41,12 +45,13 @@ FUNCTION MakeIfForWhileAnons -> Boolean:
 			END FOR
 		END WHILE
 RETURN True
+*/
 
 PROCEDURE setState12 TAKES int stateModification, int flags AS
 	IF flags == 64 DO
 		SET GLOBALS.regen TO stateModification
 	ELSE IF flags == 32 DO
-		SET GLOBALS.helth TO stateModification
+		SET GLOBALS.health TO stateModification
 	END IF
 END PROCEDURE
 
@@ -81,4 +86,4 @@ STRUCT blueElephant AS
 	lightning omega
 END STRUCT
 
-SET b TO CREATE blueElephant WITH 1, "2", [3, 4, 5], (CREATE lightning WITH (CREATE vec3 WITH 0, 0, 0), (CREATE quat WITH 0, 0, 0, 0), 10.63, 6365.342)
+SET b TO CREATE blueElephant WITH 1, "2", (3, 4, 5), (CREATE lightning WITH (CREATE vec3 WITH 0, 0, 0), (CREATE quat WITH 0, 0, 0, 0), 10.63, 6365.342)

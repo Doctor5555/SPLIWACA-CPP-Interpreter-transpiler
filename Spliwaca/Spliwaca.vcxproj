@@ -131,8 +131,10 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Spliwaca\src\Frontend\Lexer\Lexer.h" />
+    <ClInclude Include="Spliwaca\src\Frontend\Lexer\LexicalError.h" />
     <ClInclude Include="Spliwaca\src\Frontend\Lexer\Token.h" />
     <ClInclude Include="Spliwaca\src\Log.h" />
+    <ClInclude Include="Spliwaca\src\UtilFunctions.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Spliwaca\src\Frontend\Lexer\Lexer.cpp" />

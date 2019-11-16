@@ -16,6 +16,8 @@
       <Filter>Frontend\Lexer</Filter>
     </ClInclude>
     <ClInclude Include="Spliwaca\src\Log.h" />
+    <ClInclude Include="Spliwaca\src\Frontend\Lexer\LexicalError.h" />
+    <ClInclude Include="Spliwaca\src\UtilFunctions.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Spliwaca\src\Frontend\Lexer\Lexer.cpp">

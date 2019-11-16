@@ -24,18 +24,16 @@ for each string, index in split_string:
     else if string is "OUTPUT":
         Append an output token
         Consume up to the next newline as a raw token
-    else if string fits dict_decl regex:
+    else if string fits dict_list_decl regex:
         split = call SplitDictDeclt
         for section in split:
             Append token of type GetDictDeclTokenType(section)
     else if string fits identifier regex:
         Append identifier token
-    else if string is a newline:
-        Append newline token
     else if string is a space or tab:
         Do nothing
     else:
-        Lexical error: unexpected characters
+        Lexical error unexpected characters
     end if
     
     if string is a new line:
