@@ -1,0 +1,71 @@
+(*COMMENT
+
+The following is a slightly modified form of EBNF grammar notation.
+
+`*` indicates repeat the preceding group 0 or more times
+`+` indicates repeat the preceding group 1 or more times
+`?` indicates that the preceding group is optional
+
+*)
+
+(*
+Entry point is the root of the tree.
+
+Lambdas, Calls, Casts, Create, Raw are expressions - they can be part of another statement.
+Functions, procedures, i/o, Require, Inc/Dec, If, for, while, struct are statements.
+
+string boolean_op string
+*)
+
+(*LL(3) GRAMMAR, probably*)
+
+entry_point = require? ('\n'|statements|function)* EOF;
+
+statements = (statement, ('\n'+, statement)*, '\n')|'\n';
+statement = if|set|input|output|increment|decrement|for|while|quit|call;
+
+expr = boolean_expr|create|cast|call|anonf|anonp;
+
+(*Arithmetic expressions: *)
+boolean_expr = (add_expr, (boolean_op add_expr)*)|
+                   (('NOT'|'!'), boolean_expr);
+add_expr = mul_expr, ('+'|'-', mul_expr)*;
+mul_expr = power, ('*'|'/', power)*;
+power = factor, ('**', factor)*;
+factor = ('+'|'-'), atom;
+atom = string|raw|int|float|complex|identifier|list|dict|('(', expr, ')');
+
+
+number = int|float|complex|identifier;
+string = string|raw|identifier;
+list = '(', atom, ('\n'?, ',', '\n'?, atom)+, ')';
+dict = '(', atom, '=', atom, ('\n'?, '||', '\n'?, atom, '=', atom)*, ')';
+
+
+(*Other expressions: *)
+create = 'CREATE', type, ['WITH', expr, (',', expr)*];
+cast = 'CAST', type, expr;
+call = 'CALL', identifier, ['WITH', expr, (',', expr)*];
+anonf = 'ANONF', (('<-'|'TAKES'), type (',', type)*)?, ('->'|'RETURNS'), type, 'AS', '\n'+, statements, '\n'+, 'END FUNCTION\n';
+anonp = 'ANONP', (('<-'|'TAKES'), type (',', type)*)?, 'AS', '\n', statements, 'END PROCEDURE';
+
+
+(*Statements: *)
+if = 'IF', boolean_expr, 'DO', statements, ('ELSE IF', boolean_expr, 'DO', statements,)*,('ELSE', statements)?,'END IF\n';
+set = 'SET', identifier, 'TO', expr;
+input = 'INPUT', ((sign_specifier, type)|type), identifier;
+output = 'OUTPUT', raw;
+increment = 'INC', identifier;
+decrement = 'DEC', identifier;
+for = 'FOR', identifier, 'OF', (identifier|list);
+while = 'WHILE', boolean_expr, 'DO\n', statements, '\nEND WHILE';
+quit = 'QUIT', atom;
+require = 'REQUIRE', interpreter_name;
+
+struct = 'STRUCT', identifier, 'AS\n', (type, identifier, ('\n'|','|',\n'))+, 'END STRUCTURE';
+
+function = 'FUNCTION', identifier, (('<-'|'TAKES'), type (',', type)*)?, ('->'|'RETURNS'), type, 'AS', '\n', statements, '\n'+, 'END FUNCTION\n'|
+           procedure;
+
+procedure = 'PROCEDURE', identifier, (('<-'|'TAKES'), type (',', type)*)?, 'AS', '\n', statements, 'END PROCEDURE';
+
