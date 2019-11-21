@@ -29,14 +29,29 @@ namespace Spliwaca
 #define SPLW_WARN(...)          ::Spliwaca::Log::GetClientLogger()->warn(__VA_ARGS__)
 #define SPLW_ERROR(...)         ::Spliwaca::Log::GetClientLogger()->error(__VA_ARGS__)
 #define SPLW_CRITICAL(...)      ::Spliwaca::Log::GetClientLogger()->critical(__VA_ARGS__)
-#else
+#define LOG_INIT()              ::Spliwaca::Log::Init()
 
+#else
+#ifdef SPLW_DIST
+
+#define SPLW_TRACE(...)         
+#define SPLW_INFO(...)        
+#define SPLW_WARN(...)          ::Spliwaca::Log::GetClientLogger()->warn(__VA_ARGS__)
+#define SPLW_ERROR(...)         ::Spliwaca::Log::GetClientLogger()->error(__VA_ARGS__)
+#define SPLW_CRITICAL(...)      ::Spliwaca::Log::GetClientLogger()->critical(__VA_ARGS__)
+#define LOG_INIT()              ::Spliwaca::Log::Init()
+
+#else
 // Log macros			
-#define SN_TRACE(...)         
-#define SN_INFO(...)          
-#define SN_WARN(...)          
-#define SN_ERROR(...)         
-#define SN_CRITICAL(...)      
+#define SPLW_TRACE(...)         
+#define SPLW_INFO(...)          
+#define SPLW_WARN(...)          
+#define SPLW_ERROR(...)         
+#define SPLW_CRITICAL(...)
+#define LOG_INIT()
+
+#endif
+
 #endif
 
 #endif /*LOG_H_SUPERNOVA_CORE_GUARD*/

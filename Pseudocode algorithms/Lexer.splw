@@ -1,0 +1,351 @@
+﻿
+SET Token_Type_Enum TO CREATE DICT WITH (
+	None = 0||
+	Int = 1|| //
+	Float = 2|| //
+	Complex = 3|| //
+	PositiveTypeMod = 4||
+	NegativeTypeMod = 5||
+	NonZeroTypeMod = 6||
+	Increment = 7||
+	Decrement = 8||
+	String = 9|| //
+	//Bool||
+	True = 10|| //
+	False = 11||
+	Plus = 12||
+	Minus = 13||
+	Multiply = 14||
+	Divide = 15||
+	Intdiv = 16||
+	Modulo = 17||
+	Power = 18||
+	Is = 19||
+	And = 20||
+	Or = 21||
+	Not = 22||
+	Equal = 23||
+	NotEqual = 24||
+	LessThan = 25||
+	GreaterThan = 26||
+	LessThanEqual = 27||
+	GreaterThanEqual = 28||
+	Xor = 29||
+	BitwiseAnd = 30||
+	BitwiseOr = 31||
+	ShiftRight = 32||
+	ShiftLeft = 33||
+	LParen = 34||
+	RParen = 35||
+	LCurlyParen = 36||
+	RCurlyParen = 37||
+	LSquareParen = 38||
+	RSquareParen = 39||
+	Function = 40|| //
+	Procedure = 41|| //
+	AnonFunc = 42|| //
+	AnonProc = 43|| //
+	Struct = 44|| //
+	ReturnType = 45|| //
+	As = 46|| //
+	Takes = 47|| //
+	Return = 48|| //
+	//EndProc|| //
+	//EndStruct|| //
+	If = 49|| //
+	Else = 50||
+	Do = 51||
+	For = 52|| //
+	Of = 53||
+	While = 54|| //
+	//EndIf|| //
+	//EndFor|| //
+	//EndWhile|| //
+	End = 55||
+	Input = 56|| //
+	Output = 57|| //
+	Create = 58|| //
+	SplitList = 59||
+	Cast = 60|| //
+	Call = 61||
+	Raw = 62|| 
+	Quit = 63||
+	Require = 64||
+	Set = 65|| //
+	Type = 66|| //
+	Identifier = 67||
+	SingleLineComment = 68||
+	StartMultiLineComment = 69||
+	EndMultiLineComment = 70||
+	Whitespace = 71||
+	Newline = 72||
+	Comma = 73||
+	UnfinishedToken = 74||
+	ReturnValue = 75|| //Possibly unused
+	BooleanExpr = 76||
+	Break = 77
+)
+
+SET Keyword_To_Token_Type_Dict TO CREATE DICT WITH (
+	   "INT"  =               TokenType::Type
+	|| "Int"  =               TokenType::Type
+	|| "int"  =               TokenType::Type
+	|| "INTEGER"  =           TokenType::Type
+	|| "Integer"  =           TokenType::Type
+	|| "integer"  =           TokenType::Type
+	|| "FLOAT"  =             TokenType::Type
+	|| "Float"  =             TokenType::Type
+	|| "float"  =             TokenType::Type
+	|| "REAL"  =              TokenType::Type
+	|| "Real"  =              TokenType::Type
+	|| "real"  =              TokenType::Type
+	|| "NUMBER"  =            TokenType::Type
+	|| "Number"  =            TokenType::Type
+	|| "number"  =            TokenType::Type
+	|| "COMPLEX"  =           TokenType::Type
+	|| "Complex"  =           TokenType::Type
+	|| "complex"  =           TokenType::Type
+	|| "STRING"  =            TokenType::Type
+	|| "String"  =            TokenType::Type
+	|| "string"  =            TokenType::Type
+	|| "STR"  =               TokenType::Type
+	|| "Str"  =               TokenType::Type
+	|| "str"  =               TokenType::Type
+	|| "DICT"  =              TokenType::Type
+	|| "Dict"  =              TokenType::Type
+	|| "dict"  =              TokenType::Type
+	|| "DICTIONARY"  =        TokenType::Type
+	|| "Dictionary"  =        TokenType::Type
+	|| "dictionary"  =        TokenType::Type
+	|| "MAP"  =               TokenType::Type
+	|| "Map"  =               TokenType::Type
+	|| "map"  =               TokenType::Type
+	|| "MAPPING"  =           TokenType::Type
+	|| "Mapping"  =           TokenType::Type
+	|| "mapping"  =           TokenType::Type
+	|| "LIST"  =              TokenType::Type
+	|| "List"  =              TokenType::Type
+	|| "list"  =              TokenType::Type
+	|| "ARRAY"  =             TokenType::Type
+	|| "Array"  =             TokenType::Type
+	|| "array"  =             TokenType::Type
+	|| "TUPLE"  =             TokenType::Type
+	|| "Tuple"  =             TokenType::Type
+	|| "tuple"  =             TokenType::Type
+	|| "TRUE"  =              TokenType::True
+	|| "True"  =              TokenType::True
+	|| "true"  =              TokenType::True
+	|| "FALSE"  =             TokenType::False
+	|| "False"  =             TokenType::False
+	|| "false"  =             TokenType::False
+	|| "NULL"  =              TokenType::None
+	|| "Null"  =              TokenType::None
+	|| "null"  =              TokenType::None
+	|| "NONE"  =              TokenType::None
+	|| "None"  =              TokenType::None
+	|| "none"  =              TokenType::None
+	|| "EMPTY"  =             TokenType::None
+	|| "Empty"  =             TokenType::None
+	|| "empty"  =             TokenType::None
+	|| "INFINITY"  =          TokenType::Float
+	|| "Infinity"  =          TokenType::Float
+	|| "infinity"  =          TokenType::Float
+	|| "NAN"  =               TokenType::Float
+	|| "NaN"  =               TokenType::Float
+	|| "nan"  =               TokenType::Float
+	|| "IS"  =                TokenType::Is
+	|| "≣"  =                 TokenType::Is
+	|| "≡"  =                 TokenType::Is
+	|| "NOT"  =               TokenType::Not
+	|| "!"  =                 TokenType::Not
+	|| "AND"  =               TokenType::And
+	|| "&&"  =                TokenType::And
+	|| "∧"  =                TokenType::And
+	|| "OR"  =                TokenType::Or
+	|| "∨"  =                TokenType::Or
+	|| "??"  =                TokenType::Or
+	|| "="  =                 TokenType::Equal
+	|| "=="  =                TokenType::Equal
+	|| "EQUALS"  =            TokenType::Equal
+	|| "!="  =                TokenType::NotEqual
+	|| "≠"  =                 TokenType::NotEqual
+	|| "=/="  =               TokenType::NotEqual
+	|| "<"  =                 TokenType::LessThan
+	|| "≨"  =                 TokenType::LessThan
+	|| "≱"  =                 TokenType::LessThan
+	|| ">"  =                 TokenType::GreaterThan
+	|| "≩"  =                 TokenType::GreaterThan
+	|| "≰"  =                 TokenType::GreaterThan
+	|| "<="  =                TokenType::LessThanEqual
+	|| "≤"  =                 TokenType::LessThanEqual
+	|| "⩽"  =                 TokenType::LessThanEqual
+	|| "≦"  =                TokenType::LessThanEqual
+	|| "≯"  =                 TokenType::LessThanEqual
+	|| "⩾"  =                 TokenType::GreaterThanEqual
+	|| ">="  =                TokenType::GreaterThanEqual
+	|| "≥"  =                 TokenType::GreaterThanEqual
+	|| "≧"  =                TokenType::GreaterThanEqual
+	|| "≮"  =                 TokenType::GreaterThanEqual
+	|| "*"  =                 TokenType::Multiply
+	|| "**"  =                TokenType::Power
+	|| "/"  =                 TokenType::Divide
+	|| "DIVI"  =              TokenType::Intdiv
+	|| "+"  =                 TokenType::Plus
+	|| "-"  =                 TokenType::Minus
+	|| "%"  =                 TokenType::Modulo
+	|| "^"  =                 TokenType::Xor
+	|| "&"  =                 TokenType::BitwiseAnd
+	|| "|"  =                 TokenType::BitwiseOr
+	|| ">>"  =                TokenType::ShiftRight
+	|| "<<"  =                TokenType::ShiftLeft
+	|| "("  =                 TokenType::LParen
+	|| ")"  =                 TokenType::RParen
+	|| "RAW"  =               TokenType::Raw
+	|| "PLAINTEXT"  =         TokenType::Raw
+	|| "INPUT"  =             TokenType::Input
+	|| "POS"  =               TokenType::PositiveTypeMod
+	|| "POSITIVE"  =          TokenType::PositiveTypeMod
+	|| "NEG"  =               TokenType::NegativeTypeMod
+	|| "NEGATIVE"  =          TokenType::NegativeTypeMod
+	|| "NONZERO"  =           TokenType::NonZeroTypeMod
+	|| "OUTPUT"  =            TokenType::Output
+	|| "PRINT"  =             TokenType::Output
+	|| "CREATE"  =            TokenType::Create
+	|| "CAST"  =              TokenType::Cast
+	|| "CALL"  =              TokenType::Call
+	|| "QUIT"  =              TokenType::Quit
+	|| "EXIT"  =              TokenType::Quit
+	|| "STOP"  =              TokenType::Quit
+	|| "REQUIRE"  =           TokenType::Require
+	|| "INCREMENT"  =         TokenType::Increment
+	|| "INC"  =               TokenType::Increment
+	|| "DECREMENT"  =         TokenType::Decrement
+	|| "DEC"  =               TokenType::Decrement
+	|| "IF"  =                TokenType::If
+	|| "DO"  =                TokenType::Do
+	|| "ELSE"  =              TokenType::Else
+	|| "FUNCTION"  =          TokenType::Function
+	|| "FUNC"  =              TokenType::Function
+	|| "TAKES"  =             TokenType::Takes
+	|| "<-"  =                TokenType::Takes
+	|| "RETURNS"  =           TokenType::ReturnType
+	|| "->"  =                TokenType::ReturnType
+	|| "AS"  =                TokenType::As
+	|| "RETURN"  =            TokenType::Return
+	|| "PROCEDURE"  =         TokenType::Procedure
+	|| "END"  =               TokenType::End
+	|| "ANONF"  =             TokenType::AnonFunc
+	|| "ANONFUNC"  =          TokenType::AnonFunc
+	|| "ANONFUNCTION"  =      TokenType::AnonFunc
+	|| "ANONYMOUSF"  =        TokenType::AnonFunc
+	|| "ANONYMOUSFUNC"  =     TokenType::AnonFunc
+	|| "ANONYMOUSFUNCTION" =  TokenType::AnonFunc
+	|| "ANONP"  =             TokenType::AnonProc
+	|| "ANONPROC"  =          TokenType::AnonProc
+	|| "ANONPROCEDURE"  =     TokenType::AnonProc
+	|| "ANONYMOUSP"  =        TokenType::AnonProc
+	|| "ANONYMOUSPROC"  =     TokenType::AnonProc
+	|| "ANONYMOUSPROCEDURE" = TokenType::AnonProc
+	|| "SET"  =               TokenType::Set
+	|| "FOR"  =               TokenType::For
+	|| "OF"  =                TokenType::Of
+	|| "WHILE"  =             TokenType::While
+	|| "STRUCTURE"  =         TokenType::Struct
+	|| "STRUCT"  =            TokenType::Struct
+	|| "BREAK"  =             TokenType::Break
+	|| "//"  =                TokenType::SingleLineComment
+	|| "/*"  =                TokenType::StartMultiLineComment
+	|| "*/"  =                TokenType::EndMultiLineComment
+	|| "||"  =                TokenType::SplitList
+	|| "\n"  =                TokenType::Newline
+	|| ","  =                 TokenType::Comma
+)
+
+STRUCT Token AS
+	int token_type,
+	str contents,
+	int line_number,
+	int column_number
+END STRUCT
+
+STRUCT LexerState AS
+	int  line_number,
+	int  column_number,
+	str  file_addr,
+	str  file_contents
+END STRUCT
+
+FUNCTION ItemInList <- LIST v, THING t -> BOOL AS
+	FOR e OF v DO
+		IF e == t DO
+			RETURN True
+		END IF
+	END FOR
+	RETURN False
+END FUNCTION
+
+FUNCTION split TAKES String s RETURNS LIST AS
+	SET intermediate TO ""
+	SET tokens TO List
+	SET split_chars TO (' ', '\n', '\t', '\f', '(', ')', '[', ']', '+', '-', '/', '*', '!', '=', '%', '^', '&', '|', '<', '>', ',', '"', '\'')
+	SET split_duos TO ("/*", "*/", "//", "**", "??", "==", "!=", "<=", ">=", "<<", ">>", "<-", "->", "||")
+	SET split_trios TO ( "=/=" )
+
+	SET i TO 0
+	WHILE True DO
+		SET c TO s[i]
+		SET duo TO s[i]
+		SET trio TO s[i]
+		IF i <= s.length + 1 DO
+			SET duo TO duo + s[i+1]
+			SET trio TO trio + s[i+1]
+		END IF
+		IF i <= s.length + 2 DO
+			SET trio TO trio + s[i+2]
+		END IF
+
+		IF (CALL ItemInList WITH split_trios, trio) DO
+			IF intermediate != "" DO
+				CALL tokens.append WITH intermediate
+			END IF
+			SET intermediate TO c
+			IF i <= s.length + 1 DO
+				SET intermediate TO intermediate + s[i+1]
+			END IF
+			IF i <= s.length + 2 DO
+				SET intermediate TO intermediate + s[i+2]
+			END IF
+			CALL tokens.append WITH intermediate
+			SET intermediate TO ""
+			INC i
+			INC i
+		ELSE IF (CALL ItemInList WITH split_duos, duo) DO
+			IF intermediate != "" DO
+				CALL tokens.append WITH intermediate
+			END IF
+			SET intermediate TO c
+			IF i <= s.length + 1 DO
+				SET intermediate TO intermediate + s[i+1]
+			END IF
+			CALL tokens.append WITH intermediate
+			SET intermediate TO ""
+			INC i
+		ELSE IF (CALL ItemInList WITH split_chars, c)
+			IF intermediate != "" DO
+				CALL tokens.append WITH intermediate
+			END IF
+			SET intermediate TO c
+			CALL tokens.append WITH intermediate
+			SET intermediate TO ""
+		ELSE DO
+			SET intermediate TO intermediate + c
+		END IF
+
+		INC i
+		IF i >= s.length DO
+			BREAK
+		END IF
+	END WHILE
+	CALL tokens.append WITH intermediate
+	RETURN tokens
+END FUNCTION

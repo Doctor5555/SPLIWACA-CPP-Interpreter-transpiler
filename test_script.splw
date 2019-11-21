@@ -5,7 +5,9 @@ CALL ANONF TAKES int num -> str AS
 	SET rv TO ""
 	FOR i OF num DO
 		SET rv TO rv + "n"
-RETURN rv WITH 12
+	END FOR
+	RETURN rv 
+END FUNC WITH 12
 
 SET b TO 12
 
@@ -19,7 +21,9 @@ SET a TO CALL ANONF <- int num -> str AS
 	SET rv TO ""
 	FOR i OF num DO
 		SET rv TO rv + "n"
-RETURN rv WITH b
+	END FOR
+	RETURN rv 
+END FUNC WITH b
 
 /*
 FUNCTION MakeIfForWhileAnons -> Boolean:
@@ -56,8 +60,8 @@ PROCEDURE setState12 TAKES int stateModification, int flags AS
 END PROCEDURE
 
 FUNCTION getRandomNumber RETURNS str AS
-	SET rv TO CALL _INTERPRETER.random.random WITH 0, 100
-RETURN rv
+	RETURN CALL _INTERPRETER.random.random WITH 0, 100
+END FUNC
 
 STRUCT vec3 AS
 	float x
@@ -86,4 +90,4 @@ STRUCT blueElephant AS
 	lightning omega
 END STRUCT
 
-SET b TO CREATE blueElephant WITH 1, "2", (3, 4, 5), (CREATE lightning WITH (CREATE vec3 WITH 0, 0, 0), (CREATE quat WITH 0, 0, 0, 0), 10.63, 6365.342)
+SET b TO CREATE blueElephant WITH 1, "2", (3, CALL getRandomNumber, 5), (CREATE lightning WITH (CREATE vec3 WITH 0, 0, 0), (CREATE quat WITH 0, 0, 0, 0), 10.63, 6365.342)

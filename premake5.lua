@@ -12,6 +12,7 @@ outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 
 IncludeDir = {}
 IncludeDir["spdlog"] = "Spliwaca/vendor/spdlog/include"
+IncludeDir["timing"] = "Spliwaca/vendor/timing"
 
 startproject "Spliwaca"
 
@@ -38,7 +39,9 @@ project "Spliwaca"
 	files
 	{
 		"c:/dev/EPQ Spliwaca/Spliwaca/Spliwaca/src/**.h",
-		"c:/dev/EPQ Spliwaca/Spliwaca/Spliwaca/src/**.cpp"
+		"c:/dev/EPQ Spliwaca/Spliwaca/Spliwaca/src/**.cpp",
+		"c:/dev/EPQ Spliwaca/Spliwaca/vendor/timing/**.h",
+		"c:/dev/EPQ Spliwaca/Spliwaca/vendor/spdlog/include/**.h"
 	}
 	
 	defines
@@ -49,7 +52,8 @@ project "Spliwaca"
 	includedirs
 	{
 		"C:/dev/EPQ Spliwaca/Spliwaca/Spliwaca/src",
-		"%{IncludeDir.spdlog}"
+		"%{IncludeDir.spdlog}",
+		"%{IncludeDir.timing}"
 	}
 	
 --[[	links

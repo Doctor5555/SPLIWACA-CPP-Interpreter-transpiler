@@ -33,7 +33,10 @@ add_expr = mul_expr, ('+'|'-', mul_expr)*;
 mul_expr = power, ('*'|'/', power)*;
 power = factor, ('**', factor)*;
 factor = ('+'|'-'), atom;
-atom = string|raw|int|float|complex|identifier|list|dict|('(', expr, ')');
+atom = string|raw|int|float|complex|identifier|list|dict|list_access|('(', expr, ')');
+
+
+list_access = (identifier|list|dict), '[', atom, ']';
 
 
 number = int|float|complex|identifier;

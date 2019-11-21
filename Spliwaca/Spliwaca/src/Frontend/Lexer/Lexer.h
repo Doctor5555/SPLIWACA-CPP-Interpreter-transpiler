@@ -32,6 +32,8 @@ namespace Spliwaca
 	private:
 		Lexer(std::string file);
 
+		void makeToken(std::string tokenContents);
+
 		std::vector<std::string> split(const std::string& s);
 
 		template <typename Out>
@@ -70,10 +72,19 @@ namespace Spliwaca
 		std::string m_FileLocation;
 		std::shared_ptr<std::vector<std::shared_ptr<Token>>> m_Tokens;
 
-		uint32_t m_LineNumber = 1;
-		uint32_t m_ColumnNumber = 1;
+		uint32_t m_LineNumber = 0, m_ColumnNumber = 0;
+		uint32_t m_StoredLineNumber = 0, m_StoredColumnNumber = 0;
+
+		//LEXER STATE FLAGS
+		// double_quote single_quote raw block_comment line_comment
+		char flags = 0;
+		std::string persistent_contents;
 
 		std::string m_FileString;
+
+		const std::string alphabetCharacters = {
+			"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+		};
 
 		const std::map<std::string, TokenType> s_KeywordDict = {
 			{"INT",                 TokenType::Type},
@@ -241,14 +252,16 @@ namespace Spliwaca
 			{"WHILE",               TokenType::While},
 			{"STRUCTURE",           TokenType::Struct},
 			{"STRUCT",              TokenType::Struct},
+			{"BREAK",               TokenType::Break},
 			{"//",                  TokenType::SingleLineComment},
 			{"/*",                  TokenType::StartMultiLineComment},
 			{"*/",                  TokenType::EndMultiLineComment},
 			{"||",                  TokenType::SplitList},
 			{"\n",                  TokenType::Newline},
-			{",",                   TokenType::Comma}
+			{",",                   TokenType::Comma},
+			{".",                   TokenType::VarAccessOp}
 			/*{"\f",                  TokenType::Whitespace},
-			{"\u200b",              TokenType::Whitespace},
+			//{"\u200b",              TokenType::Whitespace},
 			{"\t",                  TokenType::Whitespace},
 			{" ",                   TokenType::Whitespace}*/
 		};

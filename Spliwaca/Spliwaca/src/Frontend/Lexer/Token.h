@@ -88,7 +88,10 @@ namespace Spliwaca
 		Comma,
 		UnfinishedToken,
 		ReturnValue, //Possibly unused
-		BooleanExpr
+		BooleanExpr,
+		Break,
+		eof,
+		VarAccessOp
 	};
 
 	inline std::string TokenTypeName(TokenType type)
@@ -165,6 +168,8 @@ namespace Spliwaca
 		case TokenType::Comma:            return "Comma";
 		case TokenType::Whitespace:       return "Whitespace";
 		case TokenType::Newline:          return "Newline";
+		case TokenType::eof:              return "EOF";
+		case TokenType::VarAccessOp:      return "VarAccessOperator";
 		default:                          return "Unknown";
 		}
 	}
