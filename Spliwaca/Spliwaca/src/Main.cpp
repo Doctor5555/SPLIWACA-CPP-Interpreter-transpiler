@@ -31,6 +31,8 @@ std::string mulString(std::string s, int i)
 	return s;
 }
 
+/* Code snippet copied from https://stackoverflow.com/questions/1489830/efficient-way-to-determine-number-of-digits-in-an-integer
+   accepted answer */
 int numDigits(int32_t x)
 {
 	if (x >= 10000)
@@ -82,11 +84,15 @@ int main()
 	//Parser(Lexer());
 
 	timeStart = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch());
-	std::shared_ptr<Lexer> lexer = Lexer::Create("c:/dev/epq spliwaca/test_script.splw");
+	
+	std::shared_ptr<Lexer> lexer = Lexer::Create("c:/dev/random python scripts/caesercipher.splw");
 	SPLW_INFO("Created lexer!");
 	SPLW_WARN(mulString("h", 5));
+	
 	timeStartMakeTokens = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch());
+	
 	std::shared_ptr<std::vector<std::shared_ptr<Token>>> tokens = lexer->MakeTokens();
+	
 	timeEndMakeTokens = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch());
 	for (LexicalError l : state.LexerErrors)
 	{

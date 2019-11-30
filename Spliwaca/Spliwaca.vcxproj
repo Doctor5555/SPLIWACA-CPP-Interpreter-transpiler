@@ -133,6 +133,7 @@
     <ClInclude Include="Spliwaca\src\Frontend\Lexer\Lexer.h" />
     <ClInclude Include="Spliwaca\src\Frontend\Lexer\LexicalError.h" />
     <ClInclude Include="Spliwaca\src\Frontend\Lexer\Token.h" />
+    <ClInclude Include="Spliwaca\src\Frontend\Parser\Parser.h" />
     <ClInclude Include="Spliwaca\src\Log.h" />
     <ClInclude Include="Spliwaca\src\UtilFunctions.h" />
     <ClInclude Include="vendor\spdlog\include\spdlog\async.h" />
@@ -216,6 +217,7 @@
   <ItemGroup>
     <ClCompile Include="Spliwaca\src\Frontend\Lexer\Lexer.cpp" />
     <ClCompile Include="Spliwaca\src\Frontend\Lexer\Token.cpp" />
+    <ClCompile Include="Spliwaca\src\Frontend\Parser\Parser.cpp" />
     <ClCompile Include="Spliwaca\src\Log.cpp" />
     <ClCompile Include="Spliwaca\src\Main.cpp" />
   </ItemGroup>

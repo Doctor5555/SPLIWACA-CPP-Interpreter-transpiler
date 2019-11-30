@@ -17,18 +17,6 @@ namespace Spliwaca
 		inline const std::string GetFileString() const { return m_FileString; }
 		inline const std::vector<std::string> GetSplitFileString() const { return split(m_FileString, '\n'); }
 
-		/*
-		void StripComments();
-		bool MakeFunctionsProceduresStructs();
-		bool MakeIfForWhileAnons();
-		bool MakeIO();
-		bool MakeCreateCastSet();
-		bool MakeNumberStringLiterals();
-		bool MakeRequireQuit();
-		bool MakeOperators();
-		bool MakeFinalIdentifiers();
-		*/
-
 	private:
 		Lexer(std::string file);
 

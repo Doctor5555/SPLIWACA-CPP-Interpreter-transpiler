@@ -1,0 +1,1 @@
+Pointer unions or templates or just store everything as separate nodes with a type then safely cast to the correct type? Or just instantiate with malloc and pointers then free in destructor. And have a root node that starts pointer chains.
