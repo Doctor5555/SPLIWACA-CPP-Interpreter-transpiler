@@ -12,12 +12,19 @@ using namespace Spliwaca;
 struct State
 {
 	std::vector<LexicalError> LexerErrors;
+	std::vector<SyntaxError> SyntaxErrors;
 };
 State state = State();
 
 int RegisterLexicalError(LexicalError e)
 {
 	state.LexerErrors.push_back(e);
+	return 1;
+}
+
+int RegisterSyntaxError(SyntaxError e)
+{
+	state.SyntaxErrors.push_back(e);
 	return 1;
 }
 

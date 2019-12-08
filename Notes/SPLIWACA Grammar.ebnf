@@ -19,10 +19,10 @@ string boolean_op string
 
 (*LL(3) GRAMMAR, probably*)
 
-entry_point = require?, '\n', statements, EOF;
+entry_point = (require, '\n')?, statements, EOF;
 
 statements = (statement, ('\n'+, statement)*, '\n')|'\n';
-statement = if|set|input|output|increment|decrement|for|while|quit|call|function|procedure;
+statement = if|set|input|output|increment|decrement|for|while|quit|call|function|procedure|return;
 
 expr = boolean_expr|create|cast|call|anonf|anonp;
 
@@ -67,7 +67,8 @@ require = 'REQUIRE', interpreter_name;
 
 struct = 'STRUCT', identifier, 'AS\n', (type, identifier, ('\n'|','|',\n'))+, 'END STRUCTURE';
 
-function = ('FUNCTION', identifier, (('<-'|'TAKES'), type (',', type)*)?, ('->'|'RETURNS'), type, 'AS', '\n', statements, '\n'+, 'END FUNCTION\n');
+function = ('FUNCTION', identifier, (('<-'|'TAKES'), type, identifier, (',', type, identifier)*)?, ('->'|'RETURNS'), type, 'AS', '\n', statements, '\n'+, 'END FUNCTION\n');
 
 procedure = 'PROCEDURE', identifier, (('<-'|'TAKES'), type (',', type)*)?, 'AS', '\n', statements, 'END PROCEDURE';
 
+return = 'RETURN', expr;
