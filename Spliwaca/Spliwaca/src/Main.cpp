@@ -92,7 +92,7 @@ int main()
 
 	timeStart = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch());
 	
-	std::shared_ptr<Lexer> lexer = Lexer::Create("c:/dev/random python scripts/caesercipher.splw");
+	std::shared_ptr<Lexer> lexer = Lexer::Create("c:/dev/epq spliwaca/test_script.splw");
 	SPLW_INFO("Created lexer!");
 	SPLW_WARN(mulString("h", 5));
 	

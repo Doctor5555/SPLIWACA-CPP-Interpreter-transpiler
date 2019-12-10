@@ -35,6 +35,7 @@ namespace Spliwaca
 		else
 		{
 			SPLW_ERROR("Could not open source file: {0}", m_FileLocation);
+			exit(2);
 		}
 
 		file.close();
