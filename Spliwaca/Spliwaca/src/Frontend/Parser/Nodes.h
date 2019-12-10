@@ -14,7 +14,6 @@ namespace Spliwaca
 	{
 		std::vector<std::shared_ptr<Token>> argTypes;
 		std::vector<std::shared_ptr<Token>> argNames;
-		uint32_t numArgs;
 		std::shared_ptr<Statements> body;
 	};
 
@@ -22,7 +21,6 @@ namespace Spliwaca
 	{
 		std::vector<std::shared_ptr<Token>> argTypes;
 		std::vector<std::shared_ptr<Token>> argNames;
-		uint32_t numArgs;
 		std::shared_ptr<Token> returnType;
 		std::shared_ptr<Statements> body;
 	};
@@ -36,8 +34,7 @@ namespace Spliwaca
 	struct CreateNode
 	{
 		std::shared_ptr<Token> type;
-		std::shared_ptr<Expr> args;
-		uint32_t numArgs;
+		std::vector<std::shared_ptr<Expr>> args;
 	};
 
 	struct DictPairNode
@@ -48,8 +45,7 @@ namespace Spliwaca
 
 	struct ListNode
 	{
-		std::shared_ptr<DictPairNode> FirstItem;
-		uint32_t numItems;
+		std::vector<std::shared_ptr<DictPairNode>> Items;
 	};
 
 	struct ListAccessNode
@@ -120,7 +116,6 @@ namespace Spliwaca
 		std::shared_ptr<Token> id;
 		std::vector<std::shared_ptr<Token>> argTypes;
 		std::vector<std::shared_ptr<Token>> argNames;
-		uint32_t numArgs;
 		std::shared_ptr<Statements> body;
 	};
 
@@ -129,7 +124,6 @@ namespace Spliwaca
 		std::shared_ptr<Token> id;
 		std::vector< std::shared_ptr<Token>> argTypes;
 		std::vector<std::shared_ptr<Token>> argNames;
-		uint32_t numArgs;
 		std::shared_ptr<Token> returnType;
 		std::shared_ptr<Statements> body;
 	};
@@ -137,8 +131,7 @@ namespace Spliwaca
 	struct CallNode
 	{
 		std::shared_ptr<Token> funcId;
-		std::shared_ptr<Expr> args;
-		uint32_t numArgs;
+		std::vector<std::shared_ptr<Expr>> args;
 	};
 
 	struct QuitNode
@@ -157,10 +150,11 @@ namespace Spliwaca
 		std::shared_ptr<Token> id;
 		union
 		{
-			std::shared_ptr<Token> enumerableId;
-			std::shared_ptr<ListNode> enumerableList;
+			std::shared_ptr<Token> iterableIdentifier;
+			std::shared_ptr<ListNode> iterableList;
+			std::shared_ptr<CallNode> iterableFunc;
 		};
-		uint8_t enumerableType;
+		uint8_t iterableType;
 		std::shared_ptr<Statements> body;
 	};
 
@@ -194,9 +188,8 @@ namespace Spliwaca
 
 	struct IfNode
 	{
-		std::shared_ptr<BoolExprNode> conditions;
-		std::shared_ptr<Statements> bodies;
-		uint32_t numElifs;
+		std::vector<std::shared_ptr<BoolExprNode>> conditions;
+		std::vector<std::shared_ptr<Statements>> bodies;
 		bool elsePresent;
 	};
 
@@ -223,7 +216,6 @@ namespace Spliwaca
 	struct Statements
 	{
 		std::vector<std::shared_ptr<Statement>> statements;
-		uint32_t numStatements;
 	};
 
 	struct RequireNode

@@ -54,6 +54,7 @@ namespace Spliwaca
 
 	std::shared_ptr<Statements> Parser::ConstructStatements()
 	{
+		std::shared_ptr<Statements> statements = std::shared_ptr<Statements>();
 		while (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::eof)
 		{
 			//Attempt to consume newline
@@ -62,17 +63,24 @@ namespace Spliwaca
 				m_TokenIndex++;
 			}
 
-			if (m_Tokens->at(m_TokenIndex)->GetType() == TokenType::eof)
-				return nullptr;
+			//If we have reached the end of the file, return
+			TokenType currTokType = m_Tokens->at(m_TokenIndex)->GetType();
+			if (currTokType == TokenType::eof || currTokType == TokenType::End)
+				break;
 
 			//Attempt to construct statement
 			std::shared_ptr<Statement> s = ConstructStatement();
 			if (s != nullptr)
 			{
-				//Add to list of pointers
+				statements->statements.push_back(s);
 			}
-
+			else
+			{
+				//If we didn't get a statement back, then we are done.
+				break;
+			}
 		}
+		return statements;
 	}
 	std::shared_ptr<Statement> Parser::ConstructStatement()
 	{
