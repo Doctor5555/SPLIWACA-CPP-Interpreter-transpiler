@@ -236,7 +236,7 @@ namespace Spliwaca
 		std::string s = m_FileString;
 
 		std::string intermediate = "";
-		std::vector<char> splitChars = { ' ', '\n', '\t', '\f', '(', ')', '[', ']', '+', '-', '/', '*', '!', '=', '%', '^', '&', '|', '<', '>', ',', '"', '\'', '.' };
+		std::vector<char> splitChars = { ' ', '\n', '\t', '\f', '(', ')', '[', ']', '+', '-', '/', '*', '!', '=', '%', '^', '&', '|', '<', '>', ',', '"', '\'', '.', ':' };
 		std::vector<std::string> splitDuoStrings = { "/*", "*/", "//", "**", "??", "==", "!=", "<=", ">=", "<<", ">>", "<-", "->", "||", "\\'", "\\\"" };
 		std::vector<std::string> splitTrioStrings = { "=/=" };
 		

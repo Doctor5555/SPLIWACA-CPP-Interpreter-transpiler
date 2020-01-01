@@ -55,6 +55,7 @@ namespace Spliwaca
 		ReturnType, //
 		As, //
 		Takes, //
+		Default,
 		Return, //
 		//EndProc, //
 		//EndStruct, //
@@ -71,13 +72,15 @@ namespace Spliwaca
 		Input, //
 		Output, //
 		Create, //
-		SplitList,
+		DictEquator,
 		Cast, //
 		Call,
+		With,
 		Raw, //kinda - not actually used as a token, just consumes the rest of the line to create a string literal
 		Quit,
 		Require,
 		Set, //
+		To,
 		Type, //
 		Identifier,
 		SingleLineComment,
@@ -156,10 +159,13 @@ namespace Spliwaca
 		case TokenType::Output:           return "Output";
 		case TokenType::Create:           return "Create";
 		case TokenType::Cast:             return "Cast";
+		case TokenType::Call:             return "Call";
+		case TokenType::With:             return "With";
 		case TokenType::Raw:              return "Raw";
 		case TokenType::Quit:             return "Quit";
 		case TokenType::Require:          return "Require";
 		case TokenType::Set:              return "Set";
+		case TokenType::To:               return "To";
 		//case TokenType::Type:             return "Type";
 		case TokenType::Identifier:       return "Identifier";
 		case TokenType::UnfinishedToken:  return "UnfinishedToken";

@@ -1,0 +1,13 @@
+ConstructAtom
+{
+    If the token after this one is a comma, then it must be a list.
+    If the token after this one is a colon, then it must be a dict.
+    Construct these, then check if the current token is a square bracket. If it is, then it must be an access node.
+
+    Otherwise, switch on current token type and return atom.
+}
+
+ConstructAtom TAKES bool constructingList DEFAULT false
+{
+    Switch on current token type
+}

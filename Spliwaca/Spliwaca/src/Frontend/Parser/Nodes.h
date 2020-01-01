@@ -37,22 +37,21 @@ namespace Spliwaca
 		std::vector<std::shared_ptr<Expr>> args;
 	};
 
-	struct DictPairNode
+	struct DictEntryNode
 	{
-		std::shared_ptr<AtomNode> left;
-		std::shared_ptr<AtomNode> right;
+		std::shared_ptr<BoolExprNode> left;
+		std::shared_ptr<BoolExprNode> right;
+		bool hasRight;
 	};
 
 	struct ListNode
 	{
-		std::vector<std::shared_ptr<DictPairNode>> Items;
+		std::vector<std::shared_ptr<DictEntryNode>> Items;
 	};
 
 	struct ListAccessNode
 	{
-		std::shared_ptr<Token> identifier;
-		std::shared_ptr<ListNode> list;
-		std::shared_ptr<AtomNode> index;
+		std::vector<AtomNode> indices;
 	};
 
 	struct AtomNode
@@ -67,6 +66,7 @@ namespace Spliwaca
 	{
 		std::shared_ptr<Token> opToken;
 		std::shared_ptr<AtomNode> right;
+		bool opTokenPresent;
 	};
 
 	struct PowerNode
@@ -74,6 +74,13 @@ namespace Spliwaca
 		std::shared_ptr<FactorNode> left;
 		std::shared_ptr<Token> opToken;
 		std::shared_ptr<PowerNode> right;
+	};
+
+	struct DivModExprNode
+	{
+		std::shared_ptr<PowerNode> left;
+		std::shared_ptr<Token> opToken;
+		std::shared_ptr<MulExprNode> right;
 	};
 
 	struct MulExprNode
@@ -95,18 +102,19 @@ namespace Spliwaca
 		std::shared_ptr<AddExprNode> left;
 		std::shared_ptr<Token> opToken;
 		std::shared_ptr<BoolExprNode> right;
+		int exprType;
 	};
 
 	struct Expr
 	{
 		union
 		{
-			std::shared_ptr<BoolExprNode> boolExpr;
-			std::shared_ptr<CreateNode> createNode;
-			std::shared_ptr<CastNode> castNode;
-			std::shared_ptr<CallNode> callNode;
-			std::shared_ptr<AnonfNode> anonfNode;
-			std::shared_ptr<AnonpNode> anonpNode;
+			std::shared_ptr<BoolExprNode> boolExpr; // exprType: 1
+			std::shared_ptr<CreateNode> createNode; // exprType: 2
+			std::shared_ptr<CastNode> castNode; // exprType: 3
+			std::shared_ptr<CallNode> callNode; // exprType: 4
+			std::shared_ptr<AnonfNode> anonfNode; // exprType: 5
+			std::shared_ptr<AnonpNode> anonpNode; // exprType: 6
 		};
 		uint8_t exprType;
 	};
@@ -122,7 +130,7 @@ namespace Spliwaca
 	struct FuncNode
 	{
 		std::shared_ptr<Token> id;
-		std::vector< std::shared_ptr<Token>> argTypes;
+		std::vector<std::shared_ptr<Token>> argTypes;
 		std::vector<std::shared_ptr<Token>> argNames;
 		std::shared_ptr<Token> returnType;
 		std::shared_ptr<Statements> body;
@@ -130,7 +138,7 @@ namespace Spliwaca
 
 	struct CallNode
 	{
-		std::shared_ptr<Token> funcId;
+		std::shared_ptr<Expr> funcId;
 		std::vector<std::shared_ptr<Expr>> args;
 	};
 
@@ -148,13 +156,7 @@ namespace Spliwaca
 	struct ForNode
 	{
 		std::shared_ptr<Token> id;
-		union
-		{
-			std::shared_ptr<Token> iterableIdentifier;
-			std::shared_ptr<ListNode> iterableList;
-			std::shared_ptr<CallNode> iterableFunc;
-		};
-		uint8_t iterableType;
+		std::shared_ptr<Expr> iterableExpr;
 		std::shared_ptr<Statements> body;
 	};
 

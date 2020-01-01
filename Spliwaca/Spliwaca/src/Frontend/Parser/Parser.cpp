@@ -17,7 +17,7 @@ namespace Spliwaca
 		// Consume newline after require
 		if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Newline)
 		{
-			RegisterSyntaxError(SyntaxError(0, m_Tokens->at(m_TokenIndex)->GetLineNumber(), m_Tokens->at(m_TokenIndex)->GetCharacterNumber(), m_Tokens->at(m_TokenIndex)->GetContents().size()));
+			RegisterSyntaxError(SyntaxError(SyntaxErrorType::expNewline, m_Tokens->at(m_TokenIndex)));
 		}
 		else
 			m_TokenIndex++; 
@@ -27,7 +27,7 @@ namespace Spliwaca
 
 		if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::eof)
 		{
-			RegisterSyntaxError(SyntaxError(0, m_Tokens->at(m_TokenIndex)->GetLineNumber(), m_Tokens->at(m_TokenIndex)->GetCharacterNumber(), m_Tokens->at(m_TokenIndex)->GetContents().size()));
+			RegisterSyntaxError(SyntaxError(SyntaxErrorType::expNewline, m_Tokens->at(m_TokenIndex)));
 			return ep;
 		}
 		else
@@ -38,11 +38,11 @@ namespace Spliwaca
 	{
 		if (m_Tokens->at(m_TokenIndex)->GetType() == TokenType::Require)
 		{
-			m_TokenIndex++;
+			IncIndex();
 			std::shared_ptr<RequireNode> rn = std::shared_ptr<RequireNode>();
 			if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Identifier)
 			{
-				RegisterSyntaxError(SyntaxError(1, m_Tokens->at(m_TokenIndex)->GetLineNumber(), m_Tokens->at(m_TokenIndex)->GetCharacterNumber(), m_Tokens->at(m_TokenIndex)->GetContents().size()));
+				RegisterSyntaxError(SyntaxError(SyntaxErrorType::expIdent, m_Tokens->at(m_TokenIndex)));
 				return nullptr;
 			}
 			rn->requireType = m_Tokens->at(m_TokenIndex);
@@ -65,7 +65,7 @@ namespace Spliwaca
 
 			//If we have reached the end of the file, return
 			TokenType currTokType = m_Tokens->at(m_TokenIndex)->GetType();
-			if (currTokType == TokenType::eof || currTokType == TokenType::End)
+			if (currTokType == TokenType::eof || currTokType == TokenType::End || currTokType == TokenType::Else)
 				break;
 
 			//Attempt to construct statement
@@ -76,14 +76,690 @@ namespace Spliwaca
 			}
 			else
 			{
-				//If we didn't get a statement back, then we are done.
+				//If we didn't get a statement back, then there was an error and we are finished.
 				break;
 			}
 		}
 		return statements;
 	}
+
 	std::shared_ptr<Statement> Parser::ConstructStatement()
 	{
-		return std::shared_ptr<Statement>();
+		std::shared_ptr<Statement> s = std::shared_ptr<Statement>();
+		switch (m_Tokens->at(m_TokenIndex)->GetType())
+		{
+		case TokenType::If: s->ifNode = ConstructIf(); s->statementType = 0;
+		case TokenType::Set: s->setNode = ConstructSet(); s->statementType = 1;
+		case TokenType::Input: s->inputNode = ConstructInput(); s->statementType = 2;
+		case TokenType::Output: s->outputNode = ConstructOutput(); s->statementType = 3;
+		case TokenType::Increment: s->incNode = ConstructIncrement(); s->statementType = 4;
+		case TokenType::Decrement: s->decNode = ConstructDecrement(); s->statementType = 5;
+		case TokenType::For: s->forNode = ConstructFor(); s->statementType = 6;
+		case TokenType::While: s->whileNode = ConstructWhile(); s->statementType = 7;
+		case TokenType::Quit: s->quitNode = ConstructQuit(); s->statementType = 8;
+		case TokenType::Function: s->funcNode = ConstructFunction(); s->statementType = 9;
+		case TokenType::Procedure: s->procNode = ConstructProcedure(); s->statementType = 10;
+		default:
+			RegisterSyntaxError(SyntaxError(SyntaxErrorType::expStatement, m_Tokens->at(m_TokenIndex)));
+			return nullptr;
+		}
+		return s;
+	}
+
+	std::shared_ptr<IfNode> Parser::ConstructIf()
+	{
+		std::shared_ptr<IfNode> node = std::shared_ptr<IfNode>();
+		IncIndex();
+		node->conditions.push_back(ConstructBooleanExpr());
+		if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Do)
+		{
+			//There must be a "DO"
+			RegisterSyntaxError(SyntaxError(SyntaxErrorType::expDo, m_Tokens->at(m_TokenIndex)));
+		}
+		node->bodies.push_back(ConstructStatements());
+
+		while (m_Tokens->at(m_TokenIndex)->GetType() == TokenType::Else)
+		{
+			if (node->elsePresent)
+			{
+				//We cannot have more than one else
+				RegisterSyntaxError(SyntaxError(SyntaxErrorType::tooManyElse, m_Tokens->at(m_TokenIndex)));
+			}
+			IncIndex();
+			if (m_Tokens->at(m_TokenIndex)->GetType() == TokenType::If)
+			{
+				IncIndex();
+				node->conditions.push_back(ConstructBooleanExpr());
+				if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Do)
+				{
+					//There must be a "DO"
+					RegisterSyntaxError(SyntaxError(SyntaxErrorType::expDo, m_Tokens->at(m_TokenIndex)));
+				}
+			}
+			else if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Do)
+			{
+				//There must be a "DO"
+				RegisterSyntaxError(SyntaxError(SyntaxErrorType::expDo, m_Tokens->at(m_TokenIndex)));
+			}
+			else
+			{
+				node->elsePresent = true;
+			}
+			IncIndex();
+			node->bodies.push_back(ConstructStatements());
+		}
+		if (m_Tokens->at(m_TokenIndex)->GetType() == TokenType::End && m_Tokens->at((uint64_t)m_TokenIndex+(uint64_t)1)->GetType() == TokenType::If)
+		{
+			IncIndex();
+		}
+		else
+		{
+			//Must have an end if - something is wrong here
+			RegisterSyntaxError(SyntaxError(SyntaxErrorType::expEndIf, m_Tokens->at(m_TokenIndex)));
+		}
+		return node;
+	}
+
+	std::shared_ptr<SetNode> Parser::ConstructSet()
+	{
+		std::shared_ptr<SetNode> node = std::shared_ptr<SetNode>();
+
+		IncIndex();
+
+		if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Identifier)
+		{
+			RegisterSyntaxError(SyntaxError(SyntaxErrorType::expIdent, m_Tokens->at(m_TokenIndex)));
+		}
+		else
+		{
+			node->id = m_Tokens->at(m_TokenIndex);
+			IncIndex();
+		}
+
+		if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::To)
+		{
+			RegisterSyntaxError(SyntaxError(SyntaxErrorType::expTo, m_Tokens->at(m_TokenIndex)));
+		}
+		else
+			IncIndex();
+
+		node->expr = ConstructExpr();
+
+		return node;
+	}
+
+	std::shared_ptr<InputNode> Parser::ConstructInput()
+	{
+		std::shared_ptr<InputNode> node = std::shared_ptr<InputNode>();
+
+		IncIndex();
+		auto type = m_Tokens->at(m_TokenIndex)->GetType();
+		if (type != TokenType::PositiveTypeMod && type != TokenType::NegativeTypeMod && type != TokenType::NonZeroTypeMod && type != TokenType::Type)
+		{
+			RegisterSyntaxError(SyntaxError(SyntaxErrorType::expTypeMod, m_Tokens->at(m_TokenIndex)));
+		}
+		else if (type == TokenType::Type)
+		{
+			node->type = m_Tokens->at(m_TokenIndex);
+		}
+		else
+		{
+			node->signSpec = m_Tokens->at(m_TokenIndex);
+			IncIndex();
+			if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Type)
+			{
+				RegisterSyntaxError(SyntaxError(SyntaxErrorType::expTypeMod, m_Tokens->at(m_TokenIndex)));
+			}
+			else
+			{
+				node->type = m_Tokens->at(m_TokenIndex);
+			}
+		}
+		IncIndex();
+
+		if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Identifier)
+		{
+			RegisterSyntaxError(SyntaxError(SyntaxErrorType::expIdent, m_Tokens->at(m_TokenIndex)));
+		}
+		else
+		{
+			node->id = m_Tokens->at(m_TokenIndex);
+		}
+
+		return node;
+	}
+
+	std::shared_ptr<OutputNode> Parser::ConstructOutput()
+	{
+		std::shared_ptr<OutputNode> node = std::shared_ptr<OutputNode>();
+		IncIndex();
+		if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Raw)
+		{
+			RegisterSyntaxError(SyntaxError(SyntaxErrorType::expRaw, m_Tokens->at(m_TokenIndex)));
+		}
+		else
+		{
+			node->raw = m_Tokens->at(m_TokenIndex);
+		}
+		return node;
+	}
+
+	std::shared_ptr<IncNode> Parser::ConstructIncrement()
+	{
+		std::shared_ptr<IncNode> node = std::shared_ptr<IncNode>();
+		IncIndex();
+		if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Identifier)
+		{
+			RegisterSyntaxError(SyntaxError(SyntaxErrorType::expIdent, m_Tokens->at(m_TokenIndex)));
+		}
+		else
+		{
+			node->id = m_Tokens->at(m_TokenIndex);
+		}
+		return node;
+	}
+
+	std::shared_ptr<DecNode> Parser::ConstructDecrement()
+	{
+		std::shared_ptr<DecNode> node = std::shared_ptr<DecNode>();
+		IncIndex();
+		if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Identifier)
+		{
+			RegisterSyntaxError(SyntaxError(SyntaxErrorType::expIdent, m_Tokens->at(m_TokenIndex)));
+		}
+		else
+		{
+			node->id = m_Tokens->at(m_TokenIndex);
+		}
+		return node;
+	}
+
+	std::shared_ptr<ForNode> Parser::ConstructFor()
+	{
+		std::shared_ptr<ForNode> node = std::shared_ptr<ForNode>();
+		IncIndex();
+		if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Identifier)
+		{
+			RegisterSyntaxError(SyntaxError(SyntaxErrorType::expIdent, m_Tokens->at(m_TokenIndex)));
+		}
+		else
+			node->id = m_Tokens->at(m_TokenIndex);
+
+		IncIndex();
+		if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Of)
+		{
+			RegisterSyntaxError(SyntaxError(SyntaxErrorType::expOf, m_Tokens->at(m_TokenIndex)));
+		}
+
+		node->iterableExpr = ConstructExpr();
+
+		if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Do)
+		{
+			RegisterSyntaxError(SyntaxError(SyntaxErrorType::expDo, m_Tokens->at(m_TokenIndex)));
+		}
+		IncIndex();
+		if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Newline)
+		{
+			RegisterSyntaxError(SyntaxError(SyntaxErrorType::expNewline, m_Tokens->at(m_TokenIndex)));
+		}
+
+		node->body = ConstructStatements();
+
+		if (m_Tokens->at(m_TokenIndex)->GetType() == TokenType::End && m_Tokens->at((uint64_t)m_TokenIndex + (uint64_t)1)->GetType() == TokenType::For)
+		{
+			IncIndex();
+		}
+		else
+		{
+			RegisterSyntaxError(SyntaxError(SyntaxErrorType::expEndFor, m_Tokens->at(m_TokenIndex)));
+		}
+
+		return node;
+	}
+
+	std::shared_ptr<WhileNode> Parser::ConstructWhile()
+	{
+		std::shared_ptr<WhileNode> node = std::shared_ptr<WhileNode>();
+		IncIndex();
+		node->condition = ConstructBooleanExpr();
+		
+		IncIndex();
+		if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Do)
+		{
+			RegisterSyntaxError(SyntaxError(SyntaxErrorType::expDo, m_Tokens->at(m_TokenIndex)));
+		}
+		IncIndex();
+		if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Newline)
+		{
+			RegisterSyntaxError(SyntaxError(SyntaxErrorType::expNewline, m_Tokens->at(m_TokenIndex)));
+		}
+
+		node->body = ConstructStatements();
+
+		if (m_Tokens->at(m_TokenIndex)->GetType() == TokenType::End && m_Tokens->at((uint64_t)m_TokenIndex + (uint64_t)1)->GetType() == TokenType::While)
+		{
+			IncIndex();
+		}
+		else
+		{
+			RegisterSyntaxError(SyntaxError(SyntaxErrorType::expEndWhile, m_Tokens->at(m_TokenIndex)));
+		}
+
+		return node;
+	}
+
+	std::shared_ptr<QuitNode> Parser::ConstructQuit()
+	{
+		std::shared_ptr<QuitNode> node = std::shared_ptr<QuitNode>();
+		IncIndex();
+		if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Newline)
+			node->returnVal = ConstructAtom();
+		return node;
+	}
+
+	std::shared_ptr<CallNode> Parser::ConstructCall()
+	{
+		std::shared_ptr<CallNode> node = std::shared_ptr<CallNode>();
+		IncIndex();
+		node->funcId = ConstructExpr();
+
+		if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Newline)
+		{
+			IncIndex();
+			if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::With)
+			{
+				RegisterSyntaxError(SyntaxError(SyntaxErrorType::expWith, m_Tokens->at(m_TokenIndex)));
+			}
+			else
+				IncIndex();
+
+			node->args.push_back(ConstructExpr());
+
+			while (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Newline)
+			{
+				if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Comma)
+				{
+					RegisterSyntaxError(SyntaxError(SyntaxErrorType::expComma, m_Tokens->at(m_TokenIndex)));
+				}
+				else
+					IncIndex();
+
+				node->args.push_back(ConstructExpr());
+			}
+		}
+		return node;
+	}
+
+	std::shared_ptr<FuncNode> Parser::ConstructFunction()
+	{
+		std::shared_ptr<FuncNode> node = std::shared_ptr<FuncNode>();
+		IncIndex();
+
+		if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Identifier)
+		{
+			RegisterSyntaxError(SyntaxError(SyntaxErrorType::expIdent, m_Tokens->at(m_TokenIndex)));
+		}
+		else
+		{
+			node->id = m_Tokens->at(m_TokenIndex);
+			IncIndex();
+		}
+
+		if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::ReturnType)
+		{
+			if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Takes)
+			{
+				RegisterSyntaxError(SyntaxError(SyntaxErrorType::expReturns, m_Tokens->at(m_TokenIndex)));
+			}
+			else
+				IncIndex();
+
+			if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Type)
+			{
+				RegisterSyntaxError(SyntaxError(SyntaxErrorType::expType, m_Tokens->at(m_TokenIndex)));
+			}
+			else
+			{
+				node->argTypes.push_back(m_Tokens->at(m_TokenIndex));
+				IncIndex();
+			}
+
+			if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Identifier)
+			{
+				RegisterSyntaxError(SyntaxError(SyntaxErrorType::expIdent, m_Tokens->at(m_TokenIndex)));
+			}
+			else
+			{
+				node->argNames.push_back(m_Tokens->at(m_TokenIndex));
+				IncIndex();
+			}
+
+			while (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::ReturnType)
+			{
+				if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Comma)
+				{
+					RegisterSyntaxError(SyntaxError(SyntaxErrorType::expComma, m_Tokens->at(m_TokenIndex)));
+				}
+				else
+					IncIndex();
+
+				if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Type)
+				{
+					RegisterSyntaxError(SyntaxError(SyntaxErrorType::expType, m_Tokens->at(m_TokenIndex)));
+				}
+				else
+				{
+					node->argTypes.push_back(m_Tokens->at(m_TokenIndex));
+					IncIndex();
+				}
+
+				if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Identifier)
+				{
+					RegisterSyntaxError(SyntaxError(SyntaxErrorType::expIdent, m_Tokens->at(m_TokenIndex)));
+				}
+				else
+				{
+					node->argNames.push_back(m_Tokens->at(m_TokenIndex));
+					IncIndex();
+				}
+
+			}
+		}
+
+		if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::ReturnType)
+		{
+			RegisterSyntaxError(SyntaxError(SyntaxErrorType::expReturns, m_Tokens->at(m_TokenIndex)));
+		}
+		else
+			IncIndex();
+
+		if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Type)
+		{
+			RegisterSyntaxError(SyntaxError(SyntaxErrorType::expType, m_Tokens->at(m_TokenIndex)));
+		}
+		else
+		{
+			node->returnType = m_Tokens->at(m_TokenIndex);
+			IncIndex();
+		}
+
+		if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::As)
+		{
+			RegisterSyntaxError(SyntaxError(SyntaxErrorType::expAs, m_Tokens->at(m_TokenIndex)));
+		}
+		else
+			IncIndex();
+
+		node->body = ConstructStatements();
+
+		if (m_Tokens->at(m_TokenIndex)->GetType() == TokenType::End && m_Tokens->at((uint64_t)m_TokenIndex + (uint64_t)1)->GetType() == TokenType::Function)
+		{
+			IncIndex();
+		}
+		else
+		{
+			RegisterSyntaxError(SyntaxError(SyntaxErrorType::expEndFunc, m_Tokens->at(m_TokenIndex)));
+		}
+	}
+	
+	std::shared_ptr<ProcNode> Parser::ConstructProcedure()
+	{
+		std::shared_ptr<ProcNode> node = std::shared_ptr<ProcNode>();
+		IncIndex();
+
+		if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Identifier)
+		{
+			RegisterSyntaxError(SyntaxError(SyntaxErrorType::expIdent, m_Tokens->at(m_TokenIndex)));
+		}
+		else
+		{
+			node->id = m_Tokens->at(m_TokenIndex);
+			IncIndex();
+		}
+
+		if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::ReturnType)
+		{
+			if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Takes)
+			{
+				RegisterSyntaxError(SyntaxError(SyntaxErrorType::expReturns, m_Tokens->at(m_TokenIndex)));
+			}
+			else
+				IncIndex();
+
+			if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Type)
+			{
+				RegisterSyntaxError(SyntaxError(SyntaxErrorType::expType, m_Tokens->at(m_TokenIndex)));
+			}
+			else
+			{
+				node->argTypes.push_back(m_Tokens->at(m_TokenIndex));
+				IncIndex();
+			}
+
+			if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Identifier)
+			{
+				RegisterSyntaxError(SyntaxError(SyntaxErrorType::expIdent, m_Tokens->at(m_TokenIndex)));
+			}
+			else
+			{
+				node->argNames.push_back(m_Tokens->at(m_TokenIndex));
+				IncIndex();
+			}
+
+			while (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::ReturnType)
+			{
+				if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Comma)
+				{
+					RegisterSyntaxError(SyntaxError(SyntaxErrorType::expComma, m_Tokens->at(m_TokenIndex)));
+				}
+				else
+					IncIndex();
+
+				if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Type)
+				{
+					RegisterSyntaxError(SyntaxError(SyntaxErrorType::expType, m_Tokens->at(m_TokenIndex)));
+				}
+				else
+				{
+					node->argTypes.push_back(m_Tokens->at(m_TokenIndex));
+					IncIndex();
+				}
+
+				if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Identifier)
+				{
+					RegisterSyntaxError(SyntaxError(SyntaxErrorType::expIdent, m_Tokens->at(m_TokenIndex)));
+				}
+				else
+				{
+					node->argNames.push_back(m_Tokens->at(m_TokenIndex));
+					IncIndex();
+				}
+
+			}
+		}
+
+		if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::As)
+		{
+			RegisterSyntaxError(SyntaxError(SyntaxErrorType::expAs, m_Tokens->at(m_TokenIndex)));
+		}
+		else
+			IncIndex();
+
+		node->body = ConstructStatements();
+
+		if (m_Tokens->at(m_TokenIndex)->GetType() == TokenType::End && m_Tokens->at((uint64_t)m_TokenIndex + (uint64_t)1)->GetType() == TokenType::Function)
+		{
+			IncIndex();
+		}
+		else
+		{
+			RegisterSyntaxError(SyntaxError(SyntaxErrorType::expEndFunc, m_Tokens->at(m_TokenIndex)));
+		}
+	}
+
+	std::shared_ptr<Expr> Parser::ConstructExpr()
+	{
+		std::shared_ptr<Expr> node = std::shared_ptr<Expr>();
+		switch (m_Tokens->at(m_TokenIndex)->GetType())
+		{
+		case TokenType::Create:
+			node->createNode = ConstructCreate();
+			node->exprType = 2;
+		case TokenType::Cast:
+			node->castNode = ConstructCast();
+			node->exprType = 3;
+		case TokenType::Call:
+			node->callNode = ConstructCall();
+			node->exprType = 4;
+		case TokenType::AnonFunc:
+			node->anonfNode = ConstructAnonFunc();
+			node->exprType = 5;
+		case TokenType::AnonProc:
+			node->anonpNode = ConstructAnonProc();
+			node->exprType = 6;
+		default:
+			node->boolExpr = ConstructList();
+			node->exprType = 1;
+		}
+	}
+
+	std::shared_ptr<ListNode> Parser::ConstructList()
+	{
+		std::shared_ptr<ListNode> node = std::shared_ptr<ListNode>();
+
+		node->Items.push_back(ConstructDictEntry());
+		IncIndex();
+		while (m_Tokens->at(m_TokenIndex)->GetType() == TokenType::Comma)
+		{
+			IncIndex();
+			node->Items.push_back(ConstructDictEntry());
+		}
+	}
+
+	std::shared_ptr<BoolExprNode> Parser::ConstructBooleanExpr()
+	{
+		std::shared_ptr<BoolExprNode> node = std::shared_ptr<BoolExprNode>();
+		if (m_Tokens->at(m_TokenIndex)->GetType() == TokenType::Not)
+		{
+			node->exprType = 1;
+			IncIndex();
+			node->right = ConstructBooleanExpr();
+		}
+		else
+		{
+			
+			node->left = ConstructAddExpr();
+			TokenType type = m_Tokens->at(m_TokenIndex)->GetType();
+			if (type == TokenType::NotEqual || type == TokenType::Equal || type == TokenType::LessThan || type == TokenType::GreaterThan || type == TokenType::LessThanEqual || type == TokenType::GreaterThanEqual)
+			{
+				node->exprType = 2;
+				node->opToken = m_Tokens->at(m_TokenIndex);
+				IncIndex();
+				node->right = ConstructBooleanExpr();
+			}
+			else
+			{
+				node->exprType = 3;
+			}
+		}
+		return node;
+	}
+
+	std::shared_ptr<AddExprNode> Parser::ConstructAddExpr()
+	{
+		std::shared_ptr<AddExprNode> node = std::shared_ptr<AddExprNode>();
+		node->left = ConstructMulExpr();
+		TokenType type = m_Tokens->at(m_TokenIndex)->GetType();
+		if (type == TokenType::Plus || type == TokenType::Minus)
+		{
+			node->opToken = m_Tokens->at(m_TokenIndex);
+			IncIndex();
+			node->right = ConstructAddExpr();
+		}
+		return node;
+	}
+
+	std::shared_ptr<MulExprNode> Parser::ConstructMulExpr()
+	{
+		std::shared_ptr<MulExprNode> node = std::shared_ptr<MulExprNode>();
+		node->left = ConstructDivModExpr();
+		TokenType type = m_Tokens->at(m_TokenIndex)->GetType();
+		if (type == TokenType::Multiply || type == TokenType::Divide)
+		{
+			node->opToken = m_Tokens->at(m_TokenIndex);
+			IncIndex();
+			node->right = ConstructMulExpr();
+		}
+		return node;
+	}
+
+	std::shared_ptr<DivModExprNode> Parser::ConstructDivModExpr()
+	{
+		std::shared_ptr<DivModExprNode> node = std::shared_ptr<DivModExprNode>();
+		node->left = ConstructPower();
+		TokenType type = m_Tokens->at(m_TokenIndex)->GetType();
+		if (type == TokenType::Intdiv || type == TokenType::Modulo)
+		{
+			node->opToken = m_Tokens->at(m_TokenIndex);
+			IncIndex();
+			node->right = ConstructDivModExpr();
+		}
+		return node;
+	}
+
+	std::shared_ptr<PowerNode> Parser::ConstructPower()
+	{
+		std::shared_ptr<PowerNode> node = std::shared_ptr<PowerNode>();
+		node->left = ConstructFactor();
+		TokenType type = m_Tokens->at(m_TokenIndex)->GetType();
+		if (type == TokenType::Power)
+		{
+			node->opToken = m_Tokens->at(m_TokenIndex);
+			IncIndex();
+			node->right = ConstructPower();
+		}
+		return node;
+	}
+
+	std::shared_ptr<FactorNode> Parser::ConstructFactor()
+	{
+		std::shared_ptr<FactorNode> node = std::shared_ptr<FactorNode>();
+		TokenType type = m_Tokens->at(m_TokenIndex)->GetType();
+		if (type == TokenType::Plus || type == TokenType::Minus)
+		{
+			node->opToken = m_Tokens->at(m_TokenIndex);
+			IncIndex();
+			node->right = ConstructAtom();
+			node->opTokenPresent = true;
+		}
+		else
+		{
+			node->right = ConstructAtom();
+			node->opTokenPresent = false;
+		}
+		return node;
+	}
+
+	std::shared_ptr<AtomNode> Parser::ConstructAtom(bool constructingList = false)
+	{
+		std::shared_ptr<AtomNode> node = std::shared_ptr<AtomNode>();
+		std::shared_ptr<Expr> firstExpr;
+		if (m_Tokens->at(m_TokenIndex)->GetType() == TokenType::LCurlyParen)
+		{
+			IncIndex();
+			firstExpr = ConstructExpr();
+			if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::RParen)
+			{
+				RegisterSyntaxError(SyntaxError(SyntaxErrorType::expRParen, m_Tokens->at(m_TokenIndex)));
+			}
+		}
+		else
+		{
+			switch (m_Tokens->at(m_TokenIndex)->GetType())
+			{
+				case TokenType::String
+			}
+		}
+		return node;
 	}
 }

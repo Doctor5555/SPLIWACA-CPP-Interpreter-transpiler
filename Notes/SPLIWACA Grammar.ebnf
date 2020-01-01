@@ -22,53 +22,59 @@ string boolean_op string
 entry_point = (require, '\n')?, statements, EOF;
 
 statements = (statement, ('\n'+, statement)*, '\n')|'\n';
-statement = if|set|input|output|increment|decrement|for|while|quit|call|function|procedure|return;
+statement = if|set|input|output|increment|decrement|for|while|quit|call|function|procedure|struct|return;
 
-expr = boolean_expr|create|cast|call|anonf|anonp;
+expr = list|create|cast|call|anonf|anonp;
+
+list = dict_entry, ('\n'?, ',', '\n'?, dict_entry)+;
+dict_entry = boolean_expr, ':', boolean_expr;
+(* dict = atom, ':', atom, ('\n'?, ',', '\n'?, atom, ':', atom)*; *)
 
 (*Arithmetic expressions: *)
 boolean_expr = (add_expr, (boolean_op add_expr)*)|
                    (('NOT'|'!'), boolean_expr);
-add_expr = mul_expr, ['+'|'-', add_expr]; (* -> 1 + 1 + 1 + - 1*)
-mul_expr = power, ['*'|'/', mul_expr];
+add_expr = mul_expr, ['+'|'-', add_expr]; (* -> 1 + 1 + 1 + - 1 *)
+mul_expr = divmod_expr, ['*'|'/', mul_expr];
+divmod_expr = power, ['%'|'DIVI', divmod_expr]
 power = factor, ['**', factor];
 factor = ['+'|'-'], atom;
-atom = string|raw|int|float|complex|identifier|list|dict|list_access|('(', expr, ')');
+atom = (string|raw|int|float|complex|identifier|('(', expr, ')')), list_access?;
 
 
-list_access = (identifier|list|dict), ('[', atom, ']')+;
+list_access = ('[', expr, ']')*;
 
 
 number = int|float|complex|identifier;
 string = string|raw|identifier;
-list = '(', atom, ('\n'?, ',', '\n'?, atom)+, ')';
-dict = '(', atom, ':', atom, ('\n'?, ',', '\n'?, atom, ':', atom)*, ')';
 
 
 (*Other expressions: *)
 create = 'CREATE', type, ['WITH', expr, (',', expr)*];
 cast = 'CAST', type, expr;
-call = 'CALL', identifier, ['WITH', expr, (',', expr)*];
-anonf = 'ANONF', (('<-'|'TAKES'), type (',', type)*)?, ('->'|'RETURNS'), type, 'AS', '\n'+, statements, '\n'+, 'END FUNCTION\n';
-anonp = 'ANONP', (('<-'|'TAKES'), type (',', type)*)?, 'AS', '\n', statements, 'END PROCEDURE';
+call = 'CALL', expr, ['WITH', expr, (',', expr)*];
+anonf = 'ANONF', (('<-'|'TAKES'), type, identifier, (',', type, identifier)*)?, ('->'|'RETURNS'), type, 'AS', '\n'+, statements, '\n'+, 'END FUNCTION\n';
+anonp = 'ANONP', (('<-'|'TAKES'), type, identifier, (',', type, identifier)*)?, 'AS', '\n', statements, 'END PROCEDURE';
 
 
 (*Statements: *)
-if = 'IF', boolean_expr, 'DO', statements, ('ELSE IF', boolean_expr, 'DO', statements,)*,('ELSE', statements)?,'END IF\n';
+if = 'IF', boolean_expr, 'DO', statements, ('ELSE IF', boolean_expr, 'DO', statements)*,('ELSE', statements)?,'END IF\n';
 set = 'SET', identifier, 'TO', expr;
 input = 'INPUT', ((sign_specifier, type)|type), identifier;
 output = 'OUTPUT', raw;
 increment = 'INC', identifier;
 decrement = 'DEC', identifier;
-for = 'FOR', identifier, 'OF', (identifier|list), 'DO\n', statements, '\nEND FOR';
+for = 'FOR', identifier, 'OF', expr, 'DO\n', statements, '\nEND FOR';
 while = 'WHILE', boolean_expr, 'DO\n', statements, '\nEND WHILE';
 quit = 'QUIT', atom;
 require = 'REQUIRE', interpreter_name;
 
 struct = 'STRUCT', identifier, 'AS\n', (type, identifier, ('\n'|','|',\n'))+, 'END STRUCTURE';
 
-function = ('FUNCTION', identifier, (('<-'|'TAKES'), type, identifier, (',', type, identifier)*)?, ('->'|'RETURNS'), type, 'AS', '\n', statements, '\n'+, 'END FUNCTION\n');
+function = ('FUNCTION', identifier, (('<-'|'TAKES'), type, identifier, ['WITH DEFAULT', value], (',', type, identifier, ['WITH DEFAULT', value],)*)?, ('->'|'RETURNS'), type, 'AS', '\n', statements, '\n'+, 'END FUNCTION\n');
 
-procedure = 'PROCEDURE', identifier, (('<-'|'TAKES'), type (',', type)*)?, 'AS', '\n', statements, 'END PROCEDURE';
+procedure = 'PROCEDURE', identifier, (('<-'|'TAKES'), type, identifier, ['WITH DEFAULT', value], (',', type, identifier, ['WITH DEFAULT', value],)*)?, 'AS', '\n', statements, 'END PROCEDURE';
 
 return = 'RETURN', expr;
+
+(* Meta: *)
+program = entry_point+ (* This means that we can include other files. *)
