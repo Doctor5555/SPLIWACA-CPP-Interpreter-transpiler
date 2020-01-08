@@ -21,7 +21,7 @@ string boolean_op string
 
 entry_point = (require, '\n')?, statements, EOF;
 
-statements = (statement, ('\n'+, statement)*, '\n')|'\n';
+statements = '\n'+, (statement, ('\n'+, statement)*, '\n')?;
 statement = if|set|input|output|increment|decrement|for|while|quit|call|function|procedure|struct|return;
 
 expr = list|create|cast|call|anonf|anonp;
@@ -43,10 +43,15 @@ atom = (string|raw|int|float|complex|identifier|('(', expr, ')')), list_access?;
 
 list_access = ('[', expr, ']')*;
 
-
 number = int|float|complex|identifier;
 string = string|raw|identifier;
-
+identifier = (letter|'_')+, ('.', (letter|'_')+)*
+type = identifier|"INT" | "Int" | "int" | "INTEGER" | "Integer" | "integer" | "FLOAT" | "Float" | 
+        "float" | "REAL" | "Real" | "real" | "NUMBER" | "Number" | "number" | "COMPLEX" | "Complex" |
+        "complex" | "STRING" | "String" | "string" | "STR" | "Str" | "str" | "DICT" | "Dict" |   
+        "dict" | "DICTIONARY" | "Dictionary" | "dictionary" | "MAP" | "Map" | "map" | "MAPPING" |
+        "Mapping" | "mapping" | "LIST" | "List" | "list" | "ARRAY" | "Array" | "array" | "TUPLE" |  
+        "Tuple" | "tuple"
 
 (*Other expressions: *)
 create = 'CREATE', type, ['WITH', expr, (',', expr)*];

@@ -46,19 +46,6 @@ namespace Spliwaca
 		//m_Tokens->push_back(token);
 	}
 
-	bool Lexer::charInStr(const std::string& s, char c)
-	{
-		PROFILE_FUNC();
-		for (char ch : s)
-		{
-			if (ch == c)
-			{
-				return true;
-			}
-		}
-		return false;
-	}
-
 	void Lexer::makeToken(std::string tokenContents)
 	{
 		PROFILE_FUNC();

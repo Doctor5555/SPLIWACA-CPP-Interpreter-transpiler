@@ -22,8 +22,6 @@ namespace Spliwaca
 
 		void makeToken(std::string tokenContents);
 
-		std::vector<std::string> split(const std::string& s);
-
 		template <typename Out>
 		static void split(const std::string& s, char delim, Out result)
 		{
@@ -40,20 +38,6 @@ namespace Spliwaca
 			std::vector<std::string> elems;
 			split(s, delim, std::back_inserter(elems));
 			return elems;
-		}
-
-		bool charInStr(const std::string& s, char c);
-		template<typename T>
-		bool itemInVect(const std::vector<T>& v, T t)
-		{
-			for (T e : v)
-			{
-				if (e == t)
-				{
-					return true;
-				}
-			}
-			return false;
 		}
 
 	private:

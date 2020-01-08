@@ -20,7 +20,7 @@ namespace Spliwaca
 			RegisterSyntaxError(SyntaxError(SyntaxErrorType::expNewline, m_Tokens->at(m_TokenIndex)));
 		}
 		else
-			m_TokenIndex++; 
+			IncIndex(); 
 
 		//Begin constructing statements
 		ep->statements = ConstructStatements();
@@ -36,18 +36,13 @@ namespace Spliwaca
 
 	std::shared_ptr<RequireNode> Parser::ConstructRequire()
 	{
+		std::shared_ptr<RequireNode> node = std::shared_ptr<RequireNode>();
 		if (m_Tokens->at(m_TokenIndex)->GetType() == TokenType::Require)
 		{
 			IncIndex();
-			std::shared_ptr<RequireNode> rn = std::shared_ptr<RequireNode>();
-			if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Identifier)
-			{
-				RegisterSyntaxError(SyntaxError(SyntaxErrorType::expIdent, m_Tokens->at(m_TokenIndex)));
-				return nullptr;
-			}
-			rn->requireType = m_Tokens->at(m_TokenIndex);
+			node->requireType = ConstructIdentNode();
 			m_TokenIndex++;
-			return rn;
+			return node;
 		}
 		return nullptr;
 	}
@@ -60,7 +55,7 @@ namespace Spliwaca
 			//Attempt to consume newline
 			while (m_Tokens->at(m_TokenIndex)->GetType() == TokenType::Newline)
 			{
-				m_TokenIndex++;
+				IncIndex();
 			}
 
 			//If we have reached the end of the file, return
@@ -68,6 +63,7 @@ namespace Spliwaca
 			if (currTokType == TokenType::eof || currTokType == TokenType::End || currTokType == TokenType::Else)
 				break;
 
+			IncIndex();
 			//Attempt to construct statement
 			std::shared_ptr<Statement> s = ConstructStatement();
 			if (s != nullptr)
@@ -76,7 +72,8 @@ namespace Spliwaca
 			}
 			else
 			{
-				//If we didn't get a statement back, then there was an error and we are finished.
+				//If we didn't get a statement back, then there was an error and we are finished, 
+				//as we do not know what is supposed to happen here.
 				break;
 			}
 		}
@@ -150,7 +147,7 @@ namespace Spliwaca
 		}
 		if (m_Tokens->at(m_TokenIndex)->GetType() == TokenType::End && m_Tokens->at((uint64_t)m_TokenIndex+(uint64_t)1)->GetType() == TokenType::If)
 		{
-			IncIndex();
+			IncIndex(); IncIndex();
 		}
 		else
 		{
@@ -166,15 +163,9 @@ namespace Spliwaca
 
 		IncIndex();
 
-		if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Identifier)
-		{
-			RegisterSyntaxError(SyntaxError(SyntaxErrorType::expIdent, m_Tokens->at(m_TokenIndex)));
-		}
-		else
-		{
-			node->id = m_Tokens->at(m_TokenIndex);
-			IncIndex();
-		}
+		node->id = ConstructIdentNode();
+		IncIndex();
+		
 
 		if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::To)
 		{
@@ -200,7 +191,7 @@ namespace Spliwaca
 		}
 		else if (type == TokenType::Type)
 		{
-			node->type = m_Tokens->at(m_TokenIndex);
+			node->type = ConstructTypeNode();
 		}
 		else
 		{
@@ -217,14 +208,7 @@ namespace Spliwaca
 		}
 		IncIndex();
 
-		if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Identifier)
-		{
-			RegisterSyntaxError(SyntaxError(SyntaxErrorType::expIdent, m_Tokens->at(m_TokenIndex)));
-		}
-		else
-		{
-			node->id = m_Tokens->at(m_TokenIndex);
-		}
+		node->id = ConstructIdentNode();
 
 		return node;
 	}
@@ -248,14 +232,7 @@ namespace Spliwaca
 	{
 		std::shared_ptr<IncNode> node = std::shared_ptr<IncNode>();
 		IncIndex();
-		if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Identifier)
-		{
-			RegisterSyntaxError(SyntaxError(SyntaxErrorType::expIdent, m_Tokens->at(m_TokenIndex)));
-		}
-		else
-		{
-			node->id = m_Tokens->at(m_TokenIndex);
-		}
+		node->id = ConstructIdentNode();
 		return node;
 	}
 
@@ -263,14 +240,7 @@ namespace Spliwaca
 	{
 		std::shared_ptr<DecNode> node = std::shared_ptr<DecNode>();
 		IncIndex();
-		if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Identifier)
-		{
-			RegisterSyntaxError(SyntaxError(SyntaxErrorType::expIdent, m_Tokens->at(m_TokenIndex)));
-		}
-		else
-		{
-			node->id = m_Tokens->at(m_TokenIndex);
-		}
+		node->id = ConstructIdentNode();
 		return node;
 	}
 
@@ -278,14 +248,8 @@ namespace Spliwaca
 	{
 		std::shared_ptr<ForNode> node = std::shared_ptr<ForNode>();
 		IncIndex();
-		if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Identifier)
-		{
-			RegisterSyntaxError(SyntaxError(SyntaxErrorType::expIdent, m_Tokens->at(m_TokenIndex)));
-		}
-		else
-			node->id = m_Tokens->at(m_TokenIndex);
+		node->id = ConstructIdentNode();
 
-		IncIndex();
 		if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Of)
 		{
 			RegisterSyntaxError(SyntaxError(SyntaxErrorType::expOf, m_Tokens->at(m_TokenIndex)));
@@ -307,7 +271,7 @@ namespace Spliwaca
 
 		if (m_Tokens->at(m_TokenIndex)->GetType() == TokenType::End && m_Tokens->at((uint64_t)m_TokenIndex + (uint64_t)1)->GetType() == TokenType::For)
 		{
-			IncIndex();
+			IncIndex(); IncIndex();
 		}
 		else
 		{
@@ -338,7 +302,7 @@ namespace Spliwaca
 
 		if (m_Tokens->at(m_TokenIndex)->GetType() == TokenType::End && m_Tokens->at((uint64_t)m_TokenIndex + (uint64_t)1)->GetType() == TokenType::While)
 		{
-			IncIndex();
+			IncIndex(); IncIndex();
 		}
 		else
 		{
@@ -395,44 +359,15 @@ namespace Spliwaca
 		std::shared_ptr<FuncNode> node = std::shared_ptr<FuncNode>();
 		IncIndex();
 
-		if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Identifier)
+		node->id = ConstructIdentNode();
+
+		if (m_Tokens->at(m_TokenIndex)->GetType() == TokenType::Takes)
 		{
-			RegisterSyntaxError(SyntaxError(SyntaxErrorType::expIdent, m_Tokens->at(m_TokenIndex)));
-		}
-		else
-		{
-			node->id = m_Tokens->at(m_TokenIndex);
 			IncIndex();
-		}
 
-		if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::ReturnType)
-		{
-			if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Takes)
-			{
-				RegisterSyntaxError(SyntaxError(SyntaxErrorType::expReturns, m_Tokens->at(m_TokenIndex)));
-			}
-			else
-				IncIndex();
+			node->argTypes.push_back(ConstructTypeNode());
 
-			if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Type)
-			{
-				RegisterSyntaxError(SyntaxError(SyntaxErrorType::expType, m_Tokens->at(m_TokenIndex)));
-			}
-			else
-			{
-				node->argTypes.push_back(m_Tokens->at(m_TokenIndex));
-				IncIndex();
-			}
-
-			if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Identifier)
-			{
-				RegisterSyntaxError(SyntaxError(SyntaxErrorType::expIdent, m_Tokens->at(m_TokenIndex)));
-			}
-			else
-			{
-				node->argNames.push_back(m_Tokens->at(m_TokenIndex));
-				IncIndex();
-			}
+			node->argNames.push_back(ConstructIdentNode());
 
 			while (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::ReturnType)
 			{
@@ -443,26 +378,9 @@ namespace Spliwaca
 				else
 					IncIndex();
 
-				if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Type)
-				{
-					RegisterSyntaxError(SyntaxError(SyntaxErrorType::expType, m_Tokens->at(m_TokenIndex)));
-				}
-				else
-				{
-					node->argTypes.push_back(m_Tokens->at(m_TokenIndex));
-					IncIndex();
-				}
+				node->argTypes.push_back(ConstructTypeNode());
 
-				if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Identifier)
-				{
-					RegisterSyntaxError(SyntaxError(SyntaxErrorType::expIdent, m_Tokens->at(m_TokenIndex)));
-				}
-				else
-				{
-					node->argNames.push_back(m_Tokens->at(m_TokenIndex));
-					IncIndex();
-				}
-
+				node->argNames.push_back(ConstructIdentNode());
 			}
 		}
 
@@ -473,15 +391,7 @@ namespace Spliwaca
 		else
 			IncIndex();
 
-		if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Type)
-		{
-			RegisterSyntaxError(SyntaxError(SyntaxErrorType::expType, m_Tokens->at(m_TokenIndex)));
-		}
-		else
-		{
-			node->returnType = m_Tokens->at(m_TokenIndex);
-			IncIndex();
-		}
+		node->returnType = ConstructTypeNode();
 
 		if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::As)
 		{
@@ -494,12 +404,13 @@ namespace Spliwaca
 
 		if (m_Tokens->at(m_TokenIndex)->GetType() == TokenType::End && m_Tokens->at((uint64_t)m_TokenIndex + (uint64_t)1)->GetType() == TokenType::Function)
 		{
-			IncIndex();
+			IncIndex(); IncIndex();
 		}
 		else
 		{
 			RegisterSyntaxError(SyntaxError(SyntaxErrorType::expEndFunc, m_Tokens->at(m_TokenIndex)));
 		}
+		return node;
 	}
 	
 	std::shared_ptr<ProcNode> Parser::ConstructProcedure()
@@ -507,15 +418,7 @@ namespace Spliwaca
 		std::shared_ptr<ProcNode> node = std::shared_ptr<ProcNode>();
 		IncIndex();
 
-		if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Identifier)
-		{
-			RegisterSyntaxError(SyntaxError(SyntaxErrorType::expIdent, m_Tokens->at(m_TokenIndex)));
-		}
-		else
-		{
-			node->id = m_Tokens->at(m_TokenIndex);
-			IncIndex();
-		}
+		node->id = ConstructIdentNode();
 
 		if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::ReturnType)
 		{
@@ -526,25 +429,9 @@ namespace Spliwaca
 			else
 				IncIndex();
 
-			if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Type)
-			{
-				RegisterSyntaxError(SyntaxError(SyntaxErrorType::expType, m_Tokens->at(m_TokenIndex)));
-			}
-			else
-			{
-				node->argTypes.push_back(m_Tokens->at(m_TokenIndex));
-				IncIndex();
-			}
+			node->argTypes.push_back(ConstructTypeNode());
 
-			if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Identifier)
-			{
-				RegisterSyntaxError(SyntaxError(SyntaxErrorType::expIdent, m_Tokens->at(m_TokenIndex)));
-			}
-			else
-			{
-				node->argNames.push_back(m_Tokens->at(m_TokenIndex));
-				IncIndex();
-			}
+			node->argNames.push_back(ConstructIdentNode());
 
 			while (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::ReturnType)
 			{
@@ -555,25 +442,9 @@ namespace Spliwaca
 				else
 					IncIndex();
 
-				if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Type)
-				{
-					RegisterSyntaxError(SyntaxError(SyntaxErrorType::expType, m_Tokens->at(m_TokenIndex)));
-				}
-				else
-				{
-					node->argTypes.push_back(m_Tokens->at(m_TokenIndex));
-					IncIndex();
-				}
+				node->argTypes.push_back(ConstructTypeNode());
 
-				if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Identifier)
-				{
-					RegisterSyntaxError(SyntaxError(SyntaxErrorType::expIdent, m_Tokens->at(m_TokenIndex)));
-				}
-				else
-				{
-					node->argNames.push_back(m_Tokens->at(m_TokenIndex));
-					IncIndex();
-				}
+				node->argNames.push_back(ConstructIdentNode());
 
 			}
 		}
@@ -589,12 +460,13 @@ namespace Spliwaca
 
 		if (m_Tokens->at(m_TokenIndex)->GetType() == TokenType::End && m_Tokens->at((uint64_t)m_TokenIndex + (uint64_t)1)->GetType() == TokenType::Function)
 		{
-			IncIndex();
+			IncIndex(); IncIndex();
 		}
 		else
 		{
 			RegisterSyntaxError(SyntaxError(SyntaxErrorType::expEndFunc, m_Tokens->at(m_TokenIndex)));
 		}
+		return node;
 	}
 
 	std::shared_ptr<Expr> Parser::ConstructExpr()
@@ -618,9 +490,10 @@ namespace Spliwaca
 			node->anonpNode = ConstructAnonProc();
 			node->exprType = 6;
 		default:
-			node->boolExpr = ConstructList();
+			node->listNode = ConstructList();
 			node->exprType = 1;
 		}
+		return node;
 	}
 
 	std::shared_ptr<ListNode> Parser::ConstructList()
@@ -628,12 +501,32 @@ namespace Spliwaca
 		std::shared_ptr<ListNode> node = std::shared_ptr<ListNode>();
 
 		node->Items.push_back(ConstructDictEntry());
-		IncIndex();
 		while (m_Tokens->at(m_TokenIndex)->GetType() == TokenType::Comma)
 		{
 			IncIndex();
+			if (m_Tokens->at(m_TokenIndex)->GetType() == TokenType::Newline)
+				IncIndex();
 			node->Items.push_back(ConstructDictEntry());
+			if (m_Tokens->at(m_TokenIndex)->GetType() == TokenType::Newline)
+				IncIndex();
 		}
+		return node;
+	}
+
+	std::shared_ptr<DictEntryNode> Parser::ConstructDictEntry()
+	{
+		std::shared_ptr<DictEntryNode> node = std::shared_ptr<DictEntryNode>();
+		node->left = ConstructBooleanExpr();
+		if (m_Tokens->at(m_TokenIndex)->GetType() == TokenType::DictEquator)
+		{
+			IncIndex();
+			node->right = ConstructBooleanExpr();
+			node->hasRight = true;
+		}
+		else
+			node->hasRight = false;
+
+		return node;
 	}
 
 	std::shared_ptr<BoolExprNode> Parser::ConstructBooleanExpr()
@@ -740,24 +633,222 @@ namespace Spliwaca
 		return node;
 	}
 
-	std::shared_ptr<AtomNode> Parser::ConstructAtom(bool constructingList = false)
+	std::shared_ptr<AtomNode> Parser::ConstructAtom()
 	{
 		std::shared_ptr<AtomNode> node = std::shared_ptr<AtomNode>();
 		std::shared_ptr<Expr> firstExpr;
 		if (m_Tokens->at(m_TokenIndex)->GetType() == TokenType::LCurlyParen)
 		{
 			IncIndex();
-			firstExpr = ConstructExpr();
+			node->expression = ConstructExpr();
 			if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::RParen)
 			{
 				RegisterSyntaxError(SyntaxError(SyntaxErrorType::expRParen, m_Tokens->at(m_TokenIndex)));
 			}
+			node->type = 2;
 		}
 		else
 		{
-			switch (m_Tokens->at(m_TokenIndex)->GetType())
+			std::vector<TokenType> acceptedAtomTokenTypes = { TokenType::String, TokenType::Raw, TokenType::Int, TokenType::Float, TokenType::Complex, TokenType::Identifier };
+			TokenType type = m_Tokens->at(m_TokenIndex)->GetType();
+			if (!itemInVect(acceptedAtomTokenTypes, m_Tokens->at(m_TokenIndex)->GetType()))
 			{
-				case TokenType::String
+				//If it doesn't start with an ident, then it isn't an identifier, and if it isn't any of the others, then it must be an error
+				RegisterSyntaxError(SyntaxError(SyntaxErrorType::expAtom, m_Tokens->at(m_TokenIndex)));
+				node->type = 0;
+			}
+			else if (type == TokenType::Identifier)
+			{
+				node->ident = ConstructIdentNode();
+				node->type = 3;
+			}
+			else
+			{
+				node->token = m_Tokens->at(m_TokenIndex);
+				node->type = 1;
+				IncIndex();
+			}
+		}
+		return node;
+	}
+
+	std::shared_ptr<CreateNode> Parser::ConstructCreate()
+	{
+		std::shared_ptr<CreateNode> node = std::shared_ptr<CreateNode>();
+		IncIndex();
+		node->createType = ConstructTypeNode();
+
+		if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::With)
+		{
+			node->args.push_back(ConstructExpr());
+			while (m_Tokens->at(m_TokenIndex)->GetType() == TokenType::Comma)
+			{
+				node->args.push_back(ConstructExpr());
+			}
+		}
+		return node;
+	}
+
+	std::shared_ptr<CastNode> Parser::ConstructCast()
+	{
+		std::shared_ptr<CastNode> node = std::shared_ptr<CastNode>();
+		IncIndex();
+		node->castType = ConstructTypeNode();
+		node->expr = ConstructExpr();
+		return node;
+	}
+
+	std::shared_ptr<AnonfNode> Parser::ConstructAnonFunc()
+	{
+		std::shared_ptr<AnonfNode> node = std::shared_ptr<AnonfNode>();
+		IncIndex();
+
+		if (m_Tokens->at(m_TokenIndex)->GetType() == TokenType::Takes)
+		{
+			IncIndex();
+
+			node->argTypes.push_back(ConstructTypeNode());
+
+			node->argNames.push_back(ConstructIdentNode());
+
+			while (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::ReturnType)
+			{
+				if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Comma)
+				{
+					RegisterSyntaxError(SyntaxError(SyntaxErrorType::expComma, m_Tokens->at(m_TokenIndex)));
+				}
+				else
+					IncIndex();
+
+				node->argTypes.push_back(ConstructTypeNode());
+
+				node->argNames.push_back(ConstructIdentNode());
+			}
+		}
+
+		if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::ReturnType)
+		{
+			RegisterSyntaxError(SyntaxError(SyntaxErrorType::expReturns, m_Tokens->at(m_TokenIndex)));
+		}
+		else
+			IncIndex();
+
+		node->returnType = ConstructTypeNode();
+
+		if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::As)
+		{
+			RegisterSyntaxError(SyntaxError(SyntaxErrorType::expAs, m_Tokens->at(m_TokenIndex)));
+		}
+		else
+			IncIndex();
+
+		node->body = ConstructStatements();
+
+		if (m_Tokens->at(m_TokenIndex)->GetType() == TokenType::End && m_Tokens->at((uint64_t)m_TokenIndex + (uint64_t)1)->GetType() == TokenType::Function)
+		{
+			IncIndex(); IncIndex();
+		}
+		else
+		{
+			RegisterSyntaxError(SyntaxError(SyntaxErrorType::expEndFunc, m_Tokens->at(m_TokenIndex)));
+		}
+		return node;
+	}
+
+	std::shared_ptr<AnonpNode> Parser::ConstructAnonProc()
+	{
+		std::shared_ptr<AnonpNode> node = std::shared_ptr<AnonpNode>();
+		IncIndex();
+
+		if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::ReturnType)
+		{
+			if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Takes)
+			{
+				RegisterSyntaxError(SyntaxError(SyntaxErrorType::expReturns, m_Tokens->at(m_TokenIndex)));
+			}
+			else
+				IncIndex();
+
+			node->argTypes.push_back(ConstructTypeNode());
+
+			node->argNames.push_back(ConstructIdentNode());
+
+			while (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::ReturnType)
+			{
+				if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Comma)
+				{
+					RegisterSyntaxError(SyntaxError(SyntaxErrorType::expComma, m_Tokens->at(m_TokenIndex)));
+				}
+				else
+					IncIndex();
+
+				node->argTypes.push_back(ConstructTypeNode());
+
+				node->argNames.push_back(ConstructIdentNode());
+
+			}
+		}
+
+		if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::As)
+		{
+			RegisterSyntaxError(SyntaxError(SyntaxErrorType::expAs, m_Tokens->at(m_TokenIndex)));
+		}
+		else
+			IncIndex();
+
+		node->body = ConstructStatements();
+
+		if (m_Tokens->at(m_TokenIndex)->GetType() == TokenType::End && m_Tokens->at((uint64_t)m_TokenIndex + (uint64_t)1)->GetType() == TokenType::Function)
+		{
+			IncIndex(); IncIndex();
+		}
+		else
+		{
+			RegisterSyntaxError(SyntaxError(SyntaxErrorType::expEndFunc, m_Tokens->at(m_TokenIndex)));
+		}
+		return node;
+	}
+
+	std::shared_ptr<TypeNode> Parser::ConstructTypeNode()
+	{
+		std::shared_ptr<TypeNode> node = std::shared_ptr<TypeNode>();
+		if (m_Tokens->at(m_TokenIndex)->GetType() == TokenType::Type)
+		{
+			node->typeToken = m_Tokens->at(m_TokenIndex);
+			node->type = 2;
+			IncIndex();
+		}
+		else
+		{
+			node->ident = ConstructIdentNode();
+			node->type = 1;
+		}
+		return node;
+	}
+
+	std::shared_ptr<IdentNode> Parser::ConstructIdentNode()
+	{
+		std::shared_ptr<IdentNode> node = std::shared_ptr<IdentNode>();
+		if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Identifier)
+		{
+			RegisterSyntaxError(SyntaxError(SyntaxErrorType::expIdent, m_Tokens->at(m_TokenIndex)));
+		}
+		else
+		{
+			node->ids.push_back(m_Tokens->at(m_TokenIndex));
+			IncIndex();
+		}
+		while (m_Tokens->at(m_TokenIndex)->GetType() == TokenType::VarAccessOp)
+		{
+			IncIndex();
+			if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Identifier)
+			{
+				RegisterSyntaxError(SyntaxError(SyntaxErrorType::expIdent, m_Tokens->at(m_TokenIndex)));
+			}
+			else
+			{
+				node->ids.push_back(m_Tokens->at(m_TokenIndex));
+				IncIndex();
 			}
 		}
 		return node;

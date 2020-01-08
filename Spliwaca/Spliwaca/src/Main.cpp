@@ -9,6 +9,7 @@
 
 using namespace Spliwaca;
 
+//------------------------------------- UtilFunctions utility function definitions -------------------------------
 struct State
 {
 	std::vector<LexicalError> LexerErrors;
@@ -72,6 +73,34 @@ int numDigits(int32_t x)
 		return 2;
 	return 1;
 }
+
+bool charInStr(const std::string& s, char c)
+{
+	PROFILE_FUNC();
+	for (char ch : s)
+	{
+		if (ch == c)
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+template<typename T>
+bool itemInVect(const std::vector<T>& v, T t)
+{
+	for (T e : v)
+	{
+		if (e == t)
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+//------------------------------------- End UtilFunctions utility function definitions -------------------------------
 
 int main()
 {

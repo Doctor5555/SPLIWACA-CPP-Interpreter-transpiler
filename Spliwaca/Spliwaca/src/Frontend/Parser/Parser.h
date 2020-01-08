@@ -44,12 +44,15 @@ namespace Spliwaca
 		std::shared_ptr<DivModExprNode> ConstructDivModExpr();
 		std::shared_ptr<PowerNode> ConstructPower();
 		std::shared_ptr<FactorNode> ConstructFactor();
-		std::shared_ptr<AtomNode> ConstructAtom(bool constructingList = false);
+		std::shared_ptr<AtomNode> ConstructAtom();
 
 		std::shared_ptr<CreateNode> ConstructCreate();
 		std::shared_ptr<CastNode> ConstructCast();
 		std::shared_ptr<AnonfNode> ConstructAnonFunc();
 		std::shared_ptr<AnonpNode> ConstructAnonProc();
+
+		std::shared_ptr<TypeNode> ConstructTypeNode();
+		std::shared_ptr<IdentNode> ConstructIdentNode();
 
 		Parser(std::shared_ptr<std::vector<std::shared_ptr<Token>>> tokens)
 			: m_Tokens(tokens), m_TokenIndex(0) { }
