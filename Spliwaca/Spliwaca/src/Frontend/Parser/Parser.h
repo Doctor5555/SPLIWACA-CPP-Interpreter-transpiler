@@ -33,6 +33,7 @@ namespace Spliwaca
 		std::shared_ptr<CallNode> ConstructCall();
 		std::shared_ptr<FuncNode> ConstructFunction();
 		std::shared_ptr<ProcNode> ConstructProcedure();
+		std::shared_ptr<StructNode> ConstructStruct();
 
 		std::shared_ptr<Expr> ConstructExpr();
 
@@ -48,6 +49,7 @@ namespace Spliwaca
 
 		std::shared_ptr<CreateNode> ConstructCreate();
 		std::shared_ptr<CastNode> ConstructCast();
+		std::shared_ptr<ReturnNode> ConstructReturn();
 		std::shared_ptr<AnonfNode> ConstructAnonFunc();
 		std::shared_ptr<AnonpNode> ConstructAnonProc();
 

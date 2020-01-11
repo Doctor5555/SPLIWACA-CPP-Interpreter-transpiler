@@ -25,6 +25,7 @@ namespace Spliwaca
 		expEndWhile,
 		expEndFunc,
 		expEndProc,
+		expEndStruct,
 		expTypeMod,
 		tooManyElse,
 	};

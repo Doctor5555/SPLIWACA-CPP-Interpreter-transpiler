@@ -150,9 +150,21 @@ namespace Spliwaca
 		std::shared_ptr<Statements> body;
 	};
 
+	struct StructNode
+	{
+		std::shared_ptr<IdentNode> id;
+		std::vector<std::shared_ptr<TypeNode>> types;
+		std::vector<std::shared_ptr<IdentNode>> names;
+	};
+
+	struct ReturnNode
+	{
+		std::shared_ptr<Expr> expr;
+	};
+
 	struct CallNode
 	{
-		std::shared_ptr<Expr> funcId;
+		std::shared_ptr<Expr> function;
 		std::vector<std::shared_ptr<Expr>> args;
 	};
 
@@ -223,6 +235,8 @@ namespace Spliwaca
 		std::shared_ptr<CallNode> callNode;
 		std::shared_ptr<FuncNode> funcNode;
 		std::shared_ptr<ProcNode> procNode;
+		std::shared_ptr<StructNode> structNode;
+		std::shared_ptr<ReturnNode> returnNode;
 		uint8_t statementType;
 	};
 

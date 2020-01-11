@@ -73,7 +73,7 @@ while = 'WHILE', boolean_expr, 'DO\n', statements, '\nEND WHILE';
 quit = 'QUIT', atom;
 require = 'REQUIRE', interpreter_name;
 
-struct = 'STRUCT', identifier, 'AS\n', (type, identifier, ('\n'|','|',\n'))+, 'END STRUCTURE';
+struct = 'STRUCT', identifier, 'AS\n', (type, identifier, ('\n,'|','|',\n'|'\n,\n'))+, '\nEND STRUCTURE';
 
 function = ('FUNCTION', identifier, (('<-'|'TAKES'), type, identifier, ['WITH DEFAULT', value], (',', type, identifier, ['WITH DEFAULT', value],)*)?, ('->'|'RETURNS'), type, 'AS', '\n', statements, '\n'+, 'END FUNCTION\n');
 

@@ -162,9 +162,9 @@ int main()
 		std::cout << "\n";
 	}
 
-	/*
+	
 	{
-		PROFILE_SCOPE("Main_Output");
+		//PROFILE_SCOPE("Main_Output");
 		int lineCount = lexer->GetSplitFileString().size();
 
 		int i = 0;
@@ -183,9 +183,9 @@ int main()
 			secondReconstruction.append(t->GetContents());
 		}
 
-		std::cout << secondReconstruction << "\n";
+		//std::cout << secondReconstruction << "\n";
 	}
-	*/
+	
 
 	//SPLW_WARN("FINISHED OUTPUT!");
 	//timeEnd = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch());

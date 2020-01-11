@@ -58,7 +58,7 @@ namespace Spliwaca
 			m_TokenIndex++;
 			return node;
 		}
-		return node;
+		return nullptr;
 	}
 
 	std::shared_ptr<Statements> Parser::ConstructStatements()
@@ -77,7 +77,7 @@ namespace Spliwaca
 			if (currTokType == TokenType::eof || currTokType == TokenType::End || currTokType == TokenType::Else)
 				break;
 
-			IncIndex();
+			//IncIndex();
 			//Attempt to construct statement
 			std::shared_ptr<Statement> s = ConstructStatement();
 			if (s != nullptr)
@@ -99,17 +99,20 @@ namespace Spliwaca
 		std::shared_ptr<Statement> s = std::make_shared<Statement>();
 		switch (m_Tokens->at(m_TokenIndex)->GetType())
 		{
-		case TokenType::If: s->ifNode = ConstructIf(); s->statementType = 0;
-		case TokenType::Set: s->setNode = ConstructSet(); s->statementType = 1;
-		case TokenType::Input: s->inputNode = ConstructInput(); s->statementType = 2;
-		case TokenType::Output: s->outputNode = ConstructOutput(); s->statementType = 3;
-		case TokenType::Increment: s->incNode = ConstructIncrement(); s->statementType = 4;
-		case TokenType::Decrement: s->decNode = ConstructDecrement(); s->statementType = 5;
-		case TokenType::For: s->forNode = ConstructFor(); s->statementType = 6;
-		case TokenType::While: s->whileNode = ConstructWhile(); s->statementType = 7;
-		case TokenType::Quit: s->quitNode = ConstructQuit(); s->statementType = 8;
-		case TokenType::Function: s->funcNode = ConstructFunction(); s->statementType = 9;
-		case TokenType::Procedure: s->procNode = ConstructProcedure(); s->statementType = 10;
+		case TokenType::If: s->ifNode = ConstructIf(); s->statementType = 0; break;
+		case TokenType::Set: s->setNode = ConstructSet(); s->statementType = 1; break;
+		case TokenType::Input: s->inputNode = ConstructInput(); s->statementType = 2; break;
+		case TokenType::Output: s->outputNode = ConstructOutput(); s->statementType = 3; break;
+		case TokenType::Increment: s->incNode = ConstructIncrement(); s->statementType = 4; break;
+		case TokenType::Decrement: s->decNode = ConstructDecrement(); s->statementType = 5; break;
+		case TokenType::For: s->forNode = ConstructFor(); s->statementType = 6; break;
+		case TokenType::While: s->whileNode = ConstructWhile(); s->statementType = 7; break;
+		case TokenType::Quit: s->quitNode = ConstructQuit(); s->statementType = 8; break;
+		case TokenType::Call: s->callNode = ConstructCall(); s->statementType = 9; break;
+		case TokenType::Function: s->funcNode = ConstructFunction(); s->statementType = 10; break;
+		case TokenType::Procedure: s->procNode = ConstructProcedure(); s->statementType = 11; break;
+		case TokenType::Struct: s->structNode = ConstructStruct(); s->statementType = 12; break;
+		case TokenType::Return: s->returnNode = ConstructReturn(); s->statementType = 13; break;
 		default:
 			RegisterSyntaxError(SyntaxError(SyntaxErrorType::expStatement, m_Tokens->at(m_TokenIndex)));
 			return nullptr;
@@ -178,8 +181,6 @@ namespace Spliwaca
 		IncIndex();
 
 		node->id = ConstructIdentNode();
-		IncIndex();
-		
 
 		if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::To)
 		{
@@ -339,7 +340,7 @@ namespace Spliwaca
 	{
 		std::shared_ptr<CallNode> node = std::make_shared<CallNode>();
 		IncIndex();
-		node->funcId = ConstructExpr();
+		node->function = ConstructExpr();
 
 		if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Newline)
 		{
@@ -478,7 +479,72 @@ namespace Spliwaca
 		}
 		else
 		{
-			RegisterSyntaxError(SyntaxError(SyntaxErrorType::expEndFunc, m_Tokens->at(m_TokenIndex)));
+			RegisterSyntaxError(SyntaxError(SyntaxErrorType::expEndProc, m_Tokens->at(m_TokenIndex)));
+		}
+		return node;
+	}
+
+	std::shared_ptr<StructNode> Parser::ConstructStruct()
+	{
+		std::shared_ptr<StructNode> node = std::make_shared<StructNode>();
+		IncIndex();
+
+		node->id = ConstructIdentNode();
+
+		if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::As)
+		{
+			RegisterSyntaxError(SyntaxError(SyntaxErrorType::expAs, m_Tokens->at(m_TokenIndex)));
+		}
+		else
+			IncIndex();
+
+		if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Newline)
+		{
+			RegisterSyntaxError(SyntaxError(SyntaxErrorType::expAs, m_Tokens->at(m_TokenIndex)));
+		}
+		else
+			IncIndex();
+
+		node->types.push_back(ConstructTypeNode());
+
+		node->names.push_back(ConstructIdentNode());
+
+		if (m_Tokens->at(m_TokenIndex)->GetType() == TokenType::Newline)
+		{
+			IncIndex();
+		}
+
+		while (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::End)
+		{
+			if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Comma)
+			{
+				RegisterSyntaxError(SyntaxError(SyntaxErrorType::expComma, m_Tokens->at(m_TokenIndex)));
+			}
+			else
+				IncIndex();
+
+			if (m_Tokens->at(m_TokenIndex)->GetType() == TokenType::Newline)
+			{
+				IncIndex();
+			}
+
+			node->types.push_back(ConstructTypeNode());
+
+			node->names.push_back(ConstructIdentNode());
+
+			if (m_Tokens->at(m_TokenIndex)->GetType() == TokenType::Newline)
+			{
+				IncIndex();
+			}
+		}
+		
+		if (m_Tokens->at(m_TokenIndex)->GetType() == TokenType::End && m_Tokens->at((uint64_t)m_TokenIndex + (uint64_t)1)->GetType() == TokenType::Struct)
+		{
+			IncIndex(); IncIndex();
+		}
+		else
+		{
+			RegisterSyntaxError(SyntaxError(SyntaxErrorType::expEndStruct, m_Tokens->at(m_TokenIndex)));
 		}
 		return node;
 	}
@@ -490,22 +556,22 @@ namespace Spliwaca
 		{
 		case TokenType::Create:
 			node->createNode = ConstructCreate();
-			node->exprType = 2;
+			node->exprType = 2; break;
 		case TokenType::Cast:
 			node->castNode = ConstructCast();
-			node->exprType = 3;
+			node->exprType = 3; break;
 		case TokenType::Call:
 			node->callNode = ConstructCall();
-			node->exprType = 4;
+			node->exprType = 4; break;
 		case TokenType::AnonFunc:
 			node->anonfNode = ConstructAnonFunc();
-			node->exprType = 5;
+			node->exprType = 5; break;
 		case TokenType::AnonProc:
 			node->anonpNode = ConstructAnonProc();
-			node->exprType = 6;
+			node->exprType = 6; break;
 		default:
 			node->listNode = ConstructList();
-			node->exprType = 1;
+			node->exprType = 1; break;
 		}
 		return node;
 	}
@@ -650,8 +716,7 @@ namespace Spliwaca
 	std::shared_ptr<AtomNode> Parser::ConstructAtom()
 	{
 		std::shared_ptr<AtomNode> node = std::make_shared<AtomNode>();
-		std::shared_ptr<Expr> firstExpr;
-		if (m_Tokens->at(m_TokenIndex)->GetType() == TokenType::LCurlyParen)
+		if (m_Tokens->at(m_TokenIndex)->GetType() == TokenType::LParen)
 		{
 			IncIndex();
 			node->expression = ConstructExpr();
@@ -708,6 +773,14 @@ namespace Spliwaca
 		std::shared_ptr<CastNode> node = std::make_shared<CastNode>();
 		IncIndex();
 		node->castType = ConstructTypeNode();
+		node->expr = ConstructExpr();
+		return node;
+	}
+
+	std::shared_ptr<ReturnNode> Parser::ConstructReturn()
+	{
+		std::shared_ptr<ReturnNode> node = std::make_shared<ReturnNode>();
+		IncIndex();
 		node->expr = ConstructExpr();
 		return node;
 	}
