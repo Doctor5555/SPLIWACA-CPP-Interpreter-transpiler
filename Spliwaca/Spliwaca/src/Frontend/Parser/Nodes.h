@@ -10,6 +10,8 @@ namespace Spliwaca
 	struct AtomNode;
 	struct CallNode;
 	struct IdentNode;
+	struct BoolExprNode;
+	struct MulExprNode;
 
 	struct TypeNode
 	{
@@ -95,12 +97,12 @@ namespace Spliwaca
 	{
 		std::shared_ptr<PowerNode> left;
 		std::shared_ptr<Token> opToken;
-		std::shared_ptr<MulExprNode> right;
+		std::shared_ptr<DivModExprNode> right;
 	};
 
 	struct MulExprNode
 	{
-		std::shared_ptr<PowerNode> left;
+		std::shared_ptr<DivModExprNode> left;
 		std::shared_ptr<Token> opToken;
 		std::shared_ptr<MulExprNode> right;
 	};
@@ -122,15 +124,12 @@ namespace Spliwaca
 
 	struct Expr
 	{
-		union
-		{
-			std::shared_ptr<ListNode> listNode; // exprType: 1
-			std::shared_ptr<CreateNode> createNode; // exprType: 2
-			std::shared_ptr<CastNode> castNode; // exprType: 3
-			std::shared_ptr<CallNode> callNode; // exprType: 4
-			std::shared_ptr<AnonfNode> anonfNode; // exprType: 5
-			std::shared_ptr<AnonpNode> anonpNode; // exprType: 6
-		};
+		std::shared_ptr<ListNode> listNode; // exprType: 1
+		std::shared_ptr<CreateNode> createNode; // exprType: 2
+		std::shared_ptr<CastNode> castNode; // exprType: 3
+		std::shared_ptr<CallNode> callNode; // exprType: 4
+		std::shared_ptr<AnonfNode> anonfNode; // exprType: 5
+		std::shared_ptr<AnonpNode> anonpNode; // exprType: 6
 		uint8_t exprType;
 	};
 
@@ -212,21 +211,18 @@ namespace Spliwaca
 
 	struct Statement
 	{
-		union
-		{
-			std::shared_ptr<IfNode> ifNode;
-			std::shared_ptr<SetNode> setNode;
-			std::shared_ptr<InputNode> inputNode;
-			std::shared_ptr<OutputNode> outputNode;
-			std::shared_ptr<IncNode> incNode;
-			std::shared_ptr<DecNode> decNode;
-			std::shared_ptr<ForNode> forNode;
-			std::shared_ptr<WhileNode> whileNode;
-			std::shared_ptr<QuitNode> quitNode;
-			std::shared_ptr<CallNode> callNode;
-			std::shared_ptr<FuncNode> funcNode;
-			std::shared_ptr<ProcNode> procNode;
-		};
+		std::shared_ptr<IfNode> ifNode;
+		std::shared_ptr<SetNode> setNode;
+		std::shared_ptr<InputNode> inputNode;
+		std::shared_ptr<OutputNode> outputNode;
+		std::shared_ptr<IncNode> incNode;
+		std::shared_ptr<DecNode> decNode;
+		std::shared_ptr<ForNode> forNode;
+		std::shared_ptr<WhileNode> whileNode;
+		std::shared_ptr<QuitNode> quitNode;
+		std::shared_ptr<CallNode> callNode;
+		std::shared_ptr<FuncNode> funcNode;
+		std::shared_ptr<ProcNode> procNode;
 		uint8_t statementType;
 	};
 
@@ -237,7 +233,7 @@ namespace Spliwaca
 
 	struct RequireNode
 	{
-		std::shared_ptr<Token> requireType;
+		std::shared_ptr<IdentNode> requireType;
 	};
 
 	struct EntryPoint

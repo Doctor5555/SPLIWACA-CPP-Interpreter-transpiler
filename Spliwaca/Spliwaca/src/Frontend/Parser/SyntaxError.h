@@ -42,7 +42,7 @@ namespace Spliwaca
 		inline const SyntaxErrorType  GetErrorCode() const { return m_ErrorCode; }
 		inline const uint32_t GetLineNumber() const { return m_OffendingToken->GetLineNumber(); }
 		inline const uint32_t GetColumnNumber() const { return m_OffendingToken->GetCharacterNumber(); }
-		inline const uint16_t GetColumnSpan() const { return m_OffendingToken->GetContents().length(); }
+		inline const size_t GetColumnSpan() const { return m_OffendingToken->GetContents().length(); }
 		inline const TokenType GetTokenType() const { return m_OffendingToken->GetType(); }
 
 		//2^8 = 256 error codes available

@@ -3,6 +3,19 @@
 
 namespace Spliwaca
 {
+	template<typename T>
+	bool itemInVect(const std::vector<T>& v, T t)
+	{
+		for (T e : v)
+		{
+			if (e == t)
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+
 	std::shared_ptr<Parser> Parser::Create(std::shared_ptr<std::vector<std::shared_ptr<Token>>> tokens)
 	{
 		return std::shared_ptr<Parser>(new Parser(tokens));
@@ -10,8 +23,9 @@ namespace Spliwaca
 
 	std::shared_ptr<EntryPoint> Parser::ConstructAST()
 	{
-		std::shared_ptr<EntryPoint> ep = std::shared_ptr<EntryPoint>();
+		std::shared_ptr<EntryPoint> ep = std::make_shared<EntryPoint>();
 		//Begin loop through tokens
+
 		ep->require = ConstructRequire();
 
 		// Consume newline after require
@@ -36,7 +50,7 @@ namespace Spliwaca
 
 	std::shared_ptr<RequireNode> Parser::ConstructRequire()
 	{
-		std::shared_ptr<RequireNode> node = std::shared_ptr<RequireNode>();
+		std::shared_ptr<RequireNode> node = std::make_shared<RequireNode>();
 		if (m_Tokens->at(m_TokenIndex)->GetType() == TokenType::Require)
 		{
 			IncIndex();
@@ -44,12 +58,12 @@ namespace Spliwaca
 			m_TokenIndex++;
 			return node;
 		}
-		return nullptr;
+		return node;
 	}
 
 	std::shared_ptr<Statements> Parser::ConstructStatements()
 	{
-		std::shared_ptr<Statements> statements = std::shared_ptr<Statements>();
+		std::shared_ptr<Statements> statements = std::make_shared<Statements>();
 		while (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::eof)
 		{
 			//Attempt to consume newline
@@ -82,7 +96,7 @@ namespace Spliwaca
 
 	std::shared_ptr<Statement> Parser::ConstructStatement()
 	{
-		std::shared_ptr<Statement> s = std::shared_ptr<Statement>();
+		std::shared_ptr<Statement> s = std::make_shared<Statement>();
 		switch (m_Tokens->at(m_TokenIndex)->GetType())
 		{
 		case TokenType::If: s->ifNode = ConstructIf(); s->statementType = 0;
@@ -105,7 +119,7 @@ namespace Spliwaca
 
 	std::shared_ptr<IfNode> Parser::ConstructIf()
 	{
-		std::shared_ptr<IfNode> node = std::shared_ptr<IfNode>();
+		std::shared_ptr<IfNode> node = std::make_shared<IfNode>();
 		IncIndex();
 		node->conditions.push_back(ConstructBooleanExpr());
 		if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Do)
@@ -159,7 +173,7 @@ namespace Spliwaca
 
 	std::shared_ptr<SetNode> Parser::ConstructSet()
 	{
-		std::shared_ptr<SetNode> node = std::shared_ptr<SetNode>();
+		std::shared_ptr<SetNode> node = std::make_shared<SetNode>();
 
 		IncIndex();
 
@@ -181,7 +195,7 @@ namespace Spliwaca
 
 	std::shared_ptr<InputNode> Parser::ConstructInput()
 	{
-		std::shared_ptr<InputNode> node = std::shared_ptr<InputNode>();
+		std::shared_ptr<InputNode> node = std::make_shared<InputNode>();
 
 		IncIndex();
 		auto type = m_Tokens->at(m_TokenIndex)->GetType();
@@ -203,7 +217,7 @@ namespace Spliwaca
 			}
 			else
 			{
-				node->type = m_Tokens->at(m_TokenIndex);
+				node->type = ConstructTypeNode();
 			}
 		}
 		IncIndex();
@@ -215,7 +229,7 @@ namespace Spliwaca
 
 	std::shared_ptr<OutputNode> Parser::ConstructOutput()
 	{
-		std::shared_ptr<OutputNode> node = std::shared_ptr<OutputNode>();
+		std::shared_ptr<OutputNode> node = std::make_shared<OutputNode>();
 		IncIndex();
 		if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Raw)
 		{
@@ -230,7 +244,7 @@ namespace Spliwaca
 
 	std::shared_ptr<IncNode> Parser::ConstructIncrement()
 	{
-		std::shared_ptr<IncNode> node = std::shared_ptr<IncNode>();
+		std::shared_ptr<IncNode> node = std::make_shared<IncNode>();
 		IncIndex();
 		node->id = ConstructIdentNode();
 		return node;
@@ -238,7 +252,7 @@ namespace Spliwaca
 
 	std::shared_ptr<DecNode> Parser::ConstructDecrement()
 	{
-		std::shared_ptr<DecNode> node = std::shared_ptr<DecNode>();
+		std::shared_ptr<DecNode> node = std::make_shared<DecNode>();
 		IncIndex();
 		node->id = ConstructIdentNode();
 		return node;
@@ -246,7 +260,7 @@ namespace Spliwaca
 
 	std::shared_ptr<ForNode> Parser::ConstructFor()
 	{
-		std::shared_ptr<ForNode> node = std::shared_ptr<ForNode>();
+		std::shared_ptr<ForNode> node = std::make_shared<ForNode>();
 		IncIndex();
 		node->id = ConstructIdentNode();
 
@@ -283,7 +297,7 @@ namespace Spliwaca
 
 	std::shared_ptr<WhileNode> Parser::ConstructWhile()
 	{
-		std::shared_ptr<WhileNode> node = std::shared_ptr<WhileNode>();
+		std::shared_ptr<WhileNode> node = std::make_shared<WhileNode>();
 		IncIndex();
 		node->condition = ConstructBooleanExpr();
 		
@@ -314,7 +328,7 @@ namespace Spliwaca
 
 	std::shared_ptr<QuitNode> Parser::ConstructQuit()
 	{
-		std::shared_ptr<QuitNode> node = std::shared_ptr<QuitNode>();
+		std::shared_ptr<QuitNode> node = std::make_shared<QuitNode>();
 		IncIndex();
 		if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Newline)
 			node->returnVal = ConstructAtom();
@@ -323,7 +337,7 @@ namespace Spliwaca
 
 	std::shared_ptr<CallNode> Parser::ConstructCall()
 	{
-		std::shared_ptr<CallNode> node = std::shared_ptr<CallNode>();
+		std::shared_ptr<CallNode> node = std::make_shared<CallNode>();
 		IncIndex();
 		node->funcId = ConstructExpr();
 
@@ -356,7 +370,7 @@ namespace Spliwaca
 
 	std::shared_ptr<FuncNode> Parser::ConstructFunction()
 	{
-		std::shared_ptr<FuncNode> node = std::shared_ptr<FuncNode>();
+		std::shared_ptr<FuncNode> node = std::make_shared<FuncNode>();
 		IncIndex();
 
 		node->id = ConstructIdentNode();
@@ -415,7 +429,7 @@ namespace Spliwaca
 	
 	std::shared_ptr<ProcNode> Parser::ConstructProcedure()
 	{
-		std::shared_ptr<ProcNode> node = std::shared_ptr<ProcNode>();
+		std::shared_ptr<ProcNode> node = std::make_shared<ProcNode>();
 		IncIndex();
 
 		node->id = ConstructIdentNode();
@@ -471,7 +485,7 @@ namespace Spliwaca
 
 	std::shared_ptr<Expr> Parser::ConstructExpr()
 	{
-		std::shared_ptr<Expr> node = std::shared_ptr<Expr>();
+		std::shared_ptr<Expr> node = std::make_shared<Expr>();
 		switch (m_Tokens->at(m_TokenIndex)->GetType())
 		{
 		case TokenType::Create:
@@ -498,7 +512,7 @@ namespace Spliwaca
 
 	std::shared_ptr<ListNode> Parser::ConstructList()
 	{
-		std::shared_ptr<ListNode> node = std::shared_ptr<ListNode>();
+		std::shared_ptr<ListNode> node = std::make_shared<ListNode>();
 
 		node->Items.push_back(ConstructDictEntry());
 		while (m_Tokens->at(m_TokenIndex)->GetType() == TokenType::Comma)
@@ -515,7 +529,7 @@ namespace Spliwaca
 
 	std::shared_ptr<DictEntryNode> Parser::ConstructDictEntry()
 	{
-		std::shared_ptr<DictEntryNode> node = std::shared_ptr<DictEntryNode>();
+		std::shared_ptr<DictEntryNode> node = std::make_shared<DictEntryNode>();
 		node->left = ConstructBooleanExpr();
 		if (m_Tokens->at(m_TokenIndex)->GetType() == TokenType::DictEquator)
 		{
@@ -531,7 +545,7 @@ namespace Spliwaca
 
 	std::shared_ptr<BoolExprNode> Parser::ConstructBooleanExpr()
 	{
-		std::shared_ptr<BoolExprNode> node = std::shared_ptr<BoolExprNode>();
+		std::shared_ptr<BoolExprNode> node = std::make_shared<BoolExprNode>();
 		if (m_Tokens->at(m_TokenIndex)->GetType() == TokenType::Not)
 		{
 			node->exprType = 1;
@@ -560,7 +574,7 @@ namespace Spliwaca
 
 	std::shared_ptr<AddExprNode> Parser::ConstructAddExpr()
 	{
-		std::shared_ptr<AddExprNode> node = std::shared_ptr<AddExprNode>();
+		std::shared_ptr<AddExprNode> node = std::make_shared<AddExprNode>();
 		node->left = ConstructMulExpr();
 		TokenType type = m_Tokens->at(m_TokenIndex)->GetType();
 		if (type == TokenType::Plus || type == TokenType::Minus)
@@ -574,7 +588,7 @@ namespace Spliwaca
 
 	std::shared_ptr<MulExprNode> Parser::ConstructMulExpr()
 	{
-		std::shared_ptr<MulExprNode> node = std::shared_ptr<MulExprNode>();
+		std::shared_ptr<MulExprNode> node = std::make_shared<MulExprNode>();
 		node->left = ConstructDivModExpr();
 		TokenType type = m_Tokens->at(m_TokenIndex)->GetType();
 		if (type == TokenType::Multiply || type == TokenType::Divide)
@@ -588,7 +602,7 @@ namespace Spliwaca
 
 	std::shared_ptr<DivModExprNode> Parser::ConstructDivModExpr()
 	{
-		std::shared_ptr<DivModExprNode> node = std::shared_ptr<DivModExprNode>();
+		std::shared_ptr<DivModExprNode> node = std::make_shared<DivModExprNode>();
 		node->left = ConstructPower();
 		TokenType type = m_Tokens->at(m_TokenIndex)->GetType();
 		if (type == TokenType::Intdiv || type == TokenType::Modulo)
@@ -602,7 +616,7 @@ namespace Spliwaca
 
 	std::shared_ptr<PowerNode> Parser::ConstructPower()
 	{
-		std::shared_ptr<PowerNode> node = std::shared_ptr<PowerNode>();
+		std::shared_ptr<PowerNode> node = std::make_shared<PowerNode>();
 		node->left = ConstructFactor();
 		TokenType type = m_Tokens->at(m_TokenIndex)->GetType();
 		if (type == TokenType::Power)
@@ -616,7 +630,7 @@ namespace Spliwaca
 
 	std::shared_ptr<FactorNode> Parser::ConstructFactor()
 	{
-		std::shared_ptr<FactorNode> node = std::shared_ptr<FactorNode>();
+		std::shared_ptr<FactorNode> node = std::make_shared<FactorNode>();
 		TokenType type = m_Tokens->at(m_TokenIndex)->GetType();
 		if (type == TokenType::Plus || type == TokenType::Minus)
 		{
@@ -635,7 +649,7 @@ namespace Spliwaca
 
 	std::shared_ptr<AtomNode> Parser::ConstructAtom()
 	{
-		std::shared_ptr<AtomNode> node = std::shared_ptr<AtomNode>();
+		std::shared_ptr<AtomNode> node = std::make_shared<AtomNode>();
 		std::shared_ptr<Expr> firstExpr;
 		if (m_Tokens->at(m_TokenIndex)->GetType() == TokenType::LCurlyParen)
 		{
@@ -674,7 +688,7 @@ namespace Spliwaca
 
 	std::shared_ptr<CreateNode> Parser::ConstructCreate()
 	{
-		std::shared_ptr<CreateNode> node = std::shared_ptr<CreateNode>();
+		std::shared_ptr<CreateNode> node = std::make_shared<CreateNode>();
 		IncIndex();
 		node->createType = ConstructTypeNode();
 
@@ -691,7 +705,7 @@ namespace Spliwaca
 
 	std::shared_ptr<CastNode> Parser::ConstructCast()
 	{
-		std::shared_ptr<CastNode> node = std::shared_ptr<CastNode>();
+		std::shared_ptr<CastNode> node = std::make_shared<CastNode>();
 		IncIndex();
 		node->castType = ConstructTypeNode();
 		node->expr = ConstructExpr();
@@ -700,7 +714,7 @@ namespace Spliwaca
 
 	std::shared_ptr<AnonfNode> Parser::ConstructAnonFunc()
 	{
-		std::shared_ptr<AnonfNode> node = std::shared_ptr<AnonfNode>();
+		std::shared_ptr<AnonfNode> node = std::make_shared<AnonfNode>();
 		IncIndex();
 
 		if (m_Tokens->at(m_TokenIndex)->GetType() == TokenType::Takes)
@@ -757,7 +771,7 @@ namespace Spliwaca
 
 	std::shared_ptr<AnonpNode> Parser::ConstructAnonProc()
 	{
-		std::shared_ptr<AnonpNode> node = std::shared_ptr<AnonpNode>();
+		std::shared_ptr<AnonpNode> node = std::make_shared<AnonpNode>();
 		IncIndex();
 
 		if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::ReturnType)
@@ -811,7 +825,7 @@ namespace Spliwaca
 
 	std::shared_ptr<TypeNode> Parser::ConstructTypeNode()
 	{
-		std::shared_ptr<TypeNode> node = std::shared_ptr<TypeNode>();
+		std::shared_ptr<TypeNode> node = std::make_shared<TypeNode>();
 		if (m_Tokens->at(m_TokenIndex)->GetType() == TokenType::Type)
 		{
 			node->typeToken = m_Tokens->at(m_TokenIndex);
@@ -828,7 +842,8 @@ namespace Spliwaca
 
 	std::shared_ptr<IdentNode> Parser::ConstructIdentNode()
 	{
-		std::shared_ptr<IdentNode> node = std::shared_ptr<IdentNode>();
+		std::shared_ptr<IdentNode> node = std::make_shared<IdentNode>();
+
 		if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Identifier)
 		{
 			RegisterSyntaxError(SyntaxError(SyntaxErrorType::expIdent, m_Tokens->at(m_TokenIndex)));
@@ -838,6 +853,7 @@ namespace Spliwaca
 			node->ids.push_back(m_Tokens->at(m_TokenIndex));
 			IncIndex();
 		}
+
 		while (m_Tokens->at(m_TokenIndex)->GetType() == TokenType::VarAccessOp)
 		{
 			IncIndex();

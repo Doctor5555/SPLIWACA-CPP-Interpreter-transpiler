@@ -13,6 +13,9 @@
     <Filter Include="Spliwaca\src\Frontend\Lexer">
       <UniqueIdentifier>{0EC5A661-7AD2-D447-03B9-D0326FC5A0FE}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Spliwaca\src\Frontend\Parser">
+      <UniqueIdentifier>{5B97889F-4752-784B-F009-F195DCA3C2DB}</UniqueIdentifier>
+    </Filter>
     <Filter Include="vendor">
       <UniqueIdentifier>{B3738122-9F15-ACF8-88D0-BF4C74113349}</UniqueIdentifier>
     </Filter>
@@ -50,6 +53,15 @@
     </ClInclude>
     <ClInclude Include="Spliwaca\src\Frontend\Lexer\Token.h">
       <Filter>Spliwaca\src\Frontend\Lexer</Filter>
+    </ClInclude>
+    <ClInclude Include="Spliwaca\src\Frontend\Parser\Nodes.h">
+      <Filter>Spliwaca\src\Frontend\Parser</Filter>
+    </ClInclude>
+    <ClInclude Include="Spliwaca\src\Frontend\Parser\Parser.h">
+      <Filter>Spliwaca\src\Frontend\Parser</Filter>
+    </ClInclude>
+    <ClInclude Include="Spliwaca\src\Frontend\Parser\SyntaxError.h">
+      <Filter>Spliwaca\src\Frontend\Parser</Filter>
     </ClInclude>
     <ClInclude Include="Spliwaca\src\Log.h">
       <Filter>Spliwaca\src</Filter>
@@ -180,9 +192,6 @@
     <ClInclude Include="vendor\spdlog\include\spdlog\fmt\bundled\ranges.h">
       <Filter>vendor\spdlog\include\spdlog\fmt\bundled</Filter>
     </ClInclude>
-    <ClInclude Include="vendor\spdlog\include\spdlog\fmt\bundled\safe-duration-cast.h">
-      <Filter>vendor\spdlog\include\spdlog\fmt\bundled</Filter>
-    </ClInclude>
     <ClInclude Include="vendor\spdlog\include\spdlog\fmt\fmt.h">
       <Filter>vendor\spdlog\include\spdlog\fmt</Filter>
     </ClInclude>
@@ -237,6 +246,9 @@
     <ClInclude Include="vendor\spdlog\include\spdlog\sinks\ostream_sink.h">
       <Filter>vendor\spdlog\include\spdlog\sinks</Filter>
     </ClInclude>
+    <ClInclude Include="vendor\spdlog\include\spdlog\sinks\ringbuffer_sink.h">
+      <Filter>vendor\spdlog\include\spdlog\sinks</Filter>
+    </ClInclude>
     <ClInclude Include="vendor\spdlog\include\spdlog\sinks\rotating_file_sink-inl.h">
       <Filter>vendor\spdlog\include\spdlog\sinks</Filter>
     </ClInclude>
@@ -288,14 +300,13 @@
     <ClInclude Include="vendor\timing\Instrumentor.h">
       <Filter>vendor\timing</Filter>
     </ClInclude>
-    <ClInclude Include="Spliwaca\src\Frontend\Parser\Parser.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Spliwaca\src\Frontend\Lexer\Lexer.cpp">
       <Filter>Spliwaca\src\Frontend\Lexer</Filter>
     </ClCompile>
-    <ClCompile Include="Spliwaca\src\Frontend\Lexer\Token.cpp">
-      <Filter>Spliwaca\src\Frontend\Lexer</Filter>
+    <ClCompile Include="Spliwaca\src\Frontend\Parser\Parser.cpp">
+      <Filter>Spliwaca\src\Frontend\Parser</Filter>
     </ClCompile>
     <ClCompile Include="Spliwaca\src\Log.cpp">
       <Filter>Spliwaca\src</Filter>
@@ -303,6 +314,5 @@
     <ClCompile Include="Spliwaca\src\Main.cpp">
       <Filter>Spliwaca\src</Filter>
     </ClCompile>
-    <ClCompile Include="Spliwaca\src\Frontend\Parser\Parser.cpp" />
   </ItemGroup>
 </Project>

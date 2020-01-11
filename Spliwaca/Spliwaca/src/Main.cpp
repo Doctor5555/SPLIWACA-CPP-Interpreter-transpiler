@@ -5,6 +5,8 @@
 #include "Log.h"
 #include "Frontend/Lexer/Lexer.h"
 #include "Frontend/Lexer/LexicalError.h"
+#include "Frontend/Parser/Parser.h"
+#include "Frontend/Parser/SyntaxError.h"
 #include "UtilFunctions.h"
 
 using namespace Spliwaca;
@@ -106,30 +108,30 @@ int main()
 {
 	LOG_INIT();
 
-	std::chrono::microseconds timeStartMakeTokens;
-	std::chrono::microseconds timeEndMakeTokens;
+	//std::chrono::microseconds timeStartMakeTokens;
+	//std::chrono::microseconds timeEndMakeTokens;
 
-	std::chrono::microseconds timeStart;
-	std::chrono::microseconds timeEnd;
+	//std::chrono::microseconds timeStart;
+	//std::chrono::microseconds timeEnd;
 
-	Instrumentor::Get().BeginSession("Main");
-	InstrumentationTimer t("Main_function");
+	//Instrumentor::Get().BeginSession("Main");
+	//InstrumentationTimer t("Main_function");
 	//Compiler(Parser(Lexer()));
 	//Transpiler(Parser(Lexer()));
 	//Interpreter(Parser(Lexer()));
 	//Parser(Lexer());
 
-	timeStart = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch());
+	//timeStart = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch());
 	
 	std::shared_ptr<Lexer> lexer = Lexer::Create("c:/dev/epq spliwaca/test_script.splw");
-	SPLW_INFO("Created lexer!");
-	SPLW_WARN(mulString("h", 5));
+	SPLW_INFO("Created lexer.");
+	//SPLW_WARN(mulString("h", 5));
 	
-	timeStartMakeTokens = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch());
+	//timeStartMakeTokens = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch());
 	
 	std::shared_ptr<std::vector<std::shared_ptr<Token>>> tokens = lexer->MakeTokens();
 	
-	timeEndMakeTokens = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch());
+	//timeEndMakeTokens = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch());
 	for (LexicalError l : state.LexerErrors)
 	{
 		SPLW_CRITICAL("Lexical Error code {2} at line {0}, column {1}", l.GetLineNumber(), l.GetColumnNumber(), l.GetErrorCode());
@@ -138,6 +140,29 @@ int main()
 		std::cout << "\n";
 	}
 
+	if (state.LexerErrors.size() > 0)
+	{
+		SPLW_ERROR("Lexical errors present: cannot continue to parsing stage.");
+		system("PAUSE");
+		return -1;
+	}
+	else
+		SPLW_INFO("Finished constructing tokens.");
+
+	std::shared_ptr<Parser> parser = Parser::Create(tokens);
+	SPLW_INFO("Created Parser.");
+
+	std::shared_ptr<Spliwaca::EntryPoint> ast = parser->ConstructAST();
+
+	for (SyntaxError s : state.SyntaxErrors)
+	{
+		SPLW_CRITICAL("Syntax Error code {2} at line {0}, column {1}", s.GetLineNumber(), s.GetColumnNumber(), s.GetErrorCode());
+		SPLW_WARN("{0}", lexer->GetSplitFileString().at(s.GetLineNumber()));
+		SPLW_WARN("{0}{1}", mulString(" ", s.GetColumnNumber() - 1), mulString("^", s.GetColumnSpan()));
+		std::cout << "\n";
+	}
+
+	/*
 	{
 		PROFILE_SCOPE("Main_Output");
 		int lineCount = lexer->GetSplitFileString().size();
@@ -160,15 +185,16 @@ int main()
 
 		std::cout << secondReconstruction << "\n";
 	}
+	*/
 
-	SPLW_WARN("FINISHED OUTPUT!");
-	timeEnd = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch());
+	//SPLW_WARN("FINISHED OUTPUT!");
+	//timeEnd = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch());
 
-	t.Stop();
-	Instrumentor::Get().EndSession();
+	//t.Stop();
+	//Instrumentor::Get().EndSession();
 
-	std::cout << "MakeTokens time taken: " << (timeEndMakeTokens - timeStartMakeTokens).count() << "\n";
-	std::cout << "Main time taken: " << (timeEnd - timeStart).count() << "\n";
+	//std::cout << "MakeTokens time taken: " << (timeEndMakeTokens - timeStartMakeTokens).count() << "\n";
+	//std::cout << "Main time taken: " << (timeEnd - timeStart).count() << "\n";
 
 	system("PAUSE");
 	return 0;

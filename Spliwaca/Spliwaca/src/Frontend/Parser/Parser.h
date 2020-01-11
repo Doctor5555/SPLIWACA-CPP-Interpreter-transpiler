@@ -9,7 +9,7 @@ namespace Spliwaca
 	class Parser
 	{
 	public:
-		std::shared_ptr<Parser> Create(std::shared_ptr<std::vector<std::shared_ptr<Token>>> tokens);
+		static std::shared_ptr<Parser> Create(std::shared_ptr<std::vector<std::shared_ptr<Token>>> tokens);
 		~Parser() = default;
 
 		std::shared_ptr<EntryPoint> ConstructAST();
