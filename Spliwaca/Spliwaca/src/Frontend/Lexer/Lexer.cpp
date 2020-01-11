@@ -10,6 +10,19 @@
 
 namespace Spliwaca
 {
+	template<typename T>
+	bool itemInVect(const std::vector<T>& v, T t)
+	{
+		for (T e : v)
+		{
+			if (e == t)
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+
 	std::shared_ptr<Lexer> Lexer::Create(std::string file)
 	{
 		return std::shared_ptr<Lexer>(new Lexer(file));
@@ -232,8 +245,8 @@ namespace Spliwaca
 		{
 			PROFILE_SCOPE("MakeTokens_While_loop");
 			char c = s[i];
-			std::string duo = std::string(1, c); (i < s.size() - 1) ? duo.append(std::string(1, s[i + (int)1])) : duo.append("");
-			std::string trio = std::string(1, c); (i < s.size() - 1) ? trio.append(std::string(1, s[i + (int)1])) : trio.append(""); (i < s.size() - 2) ? trio.append(std::string(1, s[i + 2])) : trio.append("");
+			std::string duo = std::string(1, c); (i < s.size() - 1) ? duo.append(std::string(1, s[i + 1])) : duo.append("");
+			std::string trio = std::string(1, c); (i < s.size() - 1) ? trio.append(std::string(1, s[i + 1])) : trio.append(""); (i < s.size() - 2) ? trio.append(std::string(1, s[i + 2])) : trio.append("");
 			
 			if (itemInVect(splitTrioStrings, trio))
 			{
