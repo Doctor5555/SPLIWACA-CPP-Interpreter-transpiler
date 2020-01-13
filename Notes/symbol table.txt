@@ -1,0 +1,26 @@
+What do I need a symbol table for?
+
+Provide a list of symbols in each function or struct.
+
+A symbol should say when it is created.
+Since variables cannot be created halfway through a line - SET is a statement only - this only needs to be a line number. We can pull this from the token when we create a variable.
+This should be the SET statement.
+
+PROCEDURE print TAKES STR a AS
+	SET cout TO CALL open WITH "std::cout"
+	CALL cout.write WITH a
+END PROCEDURE
+
+SET a TO 5
+INPUT b ">> "
+IF b < a DO
+	SET a TO "Hello World"
+ELSE DO
+	SET a TO 5+16i
+END IF
+
+CALL print WITH a
+
+python:
+def print(a):
+	assert isinstance(a, str)
