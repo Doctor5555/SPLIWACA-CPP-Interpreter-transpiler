@@ -300,6 +300,7 @@
     <ClInclude Include="vendor\timing\Instrumentor.h">
       <Filter>vendor\timing</Filter>
     </ClInclude>
+    <ClInclude Include="Spliwaca\src\Frontend\Scopes\Scope.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Spliwaca\src\Frontend\Lexer\Lexer.cpp">

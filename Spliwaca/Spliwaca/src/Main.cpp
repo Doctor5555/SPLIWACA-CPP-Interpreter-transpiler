@@ -162,7 +162,17 @@ int main()
 		std::cout << "\n";
 	}
 
+	if (state.SyntaxErrors.size() > 0)
+	{
+		SPLW_ERROR("Syntax errors present: cannot continue to semantic analysis stage.");
+		system("PAUSE");
+		return -1;
+	}
+	else
+		SPLW_INFO("Finished syntax analysis.");
+
 	
+	/*
 	{
 		//PROFILE_SCOPE("Main_Output");
 		int lineCount = lexer->GetSplitFileString().size();
@@ -185,7 +195,7 @@ int main()
 
 		//std::cout << secondReconstruction << "\n";
 	}
-	
+	*/
 
 	//SPLW_WARN("FINISHED OUTPUT!");
 	//timeEnd = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch());

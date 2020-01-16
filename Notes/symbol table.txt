@@ -7,8 +7,9 @@ Since variables cannot be created halfway through a line - SET is a statement on
 This should be the SET statement.
 
 PROCEDURE print TAKES STR a AS
-	SET cout TO CALL open WITH "std::cout"
+	SET cout TO CALL open WITH "stdout"
 	CALL cout.write WITH a
+	CALL cout.close
 END PROCEDURE
 
 SET a TO 5
@@ -22,5 +23,18 @@ END IF
 CALL print WITH a
 
 python:
+
 def print(a):
-	assert isinstance(a, str)
+	assert isinstance(a, str), "ValueError: a must be a string, not anything else."
+	cout = open("stdout")
+	cout.write(a)
+	cout.close()
+a = 5
+b = input(">> ")
+if b < a:
+	a = "Hello World"
+else:
+	a = 5+16j
+print(a)
+
+Or do we not allow ambiguity?

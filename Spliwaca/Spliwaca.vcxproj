@@ -136,6 +136,7 @@
     <ClInclude Include="Spliwaca\src\Frontend\Parser\Nodes.h" />
     <ClInclude Include="Spliwaca\src\Frontend\Parser\Parser.h" />
     <ClInclude Include="Spliwaca\src\Frontend\Parser\SyntaxError.h" />
+    <ClInclude Include="Spliwaca\src\Frontend\Scopes\Scope.h" />
     <ClInclude Include="Spliwaca\src\Log.h" />
     <ClInclude Include="Spliwaca\src\UtilFunctions.h" />
     <ClInclude Include="vendor\spdlog\include\spdlog\async.h" />
