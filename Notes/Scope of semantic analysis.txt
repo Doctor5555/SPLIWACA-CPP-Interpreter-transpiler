@@ -1,0 +1,8 @@
+Semantic analysis is required to find errors such as 
+    Type mismatch
+    Undeclared variable
+    Reserved identifier misuse.
+    Multiple declaration of variable in a scope.
+    Accessing an out of scope variable.
+    Actual and formal parameter mismatch.
+However in SPLIWACA only Accessing an out of scope variable is a true error to be found in the semantic analysis stage - Reserved identifiers are handled in syntax analysis, type mismatch is handled by an assert isinstance in code generation, undefined variables are handled as per spec and variables are not declared so cannot be declared multiple times.
