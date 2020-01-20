@@ -3,6 +3,7 @@
 #include <vector>
 #include "Frontend/Lexer/Token.h"
 #include "Nodes.h"
+#include "Frontend/Scopes/Scope.h"
 
 namespace Spliwaca
 {
@@ -17,6 +18,17 @@ namespace Spliwaca
 	private:
 		inline uint32_t IncIndex() { m_TokenIndex++; return m_TokenIndex; }
 
+		Parser(std::shared_ptr<std::vector<std::shared_ptr<Token>>> tokens)
+			: m_Tokens(tokens), m_TokenIndex(0) { }
+
+		std::shared_ptr<std::vector<std::shared_ptr<Token>>> m_Tokens;
+		uint32_t m_TokenIndex;
+
+		std::shared_ptr<Scope> m_MainScope;
+		std::vector<std::shared_ptr<Scope>> m_ScopeStack;
+		std::shared_ptr<Scope> m_CurrentScope;
+
+	private:
 		std::shared_ptr<RequireNode> ConstructRequire();
 		std::shared_ptr<Statements> ConstructStatements();
 		std::shared_ptr<Statement> ConstructStatement();
@@ -56,10 +68,5 @@ namespace Spliwaca
 		std::shared_ptr<TypeNode> ConstructTypeNode();
 		std::shared_ptr<IdentNode> ConstructIdentNode();
 
-		Parser(std::shared_ptr<std::vector<std::shared_ptr<Token>>> tokens)
-			: m_Tokens(tokens), m_TokenIndex(0) { }
-
-		std::shared_ptr<std::vector<std::shared_ptr<Token>>> m_Tokens;
-		uint32_t m_TokenIndex;
 	};
 }
