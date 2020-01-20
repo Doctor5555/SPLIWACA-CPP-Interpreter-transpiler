@@ -16,6 +16,9 @@
     <Filter Include="Spliwaca\src\Frontend\Parser">
       <UniqueIdentifier>{5B97889F-4752-784B-F009-F195DCA3C2DB}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Spliwaca\src\Frontend\Scopes">
+      <UniqueIdentifier>{5B90AAA6-474B-9A52-F002-139DDC9CE4E2}</UniqueIdentifier>
+    </Filter>
     <Filter Include="vendor">
       <UniqueIdentifier>{B3738122-9F15-ACF8-88D0-BF4C74113349}</UniqueIdentifier>
     </Filter>
@@ -62,6 +65,9 @@
     </ClInclude>
     <ClInclude Include="Spliwaca\src\Frontend\Parser\SyntaxError.h">
       <Filter>Spliwaca\src\Frontend\Parser</Filter>
+    </ClInclude>
+    <ClInclude Include="Spliwaca\src\Frontend\Scopes\Scope.h">
+      <Filter>Spliwaca\src\Frontend\Scopes</Filter>
     </ClInclude>
     <ClInclude Include="Spliwaca\src\Log.h">
       <Filter>Spliwaca\src</Filter>
@@ -192,6 +198,9 @@
     <ClInclude Include="vendor\spdlog\include\spdlog\fmt\bundled\ranges.h">
       <Filter>vendor\spdlog\include\spdlog\fmt\bundled</Filter>
     </ClInclude>
+    <ClInclude Include="vendor\spdlog\include\spdlog\fmt\bundled\safe-duration-cast.h">
+      <Filter>vendor\spdlog\include\spdlog\fmt\bundled</Filter>
+    </ClInclude>
     <ClInclude Include="vendor\spdlog\include\spdlog\fmt\fmt.h">
       <Filter>vendor\spdlog\include\spdlog\fmt</Filter>
     </ClInclude>
@@ -246,9 +255,6 @@
     <ClInclude Include="vendor\spdlog\include\spdlog\sinks\ostream_sink.h">
       <Filter>vendor\spdlog\include\spdlog\sinks</Filter>
     </ClInclude>
-    <ClInclude Include="vendor\spdlog\include\spdlog\sinks\ringbuffer_sink.h">
-      <Filter>vendor\spdlog\include\spdlog\sinks</Filter>
-    </ClInclude>
     <ClInclude Include="vendor\spdlog\include\spdlog\sinks\rotating_file_sink-inl.h">
       <Filter>vendor\spdlog\include\spdlog\sinks</Filter>
     </ClInclude>
@@ -300,7 +306,6 @@
     <ClInclude Include="vendor\timing\Instrumentor.h">
       <Filter>vendor\timing</Filter>
     </ClInclude>
-    <ClInclude Include="Spliwaca\src\Frontend\Scopes\Scope.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Spliwaca\src\Frontend\Lexer\Lexer.cpp">

@@ -180,6 +180,7 @@
     <ClInclude Include="vendor\spdlog\include\spdlog\fmt\bundled\posix.h" />
     <ClInclude Include="vendor\spdlog\include\spdlog\fmt\bundled\printf.h" />
     <ClInclude Include="vendor\spdlog\include\spdlog\fmt\bundled\ranges.h" />
+    <ClInclude Include="vendor\spdlog\include\spdlog\fmt\bundled\safe-duration-cast.h" />
     <ClInclude Include="vendor\spdlog\include\spdlog\fmt\fmt.h" />
     <ClInclude Include="vendor\spdlog\include\spdlog\fmt\ostr.h" />
     <ClInclude Include="vendor\spdlog\include\spdlog\formatter.h" />
@@ -198,7 +199,6 @@
     <ClInclude Include="vendor\spdlog\include\spdlog\sinks\msvc_sink.h" />
     <ClInclude Include="vendor\spdlog\include\spdlog\sinks\null_sink.h" />
     <ClInclude Include="vendor\spdlog\include\spdlog\sinks\ostream_sink.h" />
-    <ClInclude Include="vendor\spdlog\include\spdlog\sinks\ringbuffer_sink.h" />
     <ClInclude Include="vendor\spdlog\include\spdlog\sinks\rotating_file_sink-inl.h" />
     <ClInclude Include="vendor\spdlog\include\spdlog\sinks\rotating_file_sink.h" />
     <ClInclude Include="vendor\spdlog\include\spdlog\sinks\sink-inl.h" />

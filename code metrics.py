@@ -4,7 +4,7 @@ import re
 
 class File:
     def __init__(
-        this,
+        self,
         lines,
         includes,
         comments,
@@ -15,18 +15,18 @@ class File:
         l_whitespace,
         filename,
     ):
-        this.lines = str(lines)
-        this.includes = str(includes)
-        this.comments = str(comments)
-        this.whitespace = str(whitespace)
-        this.actual_lines = str(
-            int(this.lines) - int(this.whitespace) - int(this.comments)
+        self.lines = str(lines)
+        self.includes = str(includes)
+        self.comments = str(comments)
+        self.whitespace = str(whitespace)
+        self.actual_lines = str(
+            int(self.lines) - int(self.whitespace) - int(self.comments)
         )
-        this.l_lines = l_lines
-        this.l_includes = l_includes
-        this.l_comments = l_comments
-        this.l_whitespace = l_whitespace
-        this.filename = filename
+        self.l_lines = l_lines
+        self.l_includes = l_includes
+        self.l_comments = l_comments
+        self.l_whitespace = l_whitespace
+        self.filename = filename
 
 
 def calculateMetrics(lines, filename):
@@ -36,9 +36,6 @@ def calculateMetrics(lines, filename):
     multi_line_comment = False
 
     for line in lines:
-        if lines.index(line) == 137:
-            # print(line)
-            pass
         line_no_tabs = re.sub("[\t]", "", line)
         if line_no_tabs.startswith("//") and not multi_line_comment:
             comments.append(line)
@@ -59,9 +56,6 @@ def calculateMetrics(lines, filename):
                 includes.append(line)
             if not re.search("[a-zA-Z]", line) or line == "#pragma once":
                 whitespace.append(line)
-                if lines.index(line) == 137:
-                    # print(line)
-                    pass
 
     file = File(
         len(lines),
@@ -80,7 +74,7 @@ def calculateMetrics(lines, filename):
 
 def Str(Int: int, Len: int):
     Str = str(Int)
-    for i in range(Len - len(Str)):
+    for _ in range(Len - len(Str)):
         Str = " " + Str
     return Str
 

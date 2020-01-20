@@ -10,7 +10,7 @@ namespace Spliwaca
 	std::shared_ptr<spdlog::logger> Log::s_ClientLogger;
 
 	void Log::Init() {
-		spdlog::set_pattern("%^[%T] %n: %v%$");
+		spdlog::set_pattern("%^[%H:%M:%S:%f] %n: %v%$");
 
 		s_CoreLogger = spdlog::stdout_color_mt("Supernova");
 		s_CoreLogger->set_level(spdlog::level::trace);

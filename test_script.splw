@@ -1,3 +1,22 @@
 REQUIRE python
 
-SET a TO 5
+// This is the test script. It contains a demonstration
+// of every feature of the language.
+
+/*
+Multiline comments
+*/
+
+// INPUT:
+INPUT POS INT a
+INPUT NONZERO INT b
+INPUT STRING my_string
+INPUT COMPLEX cmplx
+
+// OUTPUT:
+OUTPUT Inputted complex number: $cmplx
+
+FUNCION func RETURNS INT AS
+	RETURN a
+END FUNCTION
+
