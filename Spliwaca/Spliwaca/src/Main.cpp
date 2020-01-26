@@ -12,10 +12,20 @@
 using namespace Spliwaca;
 
 //------------------------------------- UtilFunctions utility function definitions -------------------------------
+struct MissingVariable
+{
+	uint32_t lineNumber;
+	uint32_t columnNumber;
+
+	MissingVariable(uint32_t lineNumber, uint32_t columnNumber)
+		: lineNumber(lineNumber), columnNumber(columnNumber) { }
+};
+
 struct State
 {
 	std::vector<LexicalError> LexerErrors;
 	std::vector<SyntaxError> SyntaxErrors;
+	std::vector<MissingVariable> MissingVariables;
 };
 State state = State();
 
@@ -31,8 +41,16 @@ int RegisterSyntaxError(SyntaxError e)
 	return 1;
 }
 
+int RegisterMissingVariable(uint32_t lineNumber, uint32_t columnNumber)
+{
+	state.MissingVariables.push_back(MissingVariable(lineNumber, columnNumber));
+	return 1;
+}
+
 std::string mulString(std::string s, int i)
 {
+	if (i <= 0)
+		return "";
 	std::string init = s;
 	for (size_t j = 0; j < i; j++)
 	{
@@ -148,6 +166,20 @@ int main()
 	}
 	else
 		SPLW_INFO("Finished constructing tokens.");
+	
+	int i = 0;
+	for (std::shared_ptr<Token> t : *tokens)
+	{
+		if (t->GetContents() == "\n")
+			SPLW_TRACE("Token {0}: {1},{2} type: {3}, contents: {4}", i, t->GetLineNumber(), t->GetCharacterNumber(), TokenTypeName(t->GetType()), "\\n");//, mulString(" ", 3 - std::to_string(i).size()), mulString(" ", numDigits(lineCount) - std::to_string(t->GetLineNumber()).size()), mulString(" ", 3 - std::to_string(t->GetCharacterNumber()).size()), mulString(" ", 16 - TokenTypeName(t->GetType()).size()));
+		else if (t->GetContents() == "\t")
+			SPLW_TRACE("Token {0}: {1},{2} type: {3}, contents: {4}", i, t->GetLineNumber(), t->GetCharacterNumber(), TokenTypeName(t->GetType()), "\\t");//, mulString(" ", 3 - std::to_string(i).size()), mulString(" ", numDigits(lineCount) - std::to_string(t->GetLineNumber()).size()), mulString(" ", 3 - std::to_string(t->GetCharacterNumber()).size()), mulString(" ", 16 - TokenTypeName(t->GetType()).size()));
+		else if (t->GetContents() == "\f")
+			SPLW_TRACE("Token {0}: {1},{2} type: {3}, contents: {4}", i, t->GetLineNumber(), t->GetCharacterNumber(), TokenTypeName(t->GetType()), "\\f");//, mulString(" ", 3 - std::to_string(i).size()), mulString(" ", numDigits(lineCount) - std::to_string(t->GetLineNumber()).size()), mulString(" ", 3 - std::to_string(t->GetCharacterNumber()).size()), mulString(" ", 16 - TokenTypeName(t->GetType()).size()));
+		else
+			SPLW_TRACE("Token {0}: {1},{2} type: {3}, contents: {4}", i, t->GetLineNumber(), t->GetCharacterNumber(), TokenTypeName(t->GetType()), t->GetContents());//, mulString(" ", 3 - std::to_string(i).size()), mulString(" ", numDigits(lineCount) - std::to_string(t->GetLineNumber()).size()), mulString(" ", 3 - std::to_string(t->GetCharacterNumber()).size()), mulString(" ", 16 - TokenTypeName(t->GetType()).size()));
+		i++;
+	}
 
 	std::shared_ptr<Parser> parser = Parser::Create(tokens);
 	SPLW_INFO("Created Parser.");

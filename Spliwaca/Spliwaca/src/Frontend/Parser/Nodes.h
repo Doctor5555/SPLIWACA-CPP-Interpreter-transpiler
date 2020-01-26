@@ -1,6 +1,7 @@
 #pragma once
 #include <memory>
 #include <vector>
+#include <string>
 #include "Frontend/Lexer/Token.h"
 
 namespace Spliwaca
@@ -9,9 +10,41 @@ namespace Spliwaca
 	struct Expr;
 	struct AtomNode;
 	struct CallNode;
-	struct IdentNode;
 	struct BoolExprNode;
 	struct MulExprNode;
+
+	class IdentNode
+	{
+	public:
+
+		std::vector<std::shared_ptr<Token>> ids;
+
+		std::string GetContents()
+		{
+			std::string rv = ids.at(0)->GetContents();
+			for (size_t i = 1; i < ids.size(); i++)
+			{
+				rv.append(".");
+				rv.append(ids.at(i)->GetContents());
+			}
+			return rv;
+		}
+
+		uint32_t GetLineNumber()
+		{
+			return ids.at(0)->GetLineNumber();
+		}
+		uint32_t GetColumnNumber()
+		{
+			return ids.at(0)->GetCharacterNumber();
+		}
+
+		IdentNode()
+		{
+		}
+
+		~IdentNode() = default;
+	};
 
 	struct TypeNode
 	{
@@ -52,11 +85,6 @@ namespace Spliwaca
 		std::shared_ptr<BoolExprNode> left;
 		std::shared_ptr<BoolExprNode> right;
 		bool hasRight;
-	};
-
-	struct IdentNode
-	{
-		std::vector<std::shared_ptr<Token>> ids;
 	};
 
 	struct ListNode

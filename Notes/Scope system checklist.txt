@@ -1,0 +1,13 @@
+
+FUNCTION //
+PROCEDURE //
+ANONF //
+ANONP //
+IF //
+WHILE //
+FOR //
+STRUCT //
+
+/// All necessary symbols added
+//  Complete scope init
+/   Started

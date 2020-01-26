@@ -28,6 +28,12 @@ namespace Spliwaca
 		expEndStruct,
 		expTypeMod,
 		tooManyElse,
+		unexpEndFunc,
+		unexpEndProc,
+		unexpEndIf,
+		unexpEndFor,
+		unexpEndWhile,
+		unexpEndStruct
 	};
 
 	class SyntaxError
