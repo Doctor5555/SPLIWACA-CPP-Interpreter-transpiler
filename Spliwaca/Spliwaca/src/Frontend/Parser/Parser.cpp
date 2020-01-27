@@ -25,6 +25,8 @@ namespace Spliwaca
 	{
 		std::shared_ptr<EntryPoint> ep = std::make_shared<EntryPoint>();
 		m_MainScope = std::make_shared<Scope>("Main", 0, ScopeType::Main);
+		m_CurrentScope = m_MainScope;
+		m_ScopeStack.push_back(m_MainScope);
 
 		ep->require = ConstructRequire();
 
@@ -108,6 +110,10 @@ namespace Spliwaca
 				{
 					RegisterSyntaxError(SyntaxError(SyntaxErrorType::unexpEndStruct, m_Tokens->at(m_TokenIndex)));
 				}
+				else
+				{
+					return statements;
+				}
 			}
 			else if (currTokType == TokenType::Else)
 			{
@@ -115,7 +121,11 @@ namespace Spliwaca
 				ScopeType currentScopeType = m_CurrentScope->GetType();
 				if (nextTokType == TokenType::If && currentScopeType != ScopeType::If)
 				{
-
+					RegisterSyntaxError(SyntaxError(SyntaxErrorType::unexpElseIf, m_Tokens->at(m_TokenIndex)));
+				}
+				else
+				{
+					return statements;
 				}
 			}
 
@@ -237,9 +247,7 @@ namespace Spliwaca
 	std::shared_ptr<SetNode> Parser::ConstructSet()
 	{
 		std::shared_ptr<SetNode> node = std::make_shared<SetNode>();
-
 		IncIndex();
-
 		node->id = ConstructIdentNode();
 
 		if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::To)
@@ -250,7 +258,42 @@ namespace Spliwaca
 			IncIndex();
 
 		node->expr = ConstructExpr();
+		VarType varType;
+		switch (node->expr->exprType)
+		{
+		case 1:
+		{
+			if (node->expr->listNode->Items.size() > 1 || node->expr->listNode->Items.at(0)->hasRight)
+			{
+				varType = VarType::List;
+			}
+			else
+			{
+				if (node->expr->listNode->Items.at(0)->left->right != nullptr)
+				{
+					varType = VarType::Bool;
+				}
+				else
+				{
+					auto atom = node->expr->listNode->Items.at(0)->left->left->left->left->left->left->right;
+					while (atom->expression)
+					{
+						atom = atom->expression->listNode->Items.at(0)->left->left->left->left->left->left->right;
+					}
+					if (atom->ident != nullptr)
+					{
+						varType = m_CurrentScope->FindIdent(atom->ident)->GetSymbolType();
+					}
+					else if (atom->token->GetType() == TokenType::Int)
+					{
 
+					}
+				}
+			}
+		}
+		}
+
+		m_CurrentScope->AddEntry(node->id->GetContents(), node->id->GetLineNumber(), node->expr->GetExprReturnType());
 		return node;
 	}
 
@@ -281,9 +324,10 @@ namespace Spliwaca
 				node->type = ConstructTypeNode();
 			}
 		}
-		IncIndex();
+		//IncIndex();
 
 		node->id = ConstructIdentNode();
+		m_CurrentScope->AddEntry(node->id->GetContents(), node->id->GetLineNumber());
 
 		return node;
 	}
@@ -299,6 +343,7 @@ namespace Spliwaca
 		else
 		{
 			node->raw = m_Tokens->at(m_TokenIndex);
+			IncIndex();
 		}
 		return node;
 	}
@@ -422,7 +467,6 @@ namespace Spliwaca
 
 		if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Newline)
 		{
-			IncIndex();
 			if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::With)
 			{
 				RegisterSyntaxError(SyntaxError(SyntaxErrorType::expWith, m_Tokens->at(m_TokenIndex)));
@@ -461,10 +505,9 @@ namespace Spliwaca
 		if (m_Tokens->at(m_TokenIndex)->GetType() == TokenType::Takes)
 		{
 			IncIndex();
-
 			node->argTypes.push_back(ConstructTypeNode());
-
 			node->argNames.push_back(ConstructIdentNode());
+			m_CurrentScope->AddEntry(node->argNames.back()->GetContents(), node->argNames.back()->GetLineNumber());
 
 			while (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::ReturnType)
 			{
@@ -474,10 +517,9 @@ namespace Spliwaca
 				}
 				else
 					IncIndex();
-
 				node->argTypes.push_back(ConstructTypeNode());
-
 				node->argNames.push_back(ConstructIdentNode());
+				m_CurrentScope->AddEntry(node->argNames.back()->GetContents(), node->argNames.back()->GetLineNumber());
 			}
 		}
 
@@ -535,10 +577,9 @@ namespace Spliwaca
 			}
 			else
 				IncIndex();
-
 			node->argTypes.push_back(ConstructTypeNode());
-
 			node->argNames.push_back(ConstructIdentNode());
+			m_CurrentScope->AddEntry(node->argNames.back()->GetContents(), node->argNames.back()->GetLineNumber());
 
 			while (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::ReturnType)
 			{
@@ -548,11 +589,9 @@ namespace Spliwaca
 				}
 				else
 					IncIndex();
-
 				node->argTypes.push_back(ConstructTypeNode());
-
 				node->argNames.push_back(ConstructIdentNode());
-
+				m_CurrentScope->AddEntry(node->argNames.back()->GetContents(), node->argNames.back()->GetLineNumber());
 			}
 		}
 
@@ -838,7 +877,7 @@ namespace Spliwaca
 		{
 			std::vector<TokenType> acceptedAtomTokenTypes = { TokenType::String, TokenType::Raw, TokenType::Int, TokenType::Float, TokenType::Complex, TokenType::Identifier };
 			TokenType type = m_Tokens->at(m_TokenIndex)->GetType();
-			if (!itemInVect(acceptedAtomTokenTypes, m_Tokens->at(m_TokenIndex)->GetType()))
+			if (!itemInVect(acceptedAtomTokenTypes, type))
 			{
 				//If it doesn't start with an ident, then it isn't an identifier, and if it isn't any of the others, then it must be an error
 				RegisterSyntaxError(SyntaxError(SyntaxErrorType::expAtom, m_Tokens->at(m_TokenIndex)));
@@ -851,7 +890,7 @@ namespace Spliwaca
 				//           they need to be specially declared and placed in a global scope? main scope = global scope, scope state -> global variables
 				// it is NOT an error to reference a variable from a previous scope before defining it in the current scope - different to python behaviour 
 				// w/ functions
-				if (m_CurrentScope->FindIdent(ident->GetContents()) || m_MainScope->FindIdent(ident->GetContents()))
+				if (m_CurrentScope->FindIdent(ident) || m_MainScope->FindIdent(ident))
 				{
 					node->ident = ident;
 					node->type = 3;
@@ -917,10 +956,9 @@ namespace Spliwaca
 		if (m_Tokens->at(m_TokenIndex)->GetType() == TokenType::Takes)
 		{
 			IncIndex();
-
 			node->argTypes.push_back(ConstructTypeNode());
-
 			node->argNames.push_back(ConstructIdentNode());
+			m_CurrentScope->AddEntry(node->argNames.back()->GetContents(), node->argNames.back()->GetLineNumber());
 
 			while (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::ReturnType)
 			{
@@ -930,10 +968,9 @@ namespace Spliwaca
 				}
 				else
 					IncIndex();
-
 				node->argTypes.push_back(ConstructTypeNode());
-
 				node->argNames.push_back(ConstructIdentNode());
+				m_CurrentScope->AddEntry(node->argNames.back()->GetContents(), node->argNames.back()->GetLineNumber());
 			}
 		}
 

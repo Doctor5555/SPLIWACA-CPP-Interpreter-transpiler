@@ -16,7 +16,8 @@ INPUT COMPLEX cmplx
 // OUTPUT:
 OUTPUT Inputted complex number: $cmplx
 
-FUNCION func RETURNS INT AS
+FUNCTION func TAKES INT a RETURNS INT AS
 	RETURN a
 END FUNCTION
 
+SET c TO CALL func WITH a

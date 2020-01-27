@@ -5,35 +5,36 @@ namespace Spliwaca
 {
 	enum class SyntaxErrorType : uint8_t
 	{
-		expNewline = 0,
-		expIdent,
-		expStatement,
-		expAtom,
-		expType,
-		expComma,
-		expRParen,
-		expDo,
-		expTo,
-		expOf,
-		expWith,
-		expTakes,
-		expReturns,
-		expAs,
-		expRaw,
-		expEndIf,
-		expEndFor,
-		expEndWhile,
-		expEndFunc,
-		expEndProc,
-		expEndStruct,
-		expTypeMod,
-		tooManyElse,
-		unexpEndFunc,
-		unexpEndProc,
-		unexpEndIf,
-		unexpEndFor,
-		unexpEndWhile,
-		unexpEndStruct
+		expNewline = 0, // 0
+		expIdent,       // 1
+		expStatement,   // 2
+		expAtom,        // 3
+		expType,        // 4
+		expComma,       // 5
+		expRParen,      // 6
+		expDo,	        // 7
+		expTo,	        // 8
+		expOf,	        // 9
+		expWith,        // 10
+		expTakes,       // 11
+		expReturns,     // 12
+		expAs,	        // 13
+		expRaw,	        // 14
+		expEndIf,       // 15
+		expEndFor,      // 16
+		expEndWhile,    // 17
+		expEndFunc,	    // 18
+		expEndProc,	    // 19
+		expEndStruct,   // 20
+		expTypeMod,	    // 21
+		tooManyElse,    // 22
+		unexpEndFunc,   // 23
+		unexpEndProc,   // 24
+		unexpEndIf,	    // 25
+		unexpEndFor,    // 26
+		unexpEndWhile,  // 27
+		unexpEndStruct, // 28
+		unexpElseIf	    // 29
 	};
 
 	class SyntaxError

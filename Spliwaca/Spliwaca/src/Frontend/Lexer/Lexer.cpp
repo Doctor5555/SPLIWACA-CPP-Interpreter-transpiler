@@ -48,6 +48,7 @@ namespace Spliwaca
 		else
 		{
 			SPLW_ERROR("Could not open source file: {0}", m_FileLocation);
+			system("PAUSE");
 			exit(2);
 		}
 
@@ -217,7 +218,7 @@ namespace Spliwaca
 				{
 					//Error unexpected characters.
 					SPLW_ERROR("Lexical Error: Unexpected characters: {0}", tokenContents);
-					RegisterLexicalError(LexicalError(0, m_LineNumber, m_ColumnNumber, tokenContents.size()));
+					RegisterLexicalError(0, m_LineNumber, m_ColumnNumber, tokenContents.size());
 				}
 			}
 		}

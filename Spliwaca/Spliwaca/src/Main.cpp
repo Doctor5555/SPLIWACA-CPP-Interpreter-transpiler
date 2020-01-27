@@ -12,13 +12,18 @@
 using namespace Spliwaca;
 
 //------------------------------------- UtilFunctions utility function definitions -------------------------------
-struct MissingVariable
+class MissingVariable
 {
 	uint32_t lineNumber;
 	uint32_t columnNumber;
 
+public:
 	MissingVariable(uint32_t lineNumber, uint32_t columnNumber)
 		: lineNumber(lineNumber), columnNumber(columnNumber) { }
+
+	uint32_t GetLineNumber() const { return lineNumber; }
+	uint32_t GetColumnNumber() const { return columnNumber; }
+	uint32_t GetColumnSpan() const { return 1; }
 };
 
 struct State
@@ -29,21 +34,21 @@ struct State
 };
 State state = State();
 
-int RegisterLexicalError(LexicalError e)
+int RegisterLexicalError(uint8_t errorCode, uint32_t lineNumber, uint32_t columnNumber, uint16_t columnSpan = 1)
 {
-	state.LexerErrors.push_back(e);
+	state.LexerErrors.push_back({errorCode, lineNumber, columnNumber, columnSpan});
 	return 1;
 }
 
-int RegisterSyntaxError(SyntaxError e)
+int RegisterSyntaxError(SyntaxErrorType type, std::shared_ptr<Token> token)
 {
-	state.SyntaxErrors.push_back(e);
+	state.SyntaxErrors.push_back({type, token});
 	return 1;
 }
 
-int RegisterMissingVariable(uint32_t lineNumber, uint32_t columnNumber)
+int RegisterSemanticsError(uint32_t lineNumber, uint32_t columnNumber)
 {
-	state.MissingVariables.push_back(MissingVariable(lineNumber, columnNumber));
+	state.SemanticErrors.push_back(MissingVariable(lineNumber, columnNumber));
 	return 1;
 }
 
@@ -196,13 +201,30 @@ int main()
 
 	if (state.SyntaxErrors.size() > 0)
 	{
-		SPLW_ERROR("Syntax errors present: cannot continue to semantic analysis stage.");
-		system("PAUSE");
-		return -1;
+		SPLW_ERROR("Syntax errors present: cannot continue to next stage.");
+		if (state.MissingVariables.size() == 0)
+		{
+			system("PAUSE");
+			return -1;
+		}
 	}
 	else
 		SPLW_INFO("Finished syntax analysis.");
 
+	for (MissingVariable m : state.MissingVariables)
+	{
+		SPLW_CRITICAL("Missing variable at line {0}, column {1}", m.GetLineNumber(), m.GetColumnNumber());
+		SPLW_WARN("{0}", lexer->GetSplitFileString().at(m.GetLineNumber()));
+		SPLW_WARN("{0}{1}", mulString(" ", m.GetColumnNumber() - 1), mulString("^", m.GetColumnSpan()));
+		std::cout << "\n";
+	}
+
+	if (state.MissingVariables.size() > 0)
+	{
+		SPLW_ERROR("Missing variables present: cannot continue to next stage.");
+		system("PAUSE");
+		return -1;
+	}
 	
 	/*
 	{

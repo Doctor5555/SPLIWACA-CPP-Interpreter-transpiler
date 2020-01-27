@@ -135,6 +135,7 @@
     <ClInclude Include="Spliwaca\src\Frontend\Lexer\Token.h" />
     <ClInclude Include="Spliwaca\src\Frontend\Parser\Nodes.h" />
     <ClInclude Include="Spliwaca\src\Frontend\Parser\Parser.h" />
+    <ClInclude Include="Spliwaca\src\Frontend\Parser\SemanticError.h" />
     <ClInclude Include="Spliwaca\src\Frontend\Parser\SyntaxError.h" />
     <ClInclude Include="Spliwaca\src\Frontend\Scopes\Scope.h" />
     <ClInclude Include="Spliwaca\src\Log.h" />
@@ -219,6 +220,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Spliwaca\src\Frontend\Lexer\Lexer.cpp" />
+    <ClCompile Include="Spliwaca\src\Frontend\Parser\Nodes.cpp" />
     <ClCompile Include="Spliwaca\src\Frontend\Parser\Parser.cpp" />
     <ClCompile Include="Spliwaca\src\Log.cpp" />
     <ClCompile Include="Spliwaca\src\Main.cpp" />

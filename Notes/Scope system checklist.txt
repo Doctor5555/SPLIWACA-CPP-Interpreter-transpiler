@@ -1,11 +1,11 @@
 
-FUNCTION //
-PROCEDURE //
-ANONF //
-ANONP //
-IF //
-WHILE //
-FOR //
+FUNCTION ///
+PROCEDURE ///
+ANONF ///
+ANONP ///
+IF ///
+WHILE ///
+FOR ///
 STRUCT //
 
 /// All necessary symbols added

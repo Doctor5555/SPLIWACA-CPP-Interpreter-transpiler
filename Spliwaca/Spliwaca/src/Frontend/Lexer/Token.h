@@ -97,6 +97,19 @@ namespace Spliwaca
 		VarAccessOp
 	};
 
+	enum class VarType
+	{
+		Int,
+		Float,
+		Complex,
+		Bool,
+		String,
+		List,
+		Dict,
+		Function,
+		None
+	};
+
 	inline std::string TokenTypeName(TokenType type)
 	{
 		switch (type)

@@ -7,11 +7,11 @@
 namespace Spliwaca
 {
 	struct Statements;
-	struct Expr;
-	struct AtomNode;
-	struct CallNode;
-	struct BoolExprNode;
-	struct MulExprNode;
+	class Expr;
+	class AtomNode;
+	class CallNode;
+	class BoolExprNode;
+	class MulExprNode;
 
 	class IdentNode
 	{
@@ -37,6 +37,10 @@ namespace Spliwaca
 		uint32_t GetColumnNumber()
 		{
 			return ids.at(0)->GetCharacterNumber();
+		}
+		uint32_t GetIdentAccessNum()
+		{
+			return ids.size();
 		}
 
 		IdentNode()
@@ -80,18 +84,6 @@ namespace Spliwaca
 		std::vector<std::shared_ptr<Expr>> args;
 	};
 
-	struct DictEntryNode
-	{
-		std::shared_ptr<BoolExprNode> left;
-		std::shared_ptr<BoolExprNode> right;
-		bool hasRight;
-	};
-
-	struct ListNode
-	{
-		std::vector<std::shared_ptr<DictEntryNode>> Items;
-	};
-
 	struct ListAccessNode
 	{
 		std::vector<AtomNode> indices;
@@ -128,30 +120,111 @@ namespace Spliwaca
 		std::shared_ptr<DivModExprNode> right;
 	};
 
-	struct MulExprNode
+	class MulExprNode
 	{
+	public:
+
 		std::shared_ptr<DivModExprNode> left;
 		std::shared_ptr<Token> opToken;
 		std::shared_ptr<MulExprNode> right;
 	};
 
-	struct AddExprNode
+	class AddExprNode
 	{
+	public:
+		VarType GetExprReturnType();
+		
+		AddExprNode()
+		{
+		}
+
 		std::shared_ptr<MulExprNode> left;
 		std::shared_ptr<Token> opToken;
 		std::shared_ptr<AddExprNode> right;
 	};
 
-	struct BoolExprNode
+	class BoolExprNode
 	{
+	public:
+		VarType GetExprReturnType()
+		{
+			if (opToken != nullptr)
+			{
+				return VarType::Bool;
+			}
+			else
+			{
+				return left->GetExprReturnType();
+			}
+		}
+
+		BoolExprNode()
+		{
+		}
+
 		std::shared_ptr<AddExprNode> left;
 		std::shared_ptr<Token> opToken;
 		std::shared_ptr<BoolExprNode> right;
 		int exprType;
 	};
 
-	struct Expr
+	struct DictEntryNode
 	{
+		std::shared_ptr<BoolExprNode> left;
+		std::shared_ptr<BoolExprNode> right;
+		bool hasRight;
+	};
+
+	class ListNode
+	{
+	public:
+		VarType GetListReturnType()
+		{
+			if (Items.size() > 1 || Items.at(0)->hasRight)
+			{
+				return VarType::List;
+			}
+			else
+			{
+				return Items.at(0)->left->GetExprReturnType();
+			}
+		}
+
+		ListNode()
+		{
+		}
+
+		std::vector<std::shared_ptr<DictEntryNode>> Items;
+	};
+
+	class Expr
+	{
+	public:
+		VarType GetExprReturnType()
+		{
+			switch (exprType)
+			{
+			case 1:
+				return listNode->GetListReturnType();
+			case 2:
+				return createNode->GetCreateType();
+			case 3:
+				return castNode->GetCastType();
+			case 4:
+				return callNode->GetFuncReturnType();
+			case 5:
+				return VarType::Function;
+			case 6:
+				return VarType::Function;
+			default:
+				return VarType::None;
+			}
+		}
+
+		Expr()
+		{
+		}
+
 		std::shared_ptr<ListNode> listNode; // exprType: 1
 		std::shared_ptr<CreateNode> createNode; // exprType: 2
 		std::shared_ptr<CastNode> castNode; // exprType: 3
