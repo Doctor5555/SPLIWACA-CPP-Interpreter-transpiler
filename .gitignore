@@ -5,4 +5,5 @@ bin-int/
 
 #Files
 *.user
+*.~lock.*
 Sandbox/imgui.ini
