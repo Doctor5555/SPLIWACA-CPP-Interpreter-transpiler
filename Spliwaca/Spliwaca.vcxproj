@@ -130,6 +130,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Spliwaca\src\Backend\Code Generation\Generator.h" />
     <ClInclude Include="Spliwaca\src\Frontend\Lexer\Lexer.h" />
     <ClInclude Include="Spliwaca\src\Frontend\Lexer\LexicalError.h" />
     <ClInclude Include="Spliwaca\src\Frontend\Lexer\Token.h" />
@@ -181,7 +182,6 @@
     <ClInclude Include="vendor\spdlog\include\spdlog\fmt\bundled\posix.h" />
     <ClInclude Include="vendor\spdlog\include\spdlog\fmt\bundled\printf.h" />
     <ClInclude Include="vendor\spdlog\include\spdlog\fmt\bundled\ranges.h" />
-    <ClInclude Include="vendor\spdlog\include\spdlog\fmt\bundled\safe-duration-cast.h" />
     <ClInclude Include="vendor\spdlog\include\spdlog\fmt\fmt.h" />
     <ClInclude Include="vendor\spdlog\include\spdlog\fmt\ostr.h" />
     <ClInclude Include="vendor\spdlog\include\spdlog\formatter.h" />
@@ -200,6 +200,7 @@
     <ClInclude Include="vendor\spdlog\include\spdlog\sinks\msvc_sink.h" />
     <ClInclude Include="vendor\spdlog\include\spdlog\sinks\null_sink.h" />
     <ClInclude Include="vendor\spdlog\include\spdlog\sinks\ostream_sink.h" />
+    <ClInclude Include="vendor\spdlog\include\spdlog\sinks\ringbuffer_sink.h" />
     <ClInclude Include="vendor\spdlog\include\spdlog\sinks\rotating_file_sink-inl.h" />
     <ClInclude Include="vendor\spdlog\include\spdlog\sinks\rotating_file_sink.h" />
     <ClInclude Include="vendor\spdlog\include\spdlog\sinks\sink-inl.h" />
@@ -219,8 +220,8 @@
     <ClInclude Include="vendor\timing\Instrumentor.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Spliwaca\src\Backend\Code Generation\Generator.cpp" />
     <ClCompile Include="Spliwaca\src\Frontend\Lexer\Lexer.cpp" />
-    <ClCompile Include="Spliwaca\src\Frontend\Parser\Nodes.cpp" />
     <ClCompile Include="Spliwaca\src\Frontend\Parser\Parser.cpp" />
     <ClCompile Include="Spliwaca\src\Log.cpp" />
     <ClCompile Include="Spliwaca\src\Main.cpp" />

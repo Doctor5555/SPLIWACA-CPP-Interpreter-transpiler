@@ -24,10 +24,10 @@ entry_point = (require, '\n')?, statements, EOF;
 statements = '\n'+, (statement, ('\n'+, statement)*, '\n')?;
 statement = if|set|input|output|increment|decrement|for|while|quit|call|function|procedure|struct|return;
 
-expr = list|create|cast|call|anonf|anonp;
+expr = boolean_expr|create|cast|call|anonf|anonp;
 
 list = dict_entry, ('\n'?, ',', '\n'?, dict_entry)+;
-dict_entry = boolean_expr, ':', boolean_expr;
+dict_entry = expr, ':', expr;
 (* dict = atom, ':', atom, ('\n'?, ',', '\n'?, atom, ':', atom)*; *)
 
 (*Arithmetic expressions: *)
@@ -35,35 +35,34 @@ boolean_expr = (add_expr, (boolean_op add_expr)*)|
                    (('NOT'|'!'), boolean_expr);
 add_expr = mul_expr, ['+'|'-', add_expr]; (* -> 1 + 1 + 1 + - 1 *)
 mul_expr = divmod_expr, ['*'|'/', mul_expr];
-divmod_expr = power, ['%'|'DIVI', divmod_expr]
+divmod_expr = power, ['%'|'DIVI', divmod_expr];
 power = factor, ['**', factor];
 factor = ['+'|'-'], atom;
-atom = (string|raw|int|float|complex|identifier|('(', expr, ')')), list_access?;
-
+atom = (string|raw|int|float|complex|identifier|('(', list, ')')), list_access?;
 
 list_access = ('[', expr, ']')*;
 
 number = int|float|complex|identifier;
 string = string|raw|identifier;
-identifier = (letter|'_')+, ('.', (letter|'_')+)*
+identifier = (letter|'_')+, ('.', (letter|'_')+)*;
 type = identifier|"INT" | "Int" | "int" | "INTEGER" | "Integer" | "integer" | "FLOAT" | "Float" | 
         "float" | "REAL" | "Real" | "real" | "NUMBER" | "Number" | "number" | "COMPLEX" | "Complex" |
         "complex" | "STRING" | "String" | "string" | "STR" | "Str" | "str" | "DICT" | "Dict" |   
         "dict" | "DICTIONARY" | "Dictionary" | "dictionary" | "MAP" | "Map" | "map" | "MAPPING" |
         "Mapping" | "mapping" | "LIST" | "List" | "list" | "ARRAY" | "Array" | "array" | "TUPLE" |  
-        "Tuple" | "tuple"
+        "Tuple" | "tuple";
 
 (*Other expressions: *)
-create = 'CREATE', type, ['WITH', expr, (',', expr)*];
-cast = 'CAST', type, expr;
-call = 'CALL', expr, ['WITH', expr, (',', expr)*];
+create = 'CREATE', ident, ['WITH', atom, (',', atom)*];
+cast = 'CAST', type, list;
+call = 'CALL', atom, ['WITH', atom, (',', atom)*];
 anonf = 'ANONF', (('<-'|'TAKES'), type, identifier, (',', type, identifier)*)?, ('->'|'RETURNS'), type, 'AS', '\n'+, statements, '\n'+, 'END FUNCTION\n';
 anonp = 'ANONP', (('<-'|'TAKES'), type, identifier, (',', type, identifier)*)?, 'AS', '\n', statements, 'END PROCEDURE';
 
 
 (*Statements: *)
 if = 'IF', boolean_expr, 'DO', statements, ('ELSE IF', boolean_expr, 'DO', statements)*,('ELSE', statements)?,'END IF\n';
-set = 'SET', identifier, 'TO', expr;
+set = 'SET', identifier, 'TO', list;
 input = 'INPUT', ((sign_specifier, type)|type), identifier;
 output = 'OUTPUT', raw;
 increment = 'INC', identifier;

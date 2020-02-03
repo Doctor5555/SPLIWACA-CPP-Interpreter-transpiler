@@ -1,0 +1,59 @@
+
+//STATEMENTS:
+if -> {
+    if condition:
+        body
+    elif condition:
+        body
+    else:
+        body
+}
+set -> identifier = expr
+input -> identifier = libsplw.handle_input(int)
+output -> print(f"{<dollar escape>}") //Will need to parse the RAW token
+increment -> ident += 1
+decrement -> ident -= 1
+for -> {
+    for identifier in expr:
+        <statements>
+}
+while -> {
+    while condition:
+        <statements>
+}
+quit -> quit(atom)
+require -> ...
+
+struct -> {
+    class identifier:
+        def __init__(ident1: type1, ident2: type2, ...):
+            self.iden1 = ident1
+            self.ident2 = ident2
+            ...
+}
+function/procedure -> {
+    def identifier(ident1: type = default, ident2: type = default, ...) [-> returntype /*for functions*/]:
+        statements
+}
+return -> return expr
+
+//EXPRESSIONS:
+list -> [1, 2, 3, 4, ...]
+dict -> {1:2, 3:4, ...}
+// All below as would be expected
+
+create -> ident(expr, expr, ...)
+cast -> type(expr)
+call -> expr(expr, expr, ...)
+anonf -> {
+    //Previous line
+    def anonf_line_X(ident1: type = default, ident2: type = default, ...) -> returntype:
+        body
+    /*Current line*/ anonf_line_X
+}
+anonp -> {
+    //Previous line
+    def anonp_line_X(ident1: type = default, ident2: type = default, ...):
+        body
+    /*Current line*/ anonp_line_X
+}

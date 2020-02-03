@@ -1,12 +1,14 @@
-#include <cstdint>
+﻿#include <cstdint>
 #include <string>
 #include <iostream>
+#include <Windows.h>
 #include "Instrumentor.h"
 #include "Log.h"
 #include "Frontend/Lexer/Lexer.h"
 #include "Frontend/Lexer/LexicalError.h"
 #include "Frontend/Parser/Parser.h"
 #include "Frontend/Parser/SyntaxError.h"
+#include "Backend/Code Generation/Generator.h"
 #include "UtilFunctions.h"
 
 using namespace Spliwaca;
@@ -34,7 +36,7 @@ struct State
 };
 State state = State();
 
-int RegisterLexicalError(uint8_t errorCode, uint32_t lineNumber, uint32_t columnNumber, uint16_t columnSpan = 1)
+int RegisterLexicalError(uint8_t errorCode, uint32_t lineNumber, uint32_t columnNumber, uint16_t columnSpan)
 {
 	state.LexerErrors.push_back({errorCode, lineNumber, columnNumber, columnSpan});
 	return 1;
@@ -46,9 +48,15 @@ int RegisterSyntaxError(SyntaxErrorType type, std::shared_ptr<Token> token)
 	return 1;
 }
 
+int RegisterSyntaxError(SyntaxErrorType errorCode, uint32_t lineNumber, uint32_t columnNumber, size_t columnSpan, Spliwaca::TokenType type)
+{
+	state.SyntaxErrors.push_back({ errorCode, lineNumber, columnNumber, columnSpan, type });
+	return 1;
+}
+
 int RegisterSemanticsError(uint32_t lineNumber, uint32_t columnNumber)
 {
-	state.SemanticErrors.push_back(MissingVariable(lineNumber, columnNumber));
+	//state.SemanticErrors.push_back(MissingVariable(lineNumber, columnNumber));
 	return 1;
 }
 
@@ -101,7 +109,7 @@ int numDigits(int32_t x)
 
 bool charInStr(const std::string& s, char c)
 {
-	PROFILE_FUNC();
+	//PROFILE_FUNC();
 	for (char ch : s)
 	{
 		if (ch == c)
@@ -129,32 +137,16 @@ bool itemInVect(const std::vector<T>& v, T t)
 
 int main()
 {
+	SetConsoleOutputCP(CP_UTF8);
+	setvbuf(stdout, nullptr, _IOFBF, 1000);
+
 	LOG_INIT();
+	bool printTokenList = true;
 
-	//std::chrono::microseconds timeStartMakeTokens;
-	//std::chrono::microseconds timeEndMakeTokens;
-
-	//std::chrono::microseconds timeStart;
-	//std::chrono::microseconds timeEnd;
-
-	//Instrumentor::Get().BeginSession("Main");
-	//InstrumentationTimer t("Main_function");
-	//Compiler(Parser(Lexer()));
-	//Transpiler(Parser(Lexer()));
-	//Interpreter(Parser(Lexer()));
-	//Parser(Lexer());
-
-	//timeStart = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch());
-	
 	std::shared_ptr<Lexer> lexer = Lexer::Create("c:/dev/epq spliwaca/test_script.splw");
-	SPLW_INFO("Created lexer.");
-	//SPLW_WARN(mulString("h", 5));
-	
-	//timeStartMakeTokens = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch());
-	
+	SPLW_INFO("Created lexer.");	
 	std::shared_ptr<std::vector<std::shared_ptr<Token>>> tokens = lexer->MakeTokens();
 	
-	//timeEndMakeTokens = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch());
 	for (LexicalError l : state.LexerErrors)
 	{
 		SPLW_CRITICAL("Lexical Error code {2} at line {0}, column {1}", l.GetLineNumber(), l.GetColumnNumber(), l.GetErrorCode());
@@ -162,7 +154,6 @@ int main()
 		SPLW_WARN("{0}{1}", mulString(" ", l.GetColumnNumber() - 1), mulString("^", l.GetColumnSpan()));
 		std::cout << "\n";
 	}
-
 	if (state.LexerErrors.size() > 0)
 	{
 		SPLW_ERROR("Lexical errors present: cannot continue to parsing stage.");
@@ -172,23 +163,25 @@ int main()
 	else
 		SPLW_INFO("Finished constructing tokens.");
 	
-	int i = 0;
-	for (std::shared_ptr<Token> t : *tokens)
+	if (printTokenList == true)
 	{
-		if (t->GetContents() == "\n")
-			SPLW_TRACE("Token {0}: {1},{2} type: {3}, contents: {4}", i, t->GetLineNumber(), t->GetCharacterNumber(), TokenTypeName(t->GetType()), "\\n");//, mulString(" ", 3 - std::to_string(i).size()), mulString(" ", numDigits(lineCount) - std::to_string(t->GetLineNumber()).size()), mulString(" ", 3 - std::to_string(t->GetCharacterNumber()).size()), mulString(" ", 16 - TokenTypeName(t->GetType()).size()));
-		else if (t->GetContents() == "\t")
-			SPLW_TRACE("Token {0}: {1},{2} type: {3}, contents: {4}", i, t->GetLineNumber(), t->GetCharacterNumber(), TokenTypeName(t->GetType()), "\\t");//, mulString(" ", 3 - std::to_string(i).size()), mulString(" ", numDigits(lineCount) - std::to_string(t->GetLineNumber()).size()), mulString(" ", 3 - std::to_string(t->GetCharacterNumber()).size()), mulString(" ", 16 - TokenTypeName(t->GetType()).size()));
-		else if (t->GetContents() == "\f")
-			SPLW_TRACE("Token {0}: {1},{2} type: {3}, contents: {4}", i, t->GetLineNumber(), t->GetCharacterNumber(), TokenTypeName(t->GetType()), "\\f");//, mulString(" ", 3 - std::to_string(i).size()), mulString(" ", numDigits(lineCount) - std::to_string(t->GetLineNumber()).size()), mulString(" ", 3 - std::to_string(t->GetCharacterNumber()).size()), mulString(" ", 16 - TokenTypeName(t->GetType()).size()));
-		else
-			SPLW_TRACE("Token {0}: {1},{2} type: {3}, contents: {4}", i, t->GetLineNumber(), t->GetCharacterNumber(), TokenTypeName(t->GetType()), t->GetContents());//, mulString(" ", 3 - std::to_string(i).size()), mulString(" ", numDigits(lineCount) - std::to_string(t->GetLineNumber()).size()), mulString(" ", 3 - std::to_string(t->GetCharacterNumber()).size()), mulString(" ", 16 - TokenTypeName(t->GetType()).size()));
-		i++;
+		int i = 0;
+		for (std::shared_ptr<Token> t : *tokens)
+		{
+			if (t->GetContents() == "\n")
+				SPLW_TRACE("Token {0}: {1},{2} type: {3}, contents: {4}", i, t->GetLineNumber(), t->GetCharacterNumber(), TokenTypeName(t->GetType()), "\\n");//, mulString(" ", 3 - std::to_string(i).size()), mulString(" ", numDigits(lineCount) - std::to_string(t->GetLineNumber()).size()), mulString(" ", 3 - std::to_string(t->GetCharacterNumber()).size()), mulString(" ", 16 - TokenTypeName(t->GetType()).size()));
+			else if (t->GetContents() == "\t")
+				SPLW_TRACE("Token {0}: {1},{2} type: {3}, contents: {4}", i, t->GetLineNumber(), t->GetCharacterNumber(), TokenTypeName(t->GetType()), "\\t");//, mulString(" ", 3 - std::to_string(i).size()), mulString(" ", numDigits(lineCount) - std::to_string(t->GetLineNumber()).size()), mulString(" ", 3 - std::to_string(t->GetCharacterNumber()).size()), mulString(" ", 16 - TokenTypeName(t->GetType()).size()));
+			else if (t->GetContents() == "\f")
+				SPLW_TRACE("Token {0}: {1},{2} type: {3}, contents: {4}", i, t->GetLineNumber(), t->GetCharacterNumber(), TokenTypeName(t->GetType()), "\\f");//, mulString(" ", 3 - std::to_string(i).size()), mulString(" ", numDigits(lineCount) - std::to_string(t->GetLineNumber()).size()), mulString(" ", 3 - std::to_string(t->GetCharacterNumber()).size()), mulString(" ", 16 - TokenTypeName(t->GetType()).size()));
+			else
+				SPLW_TRACE("Token {0}: {1},{2} type: {3}, contents: {4}", i, t->GetLineNumber(), t->GetCharacterNumber(), TokenTypeName(t->GetType()), t->GetContents());//, mulString(" ", 3 - std::to_string(i).size()), mulString(" ", numDigits(lineCount) - std::to_string(t->GetLineNumber()).size()), mulString(" ", 3 - std::to_string(t->GetCharacterNumber()).size()), mulString(" ", 16 - TokenTypeName(t->GetType()).size()));
+			i++;
+		}
 	}
 
 	std::shared_ptr<Parser> parser = Parser::Create(tokens);
 	SPLW_INFO("Created Parser.");
-
 	std::shared_ptr<Spliwaca::EntryPoint> ast = parser->ConstructAST();
 
 	for (SyntaxError s : state.SyntaxErrors)
@@ -198,7 +191,6 @@ int main()
 		SPLW_WARN("{0}{1}", mulString(" ", s.GetColumnNumber() - 1), mulString("^", s.GetColumnSpan()));
 		std::cout << "\n";
 	}
-
 	if (state.SyntaxErrors.size() > 0)
 	{
 		SPLW_ERROR("Syntax errors present: cannot continue to next stage.");
@@ -211,7 +203,30 @@ int main()
 	else
 		SPLW_INFO("Finished syntax analysis.");
 
-	for (MissingVariable m : state.MissingVariables)
+	std::shared_ptr<Generator> codeGenerator = Generator::Create(ast);
+	SPLW_INFO("Created Generator");
+
+	/*
+	ROOT
+	┝BRANCH
+	│┝LEAF
+	│┝LEAF
+	┝BRANCH
+	 ┝LEAF
+	 ┝LEAF
+	
+	//std::cout << "ROOT\n┝BRANCH\n│┝LEAF\n│┝LEAF\n┝BRANCH\n ┝LEAF\n ┝LEAF" << "\n";
+	SPLW_INFO(u8R"(ROOT
+		       ┝BRANCH
+		       │┝LEAF
+		       │┕LEAF
+		       ┕BRANCH
+		        ┝LEAF
+		        ┕LEAF)");
+	//std::cout << test << std::endl;
+	*/
+
+	/*for (MissingVariable m : state.MissingVariables)
 	{
 		SPLW_CRITICAL("Missing variable at line {0}, column {1}", m.GetLineNumber(), m.GetColumnNumber());
 		SPLW_WARN("{0}", lexer->GetSplitFileString().at(m.GetLineNumber()));
@@ -225,40 +240,7 @@ int main()
 		system("PAUSE");
 		return -1;
 	}
-	
-	/*
-	{
-		//PROFILE_SCOPE("Main_Output");
-		int lineCount = lexer->GetSplitFileString().size();
-
-		int i = 0;
-		std::string secondReconstruction = "";
-		for (std::shared_ptr<Token> t : *tokens)
-		{
-			if (t->GetContents() == "\n")
-				SPLW_TRACE("Token {0}: {1},{2} type: {3}, contents: {4}", i, t->GetLineNumber(), t->GetCharacterNumber(), TokenTypeName(t->GetType()), "\\n");//, mulString(" ", 3 - std::to_string(i).size()), mulString(" ", numDigits(lineCount) - std::to_string(t->GetLineNumber()).size()), mulString(" ", 3 - std::to_string(t->GetCharacterNumber()).size()), mulString(" ", 16 - TokenTypeName(t->GetType()).size()));
-			else if (t->GetContents() == "\t")
-				SPLW_TRACE("Token {0}: {1},{2} type: {3}, contents: {4}", i, t->GetLineNumber(), t->GetCharacterNumber(), TokenTypeName(t->GetType()), "\\t");//, mulString(" ", 3 - std::to_string(i).size()), mulString(" ", numDigits(lineCount) - std::to_string(t->GetLineNumber()).size()), mulString(" ", 3 - std::to_string(t->GetCharacterNumber()).size()), mulString(" ", 16 - TokenTypeName(t->GetType()).size()));
-			else if (t->GetContents() == "\f")
-				SPLW_TRACE("Token {0}: {1},{2} type: {3}, contents: {4}", i, t->GetLineNumber(), t->GetCharacterNumber(), TokenTypeName(t->GetType()), "\\f");//, mulString(" ", 3 - std::to_string(i).size()), mulString(" ", numDigits(lineCount) - std::to_string(t->GetLineNumber()).size()), mulString(" ", 3 - std::to_string(t->GetCharacterNumber()).size()), mulString(" ", 16 - TokenTypeName(t->GetType()).size()));
-			else
-				SPLW_TRACE("Token {0}: {1},{2} type: {3}, contents: {4}", i, t->GetLineNumber(), t->GetCharacterNumber(), TokenTypeName(t->GetType()), t->GetContents());//, mulString(" ", 3 - std::to_string(i).size()), mulString(" ", numDigits(lineCount) - std::to_string(t->GetLineNumber()).size()), mulString(" ", 3 - std::to_string(t->GetCharacterNumber()).size()), mulString(" ", 16 - TokenTypeName(t->GetType()).size()));
-			i++;
-			secondReconstruction.append(t->GetContents());
-		}
-
-		//std::cout << secondReconstruction << "\n";
-	}
 	*/
-
-	//SPLW_WARN("FINISHED OUTPUT!");
-	//timeEnd = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch());
-
-	//t.Stop();
-	//Instrumentor::Get().EndSession();
-
-	//std::cout << "MakeTokens time taken: " << (timeEndMakeTokens - timeStartMakeTokens).count() << "\n";
-	//std::cout << "Main time taken: " << (timeEnd - timeStart).count() << "\n";
 
 	system("PAUSE");
 	return 0;

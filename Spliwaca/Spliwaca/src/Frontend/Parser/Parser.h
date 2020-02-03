@@ -24,9 +24,9 @@ namespace Spliwaca
 		std::shared_ptr<std::vector<std::shared_ptr<Token>>> m_Tokens;
 		uint32_t m_TokenIndex;
 
-		std::shared_ptr<Scope> m_MainScope;
-		std::vector<std::shared_ptr<Scope>> m_ScopeStack;
-		std::shared_ptr<Scope> m_CurrentScope;
+		//std::shared_ptr<Scope> m_MainScope;
+		//std::vector<std::shared_ptr<Scope>> m_ScopeStack;
+		//std::shared_ptr<Scope> m_CurrentScope;
 
 	private:
 		std::shared_ptr<RequireNode> ConstructRequire();
@@ -51,13 +51,15 @@ namespace Spliwaca
 
 		std::shared_ptr<ListNode> ConstructList();
 		std::shared_ptr<DictEntryNode> ConstructDictEntry();
-		std::shared_ptr<BoolExprNode> ConstructBooleanExpr();
+		/*std::shared_ptr<BoolExprNode> ConstructBooleanExpr();
 		std::shared_ptr<AddExprNode> ConstructAddExpr();
 		std::shared_ptr<MulExprNode> ConstructMulExpr();
 		std::shared_ptr<DivModExprNode> ConstructDivModExpr();
-		std::shared_ptr<PowerNode> ConstructPower();
+		std::shared_ptr<PowerNode> ConstructPower();*/
+		std::shared_ptr<BinOpNode> ConstructBinOpNode();
 		std::shared_ptr<FactorNode> ConstructFactor();
 		std::shared_ptr<AtomNode> ConstructAtom();
+		std::shared_ptr<ListAccessNode> ConstructListAccess();
 
 		std::shared_ptr<CreateNode> ConstructCreate();
 		std::shared_ptr<CastNode> ConstructCast();

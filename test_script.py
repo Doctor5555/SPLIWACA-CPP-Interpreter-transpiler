@@ -1,6 +1,12 @@
-def test():
-    print("Failure!")
-test()
-del test
-test = lambda: print("Success!")
-print(test())
+def test_func(a: int) -> int:
+    return a
+
+
+a = "Hello World"
+
+if True:
+    a = 5
+else:
+    a = "no"
+
+print(test_func(a))

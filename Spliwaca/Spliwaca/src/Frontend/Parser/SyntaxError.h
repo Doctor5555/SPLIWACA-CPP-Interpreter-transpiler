@@ -5,53 +5,60 @@ namespace Spliwaca
 {
 	enum class SyntaxErrorType : uint8_t
 	{
-		expNewline = 0, // 0
-		expIdent,       // 1
-		expStatement,   // 2
-		expAtom,        // 3
-		expType,        // 4
-		expComma,       // 5
-		expRParen,      // 6
-		expDo,	        // 7
-		expTo,	        // 8
-		expOf,	        // 9
-		expWith,        // 10
-		expTakes,       // 11
-		expReturns,     // 12
-		expAs,	        // 13
-		expRaw,	        // 14
-		expEndIf,       // 15
-		expEndFor,      // 16
-		expEndWhile,    // 17
-		expEndFunc,	    // 18
-		expEndProc,	    // 19
-		expEndStruct,   // 20
-		expTypeMod,	    // 21
-		tooManyElse,    // 22
-		unexpEndFunc,   // 23
-		unexpEndProc,   // 24
-		unexpEndIf,	    // 25
-		unexpEndFor,    // 26
-		unexpEndWhile,  // 27
-		unexpEndStruct, // 28
-		unexpElseIf	    // 29
+		expNewline = 0,   // 0
+		expIdent,         // 1
+		expStatement,     // 2
+		expAtom,          // 3
+		expType,          // 4
+		expComma,         // 5
+		expRParen,        // 6
+		expRSquareParen,  // 7
+		expDo,	          // 8
+		expTo,	          // 9
+		expOf,	          // 10
+		expWith,          // 11
+		expTakes,         // 12
+		expReturns,       // 13
+		expAs,	          // 14
+		expRaw,	          // 15
+		expEndIf,         // 16
+		expEndFor,        // 17
+		expEndWhile,      // 18
+		expEndFunc,	      // 19
+		expEndProc,	      // 20
+		expEndStruct,     // 21
+		expTypeMod,	      // 22
+		tooManyElse,      // 23
+		unexpEndFunc,     // 24
+		unexpEndProc,     // 25
+		unexpEndIf,	      // 26
+		unexpEndFor,      // 27
+		unexpEndWhile,    // 28
+		unexpEndStruct,   // 29
+		unexpElseIf,      // 30
+		inconsistentDict  // 31
 	};
 
 	class SyntaxError
 	{
 	public:
 		SyntaxError(SyntaxErrorType errorCode, std::shared_ptr<Token> token)
-			: m_ErrorCode(errorCode), m_OffendingToken(token)
-		{
-		}
+			: m_ErrorCode(errorCode), m_LineNumber(token->GetLineNumber()), m_ColumnNumber(token->GetCharacterNumber()),
+			  m_ColumnSpan(token->GetContents().length()), m_TokenType(token->GetType())
+		{}
+
+		SyntaxError(SyntaxErrorType errorCode, uint32_t lineNumber, uint32_t columnNumber, size_t columnSpan, Spliwaca::TokenType type)
+			: m_ErrorCode(errorCode), m_LineNumber(lineNumber), m_ColumnNumber(columnNumber),
+			m_ColumnSpan(columnSpan), m_TokenType(type)
+		{}
 
 		~SyntaxError() = default;
 
 		inline const SyntaxErrorType  GetErrorCode() const { return m_ErrorCode; }
-		inline const uint32_t GetLineNumber() const { return m_OffendingToken->GetLineNumber(); }
-		inline const uint32_t GetColumnNumber() const { return m_OffendingToken->GetCharacterNumber(); }
-		inline const size_t GetColumnSpan() const { return m_OffendingToken->GetContents().length(); }
-		inline const TokenType GetTokenType() const { return m_OffendingToken->GetType(); }
+		inline const uint32_t GetLineNumber() const { return m_LineNumber; }
+		inline const uint32_t GetColumnNumber() const { return m_ColumnNumber; }
+		inline const size_t GetColumnSpan() const { return m_ColumnSpan; }
+		inline const TokenType GetTokenType() const { return m_TokenType; }
 
 		//2^8 = 256 error codes available
 		//Code 0: Unexpected Token -- expected newline
@@ -63,6 +70,9 @@ namespace Spliwaca
 
 	private:
 		SyntaxErrorType m_ErrorCode;
-		std::shared_ptr<Token> m_OffendingToken;
+		uint32_t m_LineNumber, m_ColumnNumber;
+		size_t m_ColumnSpan;
+		TokenType m_TokenType;
+		//std::shared_ptr<Token> m_OffendingToken;
 	};
 }

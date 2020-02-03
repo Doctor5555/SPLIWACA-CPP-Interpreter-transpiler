@@ -24,16 +24,16 @@ namespace Spliwaca
 	std::shared_ptr<EntryPoint> Parser::ConstructAST()
 	{
 		std::shared_ptr<EntryPoint> ep = std::make_shared<EntryPoint>();
-		m_MainScope = std::make_shared<Scope>("Main", 0, ScopeType::Main);
-		m_CurrentScope = m_MainScope;
-		m_ScopeStack.push_back(m_MainScope);
+		//m_MainScope = std::make_shared<Scope>("Main", 0, ScopeType::Main);
+		//m_CurrentScope = m_MainScope;
+		//m_ScopeStack.push_back(m_MainScope);
 
 		ep->require = ConstructRequire();
 
 		// Consume newline after require
 		if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Newline)
 		{
-			RegisterSyntaxError(SyntaxError(SyntaxErrorType::expNewline, m_Tokens->at(m_TokenIndex)));
+			RegisterSyntaxError(SyntaxErrorType::expNewline, m_Tokens->at(m_TokenIndex));
 		}
 		else
 			IncIndex(); 
@@ -43,7 +43,7 @@ namespace Spliwaca
 
 		if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::eof)
 		{
-			RegisterSyntaxError(SyntaxError(SyntaxErrorType::expNewline, m_Tokens->at(m_TokenIndex)));
+			RegisterSyntaxError(SyntaxErrorType::expNewline, m_Tokens->at(m_TokenIndex));
 			return ep;
 		}
 		else
@@ -85,30 +85,31 @@ namespace Spliwaca
 				//Check whether this END matches the type of statement block we are in. If not, register a syntax error complaining before any
 				//other error.
 				TokenType nextTokType = m_Tokens->at(m_TokenIndex+1)->GetType();
-				ScopeType currentScopeType = m_CurrentScope->GetType();
-				if (nextTokType == TokenType::Function && currentScopeType != ScopeType::Function)
+				return statements;
+				//ScopeType currentScopeType = m_CurrentScope->GetType();
+				if (nextTokType == TokenType::Function)// && currentScopeType != ScopeType::Function)
 				{
-					RegisterSyntaxError(SyntaxError(SyntaxErrorType::unexpEndFunc, m_Tokens->at(m_TokenIndex)));
+					RegisterSyntaxError(SyntaxErrorType::unexpEndFunc, m_Tokens->at(m_TokenIndex));
 				}
-				else if (nextTokType == TokenType::Procedure && currentScopeType != ScopeType::Procedure)
+				else if (nextTokType == TokenType::Procedure)// && currentScopeType != ScopeType::Procedure)
 				{
-					RegisterSyntaxError(SyntaxError(SyntaxErrorType::unexpEndProc, m_Tokens->at(m_TokenIndex)));
+					RegisterSyntaxError(SyntaxErrorType::unexpEndProc, m_Tokens->at(m_TokenIndex));
 				}
-				else if (nextTokType == TokenType::If && currentScopeType != ScopeType::If)
+				else if (nextTokType == TokenType::If)// && currentScopeType != ScopeType::If)
 				{
-					RegisterSyntaxError(SyntaxError(SyntaxErrorType::unexpEndIf, m_Tokens->at(m_TokenIndex)));
+					RegisterSyntaxError(SyntaxErrorType::unexpEndIf, m_Tokens->at(m_TokenIndex));
 				}
-				else if (nextTokType == TokenType::For && currentScopeType != ScopeType::For)
+				else if (nextTokType == TokenType::For)// && currentScopeType != ScopeType::For)
 				{
-					RegisterSyntaxError(SyntaxError(SyntaxErrorType::unexpEndFor, m_Tokens->at(m_TokenIndex)));
+					RegisterSyntaxError(SyntaxErrorType::unexpEndFor, m_Tokens->at(m_TokenIndex));
 				}
-				else if (nextTokType == TokenType::While && currentScopeType != ScopeType::While)
+				else if (nextTokType == TokenType::While)// && currentScopeType != ScopeType::While)
 				{
-					RegisterSyntaxError(SyntaxError(SyntaxErrorType::unexpEndWhile, m_Tokens->at(m_TokenIndex)));
+					RegisterSyntaxError(SyntaxErrorType::unexpEndWhile, m_Tokens->at(m_TokenIndex));
 				}
-				else if (nextTokType == TokenType::Struct && currentScopeType != ScopeType::Struct)
+				else if (nextTokType == TokenType::Struct)// && currentScopeType != ScopeType::Struct)
 				{
-					RegisterSyntaxError(SyntaxError(SyntaxErrorType::unexpEndStruct, m_Tokens->at(m_TokenIndex)));
+					RegisterSyntaxError(SyntaxErrorType::unexpEndStruct, m_Tokens->at(m_TokenIndex));
 				}
 				else
 				{
@@ -118,10 +119,11 @@ namespace Spliwaca
 			else if (currTokType == TokenType::Else)
 			{
 				TokenType nextTokType = m_Tokens->at(m_TokenIndex + 1)->GetType();
-				ScopeType currentScopeType = m_CurrentScope->GetType();
-				if (nextTokType == TokenType::If && currentScopeType != ScopeType::If)
+				return statements;
+				//ScopeType currentScopeType = m_CurrentScope->GetType();
+				if (nextTokType == TokenType::If)// && currentScopeType != ScopeType::If)
 				{
-					RegisterSyntaxError(SyntaxError(SyntaxErrorType::unexpElseIf, m_Tokens->at(m_TokenIndex)));
+					RegisterSyntaxError(SyntaxErrorType::unexpElseIf, m_Tokens->at(m_TokenIndex));
 				}
 				else
 				{
@@ -166,7 +168,7 @@ namespace Spliwaca
 		case TokenType::Struct: s->structNode = ConstructStruct(); s->statementType = 12; break;
 		case TokenType::Return: s->returnNode = ConstructReturn(); s->statementType = 13; break;
 		default:
-			RegisterSyntaxError(SyntaxError(SyntaxErrorType::expStatement, m_Tokens->at(m_TokenIndex)));
+			RegisterSyntaxError(SyntaxErrorType::expStatement, m_Tokens->at(m_TokenIndex));
 			return nullptr;
 		}
 		return s;
@@ -177,60 +179,60 @@ namespace Spliwaca
 		std::shared_ptr<IfNode> node = std::make_shared<IfNode>();
 		IncIndex();
 
-		node->conditions.push_back(ConstructBooleanExpr());
+		node->conditions.push_back(ConstructBinOpNode());
 		if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Do)
 		{
 			//There must be a "DO"
-			RegisterSyntaxError(SyntaxError(SyntaxErrorType::expDo, m_Tokens->at(m_TokenIndex)));
+			RegisterSyntaxError(SyntaxErrorType::expDo, m_Tokens->at(m_TokenIndex));
 		}
 		else
 			IncIndex();
 
-		m_ScopeStack.push_back(m_CurrentScope->AddSubScope("IF_line_"+std::to_string(m_Tokens->at(m_TokenIndex)->GetLineNumber()), m_Tokens->at(m_TokenIndex)->GetLineNumber(), ScopeType::If));
-		m_CurrentScope = m_ScopeStack.back();
+		//m_ScopeStack.push_back(m_CurrentScope->AddSubScope("IF_line_"+std::to_string(m_Tokens->at(m_TokenIndex)->GetLineNumber()), m_Tokens->at(m_TokenIndex)->GetLineNumber(), ScopeType::If));
+		//m_CurrentScope = m_ScopeStack.back();
 
 		node->bodies.push_back(ConstructStatements());
 
-		m_CurrentScope->CloseScope(m_Tokens->at(m_TokenIndex)->GetLineNumber());
-		m_ScopeStack.pop_back();
-		m_CurrentScope = m_ScopeStack.back();
+		//m_CurrentScope->CloseScope(m_Tokens->at(m_TokenIndex)->GetLineNumber());
+		//m_ScopeStack.pop_back();
+		//m_CurrentScope = m_ScopeStack.back();
 
 		while (m_Tokens->at(m_TokenIndex)->GetType() == TokenType::Else)
 		{
 			if (node->elsePresent)
 			{
 				//We cannot have more than one else
-				RegisterSyntaxError(SyntaxError(SyntaxErrorType::tooManyElse, m_Tokens->at(m_TokenIndex)));
+				RegisterSyntaxError(SyntaxErrorType::tooManyElse, m_Tokens->at(m_TokenIndex));
 			}
 			IncIndex();
 			if (m_Tokens->at(m_TokenIndex)->GetType() == TokenType::If)
 			{
 				IncIndex();
-				node->conditions.push_back(ConstructBooleanExpr());
+				node->conditions.push_back(ConstructBinOpNode());
 				if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Do)
 				{
 					//There must be a "DO"
-					RegisterSyntaxError(SyntaxError(SyntaxErrorType::expDo, m_Tokens->at(m_TokenIndex)));
+					RegisterSyntaxError(SyntaxErrorType::expDo, m_Tokens->at(m_TokenIndex));
 				}
 			}
 			else if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Do)
 			{
 				//There must be a "DO"
-				RegisterSyntaxError(SyntaxError(SyntaxErrorType::expDo, m_Tokens->at(m_TokenIndex)));
+				RegisterSyntaxError(SyntaxErrorType::expDo, m_Tokens->at(m_TokenIndex));
 			}
 			else
 			{
 				node->elsePresent = true;
 			}
 			IncIndex();
-			m_ScopeStack.push_back(m_CurrentScope->AddSubScope("IF_line_" + std::to_string(m_Tokens->at(m_TokenIndex)->GetLineNumber()), m_Tokens->at(m_TokenIndex)->GetLineNumber(), ScopeType::If));
-			m_CurrentScope = m_ScopeStack.back();
+			//m_ScopeStack.push_back(m_CurrentScope->AddSubScope("IF_line_" + std::to_string(m_Tokens->at(m_TokenIndex)->GetLineNumber()), m_Tokens->at(m_TokenIndex)->GetLineNumber(), ScopeType::If));
+			//m_CurrentScope = m_ScopeStack.back();
 
 			node->bodies.push_back(ConstructStatements());
 
-			m_CurrentScope->CloseScope(m_Tokens->at(m_TokenIndex)->GetLineNumber());
-			m_ScopeStack.pop_back();
-			m_CurrentScope = m_ScopeStack.back();
+			//m_CurrentScope->CloseScope(m_Tokens->at(m_TokenIndex)->GetLineNumber());
+			//m_ScopeStack.pop_back();
+			//m_CurrentScope = m_ScopeStack.back();
 		}
 		if (m_Tokens->at(m_TokenIndex)->GetType() == TokenType::End && m_Tokens->at((uint64_t)m_TokenIndex+(uint64_t)1)->GetType() == TokenType::If)
 		{
@@ -239,7 +241,7 @@ namespace Spliwaca
 		else
 		{
 			//Must have an end if - something is wrong here
-			RegisterSyntaxError(SyntaxError(SyntaxErrorType::expEndIf, m_Tokens->at(m_TokenIndex)));
+			RegisterSyntaxError(SyntaxErrorType::expEndIf, m_Tokens->at(m_TokenIndex));
 		}
 		return node;
 	}
@@ -252,14 +254,14 @@ namespace Spliwaca
 
 		if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::To)
 		{
-			RegisterSyntaxError(SyntaxError(SyntaxErrorType::expTo, m_Tokens->at(m_TokenIndex)));
+			RegisterSyntaxError(SyntaxErrorType::expTo, m_Tokens->at(m_TokenIndex));
 		}
 		else
 			IncIndex();
 
-		node->expr = ConstructExpr();
-		VarType varType;
-		switch (node->expr->exprType)
+		node->list = ConstructList();
+		//VarType varType;
+		/*switch (node->expr->exprType)
 		{
 		case 1:
 		{
@@ -291,9 +293,9 @@ namespace Spliwaca
 				}
 			}
 		}
-		}
+		}*/
 
-		m_CurrentScope->AddEntry(node->id->GetContents(), node->id->GetLineNumber(), node->expr->GetExprReturnType());
+		//m_CurrentScope->AddEntry(node->id->GetContents(), node->id->GetLineNumber(), node->expr->GetExprReturnType());
 		return node;
 	}
 
@@ -305,7 +307,7 @@ namespace Spliwaca
 		auto type = m_Tokens->at(m_TokenIndex)->GetType();
 		if (type != TokenType::PositiveTypeMod && type != TokenType::NegativeTypeMod && type != TokenType::NonZeroTypeMod && type != TokenType::Type)
 		{
-			RegisterSyntaxError(SyntaxError(SyntaxErrorType::expTypeMod, m_Tokens->at(m_TokenIndex)));
+			RegisterSyntaxError(SyntaxErrorType::expTypeMod, m_Tokens->at(m_TokenIndex));
 		}
 		else if (type == TokenType::Type)
 		{
@@ -317,7 +319,7 @@ namespace Spliwaca
 			IncIndex();
 			if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Type)
 			{
-				RegisterSyntaxError(SyntaxError(SyntaxErrorType::expTypeMod, m_Tokens->at(m_TokenIndex)));
+				RegisterSyntaxError(SyntaxErrorType::expTypeMod, m_Tokens->at(m_TokenIndex));
 			}
 			else
 			{
@@ -327,7 +329,7 @@ namespace Spliwaca
 		//IncIndex();
 
 		node->id = ConstructIdentNode();
-		m_CurrentScope->AddEntry(node->id->GetContents(), node->id->GetLineNumber());
+		//m_CurrentScope->AddEntry(node->id->GetContents(), node->id->GetLineNumber());
 
 		return node;
 	}
@@ -338,7 +340,7 @@ namespace Spliwaca
 		IncIndex();
 		if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Raw)
 		{
-			RegisterSyntaxError(SyntaxError(SyntaxErrorType::expRaw, m_Tokens->at(m_TokenIndex)));
+			RegisterSyntaxError(SyntaxErrorType::expRaw, m_Tokens->at(m_TokenIndex));
 		}
 		else
 		{
@@ -369,45 +371,42 @@ namespace Spliwaca
 		std::shared_ptr<ForNode> node = std::make_shared<ForNode>();
 		IncIndex();
 
-		m_ScopeStack.push_back(m_CurrentScope->AddSubScope("FOR_line_" + std::to_string(m_Tokens->at(m_TokenIndex)->GetLineNumber()), m_Tokens->at(m_TokenIndex)->GetLineNumber(), ScopeType::For));
-		m_CurrentScope = m_ScopeStack.back();
-
-		
-
+		//m_ScopeStack.push_back(m_CurrentScope->AddSubScope("FOR_line_" + std::to_string(m_Tokens->at(m_TokenIndex)->GetLineNumber()), m_Tokens->at(m_TokenIndex)->GetLineNumber(), ScopeType::For));
+		//m_CurrentScope = m_ScopeStack.back();
 		node->id = ConstructIdentNode();
 
 		if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Of)
 		{
-			RegisterSyntaxError(SyntaxError(SyntaxErrorType::expOf, m_Tokens->at(m_TokenIndex)));
+			RegisterSyntaxError(SyntaxErrorType::expOf, m_Tokens->at(m_TokenIndex));
 		}
 
-		node->iterableExpr = ConstructExpr();
+		node->iterableExpr = ConstructList();
 
 		if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Do)
 		{
-			RegisterSyntaxError(SyntaxError(SyntaxErrorType::expDo, m_Tokens->at(m_TokenIndex)));
+			RegisterSyntaxError(SyntaxErrorType::expDo, m_Tokens->at(m_TokenIndex));
 		}
 		IncIndex();
 		if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Newline)
 		{
-			RegisterSyntaxError(SyntaxError(SyntaxErrorType::expNewline, m_Tokens->at(m_TokenIndex)));
+			RegisterSyntaxError(SyntaxErrorType::expNewline, m_Tokens->at(m_TokenIndex));
 		}
 
 		node->body = ConstructStatements();
 
 		if (m_Tokens->at(m_TokenIndex)->GetType() == TokenType::End && m_Tokens->at((uint64_t)m_TokenIndex + (uint64_t)1)->GetType() == TokenType::For)
 		{
-			m_CurrentScope->CloseScope(m_Tokens->at(m_TokenIndex)->GetLineNumber());
+			//CurrentScope->CloseScope(m_Tokens->at(m_TokenIndex)->GetLineNumber());
 			IncIndex(); IncIndex();
 		}
 		else
 		{
-			m_CurrentScope->CloseScope(0);
-			RegisterSyntaxError(SyntaxError(SyntaxErrorType::expEndFor, m_Tokens->at(m_TokenIndex)));
+			//CurrentScope->CloseScope(0);
+			RegisterSyntaxError(SyntaxErrorType::expEndFor, m_Tokens->at(m_TokenIndex));
 		}
 
-		m_ScopeStack.pop_back();
-		m_CurrentScope = m_ScopeStack.back();
+		//ScopeStack.pop_back();
+		//CurrentScope = m_ScopeStack.back();
 		return node;
 	}
 
@@ -416,37 +415,37 @@ namespace Spliwaca
 		std::shared_ptr<WhileNode> node = std::make_shared<WhileNode>();
 		IncIndex();
 
-		m_ScopeStack.push_back(m_CurrentScope->AddSubScope("WHILE_line_" + std::to_string(m_Tokens->at(m_TokenIndex)->GetLineNumber()), m_Tokens->at(m_TokenIndex)->GetLineNumber(), ScopeType::While));
-		m_CurrentScope = m_ScopeStack.back();
+		//m_ScopeStack.push_back(m_CurrentScope->AddSubScope("WHILE_line_" + std::to_string(m_Tokens->at(m_TokenIndex)->GetLineNumber()), m_Tokens->at(m_TokenIndex)->GetLineNumber(), ScopeType::While));
+		//m_CurrentScope = m_ScopeStack.back();
 
-		node->condition = ConstructBooleanExpr();
+		node->condition = ConstructBinOpNode();
 		
 		IncIndex();
 		if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Do)
 		{
-			RegisterSyntaxError(SyntaxError(SyntaxErrorType::expDo, m_Tokens->at(m_TokenIndex)));
+			RegisterSyntaxError(SyntaxErrorType::expDo, m_Tokens->at(m_TokenIndex));
 		}
 		IncIndex();
 		if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Newline)
 		{
-			RegisterSyntaxError(SyntaxError(SyntaxErrorType::expNewline, m_Tokens->at(m_TokenIndex)));
+			RegisterSyntaxError(SyntaxErrorType::expNewline, m_Tokens->at(m_TokenIndex));
 		}
 
 		node->body = ConstructStatements();
 
 		if (m_Tokens->at(m_TokenIndex)->GetType() == TokenType::End && m_Tokens->at((uint64_t)m_TokenIndex + (uint64_t)1)->GetType() == TokenType::While)
 		{
-			m_CurrentScope->CloseScope(m_Tokens->at(m_TokenIndex)->GetLineNumber());
+			//m_CurrentScope->CloseScope(m_Tokens->at(m_TokenIndex)->GetLineNumber());
 			IncIndex(); IncIndex();
 		}
 		else
 		{
-			m_CurrentScope->CloseScope(0);
-			RegisterSyntaxError(SyntaxError(SyntaxErrorType::expEndWhile, m_Tokens->at(m_TokenIndex)));
+			//m_CurrentScope->CloseScope(0);
+			RegisterSyntaxError(SyntaxErrorType::expEndWhile, m_Tokens->at(m_TokenIndex));
 		}
 
-		m_ScopeStack.pop_back();
-		m_CurrentScope = m_ScopeStack.back();
+		//m_ScopeStack.pop_back();
+		//m_CurrentScope = m_ScopeStack.back();
 		return node;
 	}
 
@@ -463,29 +462,29 @@ namespace Spliwaca
 	{
 		std::shared_ptr<CallNode> node = std::make_shared<CallNode>();
 		IncIndex();
-		node->function = ConstructExpr();
+		node->function = ConstructAtom();
 
 		if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Newline)
 		{
 			if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::With)
 			{
-				RegisterSyntaxError(SyntaxError(SyntaxErrorType::expWith, m_Tokens->at(m_TokenIndex)));
+				RegisterSyntaxError(SyntaxErrorType::expWith, m_Tokens->at(m_TokenIndex));
 			}
 			else
 				IncIndex();
 
-			node->args.push_back(ConstructExpr());
+			node->args.push_back(ConstructAtom());
 
 			while (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Newline)
 			{
 				if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Comma)
 				{
-					RegisterSyntaxError(SyntaxError(SyntaxErrorType::expComma, m_Tokens->at(m_TokenIndex)));
+					RegisterSyntaxError(SyntaxErrorType::expComma, m_Tokens->at(m_TokenIndex));
 				}
 				else
 					IncIndex();
 
-				node->args.push_back(ConstructExpr());
+				node->args.push_back(ConstructAtom());
 			}
 		}
 		return node;
@@ -498,34 +497,34 @@ namespace Spliwaca
 
 		node->id = ConstructIdentNode();
 
-		m_CurrentScope->AddEntry(node->id->GetContents(), node->id->GetLineNumber()); 
-		m_ScopeStack.push_back(m_CurrentScope->AddSubScope(node->id->GetContents(), node->id->GetLineNumber(), ScopeType::Function));
-		m_CurrentScope = m_ScopeStack.back();
+		//m_CurrentScope->AddEntry(node->id->GetContents(), node->id->GetLineNumber()); 
+		//m_ScopeStack.push_back(m_CurrentScope->AddSubScope(node->id->GetContents(), node->id->GetLineNumber(), ScopeType::Function));
+		//m_CurrentScope = m_ScopeStack.back();
 
 		if (m_Tokens->at(m_TokenIndex)->GetType() == TokenType::Takes)
 		{
 			IncIndex();
 			node->argTypes.push_back(ConstructTypeNode());
 			node->argNames.push_back(ConstructIdentNode());
-			m_CurrentScope->AddEntry(node->argNames.back()->GetContents(), node->argNames.back()->GetLineNumber());
+			//m_CurrentScope->AddEntry(node->argNames.back()->GetContents(), node->argNames.back()->GetLineNumber());
 
 			while (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::ReturnType)
 			{
 				if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Comma)
 				{
-					RegisterSyntaxError(SyntaxError(SyntaxErrorType::expComma, m_Tokens->at(m_TokenIndex)));
+					RegisterSyntaxError(SyntaxErrorType::expComma, m_Tokens->at(m_TokenIndex));
 				}
 				else
 					IncIndex();
 				node->argTypes.push_back(ConstructTypeNode());
 				node->argNames.push_back(ConstructIdentNode());
-				m_CurrentScope->AddEntry(node->argNames.back()->GetContents(), node->argNames.back()->GetLineNumber());
+				//m_CurrentScope->AddEntry(node->argNames.back()->GetContents(), node->argNames.back()->GetLineNumber());
 			}
 		}
 
 		if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::ReturnType)
 		{
-			RegisterSyntaxError(SyntaxError(SyntaxErrorType::expReturns, m_Tokens->at(m_TokenIndex)));
+			RegisterSyntaxError(SyntaxErrorType::expReturns, m_Tokens->at(m_TokenIndex));
 		}
 		else
 			IncIndex();
@@ -534,7 +533,7 @@ namespace Spliwaca
 
 		if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::As)
 		{
-			RegisterSyntaxError(SyntaxError(SyntaxErrorType::expAs, m_Tokens->at(m_TokenIndex)));
+			RegisterSyntaxError(SyntaxErrorType::expAs, m_Tokens->at(m_TokenIndex));
 		}
 		else
 			IncIndex();
@@ -543,17 +542,17 @@ namespace Spliwaca
 
 		if (m_Tokens->at(m_TokenIndex)->GetType() == TokenType::End && m_Tokens->at((uint64_t)m_TokenIndex + (uint64_t)1)->GetType() == TokenType::Function)
 		{
-			m_CurrentScope->CloseScope(m_Tokens->at(m_TokenIndex)->GetLineNumber());
+			//m_CurrentScope->CloseScope(m_Tokens->at(m_TokenIndex)->GetLineNumber());
 			IncIndex(); IncIndex();
 		}
 		else
 		{
-			RegisterSyntaxError(SyntaxError(SyntaxErrorType::expEndFunc, m_Tokens->at(m_TokenIndex)));
-			m_CurrentScope->CloseScope(0);
+			RegisterSyntaxError(SyntaxErrorType::expEndFunc, m_Tokens->at(m_TokenIndex));
+			//m_CurrentScope->CloseScope(0);
 		}
 		
-		m_ScopeStack.pop_back();
-		m_CurrentScope = m_ScopeStack.back();
+		//m_ScopeStack.pop_back();
+		//m_CurrentScope = m_ScopeStack.back();
 
 		return node;
 	}
@@ -565,39 +564,39 @@ namespace Spliwaca
 
 		node->id = ConstructIdentNode();
 
-		m_CurrentScope->AddEntry(node->id->GetContents(), node->id->GetLineNumber());
-		m_ScopeStack.push_back(m_CurrentScope->AddSubScope(node->id->GetContents(), node->id->GetLineNumber(), ScopeType::Procedure));
-		m_CurrentScope = m_ScopeStack.back();
+		//m_CurrentScope->AddEntry(node->id->GetContents(), node->id->GetLineNumber());
+		//m_ScopeStack.push_back(m_CurrentScope->AddSubScope(node->id->GetContents(), node->id->GetLineNumber(), ScopeType::Procedure));
+		//m_CurrentScope = m_ScopeStack.back();
 
 		if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::ReturnType)
 		{
 			if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Takes)
 			{
-				RegisterSyntaxError(SyntaxError(SyntaxErrorType::expReturns, m_Tokens->at(m_TokenIndex)));
+				RegisterSyntaxError(SyntaxErrorType::expReturns, m_Tokens->at(m_TokenIndex));
 			}
 			else
 				IncIndex();
 			node->argTypes.push_back(ConstructTypeNode());
 			node->argNames.push_back(ConstructIdentNode());
-			m_CurrentScope->AddEntry(node->argNames.back()->GetContents(), node->argNames.back()->GetLineNumber());
+			//m_CurrentScope->AddEntry(node->argNames.back()->GetContents(), node->argNames.back()->GetLineNumber());
 
 			while (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::ReturnType)
 			{
 				if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Comma)
 				{
-					RegisterSyntaxError(SyntaxError(SyntaxErrorType::expComma, m_Tokens->at(m_TokenIndex)));
+					RegisterSyntaxError(SyntaxErrorType::expComma, m_Tokens->at(m_TokenIndex));
 				}
 				else
 					IncIndex();
 				node->argTypes.push_back(ConstructTypeNode());
 				node->argNames.push_back(ConstructIdentNode());
-				m_CurrentScope->AddEntry(node->argNames.back()->GetContents(), node->argNames.back()->GetLineNumber());
+				//m_CurrentScope->AddEntry(node->argNames.back()->GetContents(), node->argNames.back()->GetLineNumber());
 			}
 		}
 
 		if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::As)
 		{
-			RegisterSyntaxError(SyntaxError(SyntaxErrorType::expAs, m_Tokens->at(m_TokenIndex)));
+			RegisterSyntaxError(SyntaxErrorType::expAs, m_Tokens->at(m_TokenIndex));
 		}
 		else
 			IncIndex();
@@ -606,17 +605,17 @@ namespace Spliwaca
 
 		if (m_Tokens->at(m_TokenIndex)->GetType() == TokenType::End && m_Tokens->at((uint64_t)m_TokenIndex + (uint64_t)1)->GetType() == TokenType::Function)
 		{
-			m_CurrentScope->CloseScope(m_Tokens->at(m_TokenIndex)->GetLineNumber());
+			//m_CurrentScope->CloseScope(m_Tokens->at(m_TokenIndex)->GetLineNumber());
 			IncIndex(); IncIndex();
 		}
 		else
 		{
-			m_CurrentScope->CloseScope(0);
-			RegisterSyntaxError(SyntaxError(SyntaxErrorType::expEndProc, m_Tokens->at(m_TokenIndex)));
+			//m_CurrentScope->CloseScope(0);
+			RegisterSyntaxError(SyntaxErrorType::expEndProc, m_Tokens->at(m_TokenIndex));
 		}
 
-		m_ScopeStack.pop_back();
-		m_CurrentScope = m_ScopeStack.back();
+		//m_ScopeStack.pop_back();
+		//m_CurrentScope = m_ScopeStack.back();
 		return node;
 	}
 
@@ -627,22 +626,22 @@ namespace Spliwaca
 
 		node->id = ConstructIdentNode();
 
-		m_CurrentScope->AddEntry(node->id->GetContents(), node->id->GetLineNumber());
-		m_ScopeStack.push_back(m_CurrentScope->AddSubScope(node->id->GetContents(), m_Tokens->at(m_TokenIndex)->GetLineNumber(), ScopeType::If));
-		m_CurrentScope = m_ScopeStack.back();
+		//m_CurrentScope->AddEntry(node->id->GetContents(), node->id->GetLineNumber());
+		//m_ScopeStack.push_back(m_CurrentScope->AddSubScope(node->id->GetContents(), m_Tokens->at(m_TokenIndex)->GetLineNumber(), ScopeType::If));
+		//m_CurrentScope = m_ScopeStack.back();
 
 		
 
 		if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::As)
 		{
-			RegisterSyntaxError(SyntaxError(SyntaxErrorType::expAs, m_Tokens->at(m_TokenIndex)));
+			RegisterSyntaxError(SyntaxErrorType::expAs, m_Tokens->at(m_TokenIndex));
 		}
 		else
 			IncIndex();
 
 		if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Newline)
 		{
-			RegisterSyntaxError(SyntaxError(SyntaxErrorType::expAs, m_Tokens->at(m_TokenIndex)));
+			RegisterSyntaxError(SyntaxErrorType::expAs, m_Tokens->at(m_TokenIndex));
 		}
 		else
 			IncIndex();
@@ -660,7 +659,7 @@ namespace Spliwaca
 		{
 			if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Comma)
 			{
-				RegisterSyntaxError(SyntaxError(SyntaxErrorType::expComma, m_Tokens->at(m_TokenIndex)));
+				RegisterSyntaxError(SyntaxErrorType::expComma, m_Tokens->at(m_TokenIndex));
 			}
 			else
 				IncIndex();
@@ -682,17 +681,17 @@ namespace Spliwaca
 		
 		if (m_Tokens->at(m_TokenIndex)->GetType() == TokenType::End && m_Tokens->at((uint64_t)m_TokenIndex + (uint64_t)1)->GetType() == TokenType::Struct)
 		{
-			m_CurrentScope->CloseScope(m_Tokens->at(m_TokenIndex)->GetLineNumber());
+			//m_CurrentScope->CloseScope(m_Tokens->at(m_TokenIndex)->GetLineNumber());
 			IncIndex(); IncIndex();
 		}
 		else
 		{
-			m_CurrentScope->CloseScope(m_Tokens->at(m_TokenIndex)->GetLineNumber());
-			RegisterSyntaxError(SyntaxError(SyntaxErrorType::expEndStruct, m_Tokens->at(m_TokenIndex)));
+			//m_CurrentScope->CloseScope(m_Tokens->at(m_TokenIndex)->GetLineNumber());
+			RegisterSyntaxError(SyntaxErrorType::expEndStruct, m_Tokens->at(m_TokenIndex));
 		}
 		
-		m_ScopeStack.pop_back();
-		m_CurrentScope = m_ScopeStack.back();
+		//m_ScopeStack.pop_back();
+		//m_CurrentScope = m_ScopeStack.back();
 		return node;
 	}
 
@@ -717,7 +716,7 @@ namespace Spliwaca
 			node->anonpNode = ConstructAnonProc();
 			node->exprType = 6; break;
 		default:
-			node->listNode = ConstructList();
+			node->binOpNode = ConstructBinOpNode();
 			node->exprType = 1; break;
 		}
 		return node;
@@ -726,6 +725,7 @@ namespace Spliwaca
 	std::shared_ptr<ListNode> Parser::ConstructList()
 	{
 		std::shared_ptr<ListNode> node = std::make_shared<ListNode>();
+		uint32_t lineNumber = m_Tokens->at(m_TokenIndex)->GetLineNumber();
 
 		node->Items.push_back(ConstructDictEntry());
 		while (m_Tokens->at(m_TokenIndex)->GetType() == TokenType::Comma)
@@ -737,17 +737,31 @@ namespace Spliwaca
 			if (m_Tokens->at(m_TokenIndex)->GetType() == TokenType::Newline)
 				IncIndex();
 		}
+
+		int dictPairs = -1;
+		for (auto dictNode : node->Items)
+		{
+			if (dictNode->hasRight && dictPairs == 0)
+				RegisterSyntaxError(SyntaxErrorType::inconsistentDict, lineNumber, 0, 10, TokenType::None);
+			else if (dictNode->hasRight)
+				dictPairs = 1;
+			else if (dictPairs == 1)
+				RegisterSyntaxError(SyntaxErrorType::inconsistentDict, lineNumber, 0, 10, TokenType::None);
+			else
+				dictPairs = 0;
+		}
+
 		return node;
 	}
 
 	std::shared_ptr<DictEntryNode> Parser::ConstructDictEntry()
 	{
 		std::shared_ptr<DictEntryNode> node = std::make_shared<DictEntryNode>();
-		node->left = ConstructBooleanExpr();
+		node->left = ConstructExpr();
 		if (m_Tokens->at(m_TokenIndex)->GetType() == TokenType::DictEquator)
 		{
 			IncIndex();
-			node->right = ConstructBooleanExpr();
+			node->right = ConstructExpr();
 			node->hasRight = true;
 		}
 		else
@@ -756,6 +770,7 @@ namespace Spliwaca
 		return node;
 	}
 
+	/*
 	std::shared_ptr<BoolExprNode> Parser::ConstructBooleanExpr()
 	{
 		std::shared_ptr<BoolExprNode> node = std::make_shared<BoolExprNode>();
@@ -840,12 +855,30 @@ namespace Spliwaca
 		}
 		return node;
 	}
+	*/
+
+	std::shared_ptr<BinOpNode> Parser::ConstructBinOpNode()
+	{
+		std::shared_ptr<BinOpNode> node = std::make_shared<BinOpNode>();
+		node->left = ConstructFactor();
+		std::vector<TokenType> acceptedTypes = { TokenType::And, TokenType::Or, TokenType::NotEqual, TokenType::Equal, TokenType::GreaterThan,
+			TokenType::GreaterThanEqual, TokenType::LessThan , TokenType::LessThanEqual, TokenType::Plus, TokenType::Minus, TokenType::Modulo,
+			TokenType::Multiply, TokenType::Divide, TokenType::Intdiv, TokenType::Power, TokenType::BitwiseAnd, TokenType::BitwiseOr};
+
+		if (itemInVect(acceptedTypes, m_Tokens->at(m_TokenIndex)->GetType()))
+		{
+			node->opToken = m_Tokens->at(m_TokenIndex);
+			IncIndex();
+			node->right = ConstructBinOpNode();
+		}
+		return node;
+	}
 
 	std::shared_ptr<FactorNode> Parser::ConstructFactor()
 	{
 		std::shared_ptr<FactorNode> node = std::make_shared<FactorNode>();
-		TokenType type = m_Tokens->at(m_TokenIndex)->GetType();
-		if (type == TokenType::Plus || type == TokenType::Minus)
+		std::vector<TokenType> acceptedTypes = { TokenType::Plus, TokenType::Minus, TokenType::Not };
+		if (itemInVect(acceptedTypes, m_Tokens->at(m_TokenIndex)->GetType()))
 		{
 			node->opToken = m_Tokens->at(m_TokenIndex);
 			IncIndex();
@@ -866,10 +899,10 @@ namespace Spliwaca
 		if (m_Tokens->at(m_TokenIndex)->GetType() == TokenType::LParen)
 		{
 			IncIndex();
-			node->expression = ConstructExpr();
+			node->list = ConstructList();
 			if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::RParen)
 			{
-				RegisterSyntaxError(SyntaxError(SyntaxErrorType::expRParen, m_Tokens->at(m_TokenIndex)));
+				RegisterSyntaxError(SyntaxErrorType::expRParen, m_Tokens->at(m_TokenIndex));
 			}
 			node->type = 2;
 		}
@@ -880,26 +913,28 @@ namespace Spliwaca
 			if (!itemInVect(acceptedAtomTokenTypes, type))
 			{
 				//If it doesn't start with an ident, then it isn't an identifier, and if it isn't any of the others, then it must be an error
-				RegisterSyntaxError(SyntaxError(SyntaxErrorType::expAtom, m_Tokens->at(m_TokenIndex)));
+				RegisterSyntaxError(SyntaxErrorType::expAtom, m_Tokens->at(m_TokenIndex));
 				node->type = 0;
 			}
 			else if (type == TokenType::Identifier)
 			{
-				std::shared_ptr<IdentNode> ident = ConstructIdentNode();
+				//std::shared_ptr<IdentNode> ident = ConstructIdentNode();
+				node->ident = ConstructIdentNode();
+				node->type = 3;
 				//@IMPORTANT How are global variables managed? Are all variables declared in the main scope treated as globals, or do
 				//           they need to be specially declared and placed in a global scope? main scope = global scope, scope state -> global variables
 				// it is NOT an error to reference a variable from a previous scope before defining it in the current scope - different to python behaviour 
 				// w/ functions
-				if (m_CurrentScope->FindIdent(ident) || m_MainScope->FindIdent(ident))
+				/*if (m_CurrentScope->FindIdent(ident) || m_MainScope->FindIdent(ident))
 				{
 					node->ident = ident;
 					node->type = 3;
 				}
 				else
 				{
-					RegisterMissingVariable(ident->GetLineNumber(), ident->GetColumnNumber());
+					//RegisterMissingVariable(ident->GetLineNumber(), ident->GetColumnNumber());
 					node->type = 0;
-				}
+				}*/
 			}
 			else
 			{
@@ -908,7 +943,36 @@ namespace Spliwaca
 				IncIndex();
 			}
 		}
+
+		if (m_Tokens->at(m_TokenIndex)->GetType() == TokenType::LSquareParen)
+		{
+			node->listAccess = ConstructListAccess();
+			node->listAccessPresent = true;
+		}
 		return node;
+	}
+
+	std::shared_ptr<ListAccessNode> Parser::ConstructListAccess()
+	{
+		std::shared_ptr<ListAccessNode> node = std::make_shared<ListAccessNode>();
+		IncIndex();
+
+		node->indices.push_back(ConstructList());
+		if (m_Tokens->at(m_TokenIndex)->GetType() == TokenType::RSquareParen)
+			IncIndex();
+		else
+			RegisterSyntaxError(SyntaxErrorType::expRSquareParen, m_Tokens->at(m_TokenIndex));
+
+		while (m_Tokens->at(m_TokenIndex)->GetType() == TokenType::LSquareParen)
+		{
+			node->indices.push_back(ConstructList());
+			if (m_Tokens->at(m_TokenIndex)->GetType() == TokenType::RSquareParen)
+				IncIndex();
+			else
+				RegisterSyntaxError(SyntaxErrorType::expRSquareParen, m_Tokens->at(m_TokenIndex));
+		}
+
+		return std::shared_ptr<ListAccessNode>();
 	}
 
 	std::shared_ptr<CreateNode> Parser::ConstructCreate()
@@ -919,10 +983,10 @@ namespace Spliwaca
 
 		if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::With)
 		{
-			node->args.push_back(ConstructExpr());
+			node->args.push_back(ConstructAtom());
 			while (m_Tokens->at(m_TokenIndex)->GetType() == TokenType::Comma)
 			{
-				node->args.push_back(ConstructExpr());
+				node->args.push_back(ConstructAtom());
 			}
 		}
 		return node;
@@ -933,7 +997,7 @@ namespace Spliwaca
 		std::shared_ptr<CastNode> node = std::make_shared<CastNode>();
 		IncIndex();
 		node->castType = ConstructTypeNode();
-		node->expr = ConstructExpr();
+		node->list = ConstructList();
 		return node;
 	}
 
@@ -941,7 +1005,7 @@ namespace Spliwaca
 	{
 		std::shared_ptr<ReturnNode> node = std::make_shared<ReturnNode>();
 		IncIndex();
-		node->expr = ConstructExpr();
+		node->list = ConstructList();
 		return node;
 	}
 
@@ -950,33 +1014,33 @@ namespace Spliwaca
 		std::shared_ptr<AnonfNode> node = std::make_shared<AnonfNode>();
 		IncIndex();
 
-		m_ScopeStack.push_back(m_CurrentScope->AddSubScope("ANONF_line_" + std::to_string(m_Tokens->at(m_TokenIndex)->GetLineNumber()), m_Tokens->at(m_TokenIndex)->GetLineNumber(), ScopeType::Anonf));
-		m_CurrentScope = m_ScopeStack.back();
+		//m_ScopeStack.push_back(m_CurrentScope->AddSubScope("ANONF_line_" + std::to_string(m_Tokens->at(m_TokenIndex)->GetLineNumber()), m_Tokens->at(m_TokenIndex)->GetLineNumber(), ScopeType::Anonf));
+		//m_CurrentScope = m_ScopeStack.back();
 
 		if (m_Tokens->at(m_TokenIndex)->GetType() == TokenType::Takes)
 		{
 			IncIndex();
 			node->argTypes.push_back(ConstructTypeNode());
 			node->argNames.push_back(ConstructIdentNode());
-			m_CurrentScope->AddEntry(node->argNames.back()->GetContents(), node->argNames.back()->GetLineNumber());
+			//m_CurrentScope->AddEntry(node->argNames.back()->GetContents(), node->argNames.back()->GetLineNumber());
 
 			while (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::ReturnType)
 			{
 				if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Comma)
 				{
-					RegisterSyntaxError(SyntaxError(SyntaxErrorType::expComma, m_Tokens->at(m_TokenIndex)));
+					RegisterSyntaxError(SyntaxErrorType::expComma, m_Tokens->at(m_TokenIndex));
 				}
 				else
 					IncIndex();
 				node->argTypes.push_back(ConstructTypeNode());
 				node->argNames.push_back(ConstructIdentNode());
-				m_CurrentScope->AddEntry(node->argNames.back()->GetContents(), node->argNames.back()->GetLineNumber());
+				//m_CurrentScope->AddEntry(node->argNames.back()->GetContents(), node->argNames.back()->GetLineNumber());
 			}
 		}
 
 		if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::ReturnType)
 		{
-			RegisterSyntaxError(SyntaxError(SyntaxErrorType::expReturns, m_Tokens->at(m_TokenIndex)));
+			RegisterSyntaxError(SyntaxErrorType::expReturns, m_Tokens->at(m_TokenIndex));
 		}
 		else
 			IncIndex();
@@ -985,7 +1049,7 @@ namespace Spliwaca
 
 		if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::As)
 		{
-			RegisterSyntaxError(SyntaxError(SyntaxErrorType::expAs, m_Tokens->at(m_TokenIndex)));
+			RegisterSyntaxError(SyntaxErrorType::expAs, m_Tokens->at(m_TokenIndex));
 		}
 		else
 			IncIndex();
@@ -994,17 +1058,17 @@ namespace Spliwaca
 
 		if (m_Tokens->at(m_TokenIndex)->GetType() == TokenType::End && m_Tokens->at((uint64_t)m_TokenIndex + (uint64_t)1)->GetType() == TokenType::Function)
 		{
-			m_CurrentScope->CloseScope(m_Tokens->at(m_TokenIndex)->GetLineNumber());
+			//m_CurrentScope->CloseScope(m_Tokens->at(m_TokenIndex)->GetLineNumber());
 			IncIndex(); IncIndex();
 		}
 		else
 		{
-			m_CurrentScope->CloseScope(0);
-			RegisterSyntaxError(SyntaxError(SyntaxErrorType::expEndFunc, m_Tokens->at(m_TokenIndex)));
+			//m_CurrentScope->CloseScope(0);
+			RegisterSyntaxError(SyntaxErrorType::expEndFunc, m_Tokens->at(m_TokenIndex));
 		}
 
-		m_ScopeStack.pop_back();
-		m_CurrentScope = m_ScopeStack.back();
+		//m_ScopeStack.pop_back();
+		//m_CurrentScope = m_ScopeStack.back();
 		return node;
 	}
 
@@ -1013,14 +1077,14 @@ namespace Spliwaca
 		std::shared_ptr<AnonpNode> node = std::make_shared<AnonpNode>();
 		IncIndex();
 
-		m_ScopeStack.push_back(m_CurrentScope->AddSubScope("ANONP_line_" + std::to_string(m_Tokens->at(m_TokenIndex)->GetLineNumber()), m_Tokens->at(m_TokenIndex)->GetLineNumber(), ScopeType::Anonp));
-		m_CurrentScope = m_ScopeStack.back();
+		//m_ScopeStack.push_back(m_CurrentScope->AddSubScope("ANONP_line_" + std::to_string(m_Tokens->at(m_TokenIndex)->GetLineNumber()), m_Tokens->at(m_TokenIndex)->GetLineNumber(), ScopeType::Anonp));
+		//m_CurrentScope = m_ScopeStack.back();
 
 		if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::ReturnType)
 		{
 			if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Takes)
 			{
-				RegisterSyntaxError(SyntaxError(SyntaxErrorType::expReturns, m_Tokens->at(m_TokenIndex)));
+				RegisterSyntaxError(SyntaxErrorType::expReturns, m_Tokens->at(m_TokenIndex));
 			}
 			else
 				IncIndex();
@@ -1033,7 +1097,7 @@ namespace Spliwaca
 			{
 				if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Comma)
 				{
-					RegisterSyntaxError(SyntaxError(SyntaxErrorType::expComma, m_Tokens->at(m_TokenIndex)));
+					RegisterSyntaxError(SyntaxErrorType::expComma, m_Tokens->at(m_TokenIndex));
 				}
 				else
 					IncIndex();
@@ -1047,7 +1111,7 @@ namespace Spliwaca
 
 		if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::As)
 		{
-			RegisterSyntaxError(SyntaxError(SyntaxErrorType::expAs, m_Tokens->at(m_TokenIndex)));
+			RegisterSyntaxError(SyntaxErrorType::expAs, m_Tokens->at(m_TokenIndex));
 		}
 		else
 			IncIndex();
@@ -1056,17 +1120,17 @@ namespace Spliwaca
 
 		if (m_Tokens->at(m_TokenIndex)->GetType() == TokenType::End && m_Tokens->at((uint64_t)m_TokenIndex + (uint64_t)1)->GetType() == TokenType::Function)
 		{
-			m_CurrentScope->CloseScope(m_Tokens->at(m_TokenIndex)->GetLineNumber());
+			//m_CurrentScope->CloseScope(m_Tokens->at(m_TokenIndex)->GetLineNumber());
 			IncIndex(); IncIndex();
 		}
 		else
 		{
-			m_CurrentScope->CloseScope(0);
-			RegisterSyntaxError(SyntaxError(SyntaxErrorType::expEndFunc, m_Tokens->at(m_TokenIndex)));
+			//m_CurrentScope->CloseScope(0);
+			RegisterSyntaxError(SyntaxErrorType::expEndFunc, m_Tokens->at(m_TokenIndex));
 		}
 
-		m_ScopeStack.pop_back();
-		m_CurrentScope = m_ScopeStack.back();
+		//m_ScopeStack.pop_back();
+		//m_CurrentScope = m_ScopeStack.back();
 		return node;
 	}
 
@@ -1093,7 +1157,7 @@ namespace Spliwaca
 
 		if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Identifier)
 		{
-			RegisterSyntaxError(SyntaxError(SyntaxErrorType::expIdent, m_Tokens->at(m_TokenIndex)));
+			RegisterSyntaxError(SyntaxErrorType::expIdent, m_Tokens->at(m_TokenIndex));
 		}
 		else
 		{
@@ -1106,7 +1170,7 @@ namespace Spliwaca
 			IncIndex();
 			if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Identifier)
 			{
-				RegisterSyntaxError(SyntaxError(SyntaxErrorType::expIdent, m_Tokens->at(m_TokenIndex)));
+				RegisterSyntaxError(SyntaxErrorType::expIdent, m_Tokens->at(m_TokenIndex));
 			}
 			else
 			{
