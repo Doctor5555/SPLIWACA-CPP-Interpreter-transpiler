@@ -141,7 +141,7 @@ int main()
 	setvbuf(stdout, nullptr, _IOFBF, 1000);
 
 	LOG_INIT();
-	bool printTokenList = true;
+	bool printTokenList = false;
 
 	std::shared_ptr<Lexer> lexer = Lexer::Create("c:/dev/epq spliwaca/test_script.splw");
 	SPLW_INFO("Created lexer.");	
@@ -205,6 +205,12 @@ int main()
 
 	std::shared_ptr<Generator> codeGenerator = Generator::Create(ast);
 	SPLW_INFO("Created Generator");
+
+	std::string finalCode = codeGenerator->GenerateCode();
+
+	std::cout << finalCode << std::endl;
+
+	SPLW_INFO("Finished code output!");
 
 	/*
 	ROOT

@@ -101,6 +101,22 @@ namespace Spliwaca
 			m_Tokens->push_back(std::make_shared<Token>(Token(TokenType::eof, "", m_LineNumber, m_ColumnNumber)));
 			return;
 		}/* ---------------------------------END CLEANUP--------------------------------- */
+		else if (flags & 32) // First char of RAW
+		{
+			flags &= 0b11011111;
+			if (tokenContents != " ")
+			{
+				if (tokenContents == "\n")
+				{
+					flags &= 0b11111011;
+					m_Tokens->push_back(std::make_shared<Token>(Token(TokenType::Raw, persistent_contents.c_str(), m_StoredLineNumber, m_StoredColumnNumber)));
+					m_Tokens->push_back(std::make_shared<Token>(Token(TokenType::Newline, "\n", m_LineNumber, m_ColumnNumber)));
+					persistent_contents = "";
+				}
+				else
+					persistent_contents.append(tokenContents);
+			}
+		}
 		else if (flags & 16) // Double quote
 		{
 			if (tokenContents == "\"")
@@ -168,13 +184,13 @@ namespace Spliwaca
 			else if (tokenContents == "OUTPUT")
 			{
 				m_Tokens->push_back(std::make_shared<Token>(Token(TokenType::Output, tokenContents.c_str(), m_LineNumber, m_ColumnNumber)));
-				flags |= 0b00000100;
+				flags |= 0b00100100;
 				m_StoredColumnNumber = m_ColumnNumber;
 				m_StoredLineNumber = m_LineNumber;
 			}
 			else if (tokenContents == "RAW")
 			{
-				flags |= 0b00000100;
+				flags |= 0b00100100;
 				m_StoredColumnNumber = m_ColumnNumber;
 				m_StoredLineNumber = m_LineNumber;
 			}
@@ -244,7 +260,6 @@ namespace Spliwaca
 		int i = 0;
 		while (true)
 		{
-			PROFILE_SCOPE("MakeTokens_While_loop");
 			char c = s[i];
 			std::string duo = std::string(1, c); (i < s.size() - 1) ? duo.append(std::string(1, s[i + 1])) : duo.append("");
 			std::string trio = std::string(1, c); (i < s.size() - 1) ? trio.append(std::string(1, s[i + 1])) : trio.append(""); (i < s.size() - 2) ? trio.append(std::string(1, s[i + 2])) : trio.append("");

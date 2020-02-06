@@ -58,9 +58,8 @@ namespace Spliwaca
 			case 12: GenerateStruct(s->structNode); break;
 			case 13: GenerateReturn(s->returnNode); break;
 			}
+			m_Code += "\n";
 		}
-
-		m_Code += "\n";
 	}
 
 	void Generator::GenerateIf(std::shared_ptr<IfNode> node)
@@ -164,14 +163,12 @@ namespace Spliwaca
 
 	void Generator::GenerateFunc(std::shared_ptr<FuncNode> node)
 	{
-		m_Code += m_Tabs + "def "; GenerateIdent(node->id); m_Code += "("; GenerateIdent(node->argNames.at(0)); m_Code += ": "; GenerateType(node->argTypes.at(0));
+		m_Code += m_Tabs + "def " + node->id->GetContents() + "(" + node->argNames.at(0)->GetContents() + ": "; GenerateType(node->argTypes.at(0));
 		assert(node->argNames.size() == node->argTypes.size());
 
 		for (uint32_t i = 1; i < node->argNames.size(); i++)
 		{
-			m_Code += ", ";
-			GenerateIdent(node->argNames.at(i));
-			m_Code += ": ";
+			m_Code += ", " + node->argNames.at(i)->GetContents() + ": ";
 			GenerateType(node->argTypes.at(i));
 		}
 
@@ -186,14 +183,12 @@ namespace Spliwaca
 
 	void Generator::GenerateProc(std::shared_ptr<ProcNode> node)
 	{
-		m_Code += m_Tabs + "def "; GenerateIdent(node->id); m_Code += "("; GenerateIdent(node->argNames.at(0)); m_Code += ": "; GenerateType(node->argTypes.at(0));
+		m_Code += m_Tabs + "def " + node->id->GetContents() + "(" + node->argNames.at(0)->GetContents() + ": "; GenerateType(node->argTypes.at(0));
 		assert(node->argNames.size() == node->argTypes.size());
 
 		for (uint32_t i = 1; i < node->argNames.size(); i++)
 		{
-			m_Code += ", ";
-			GenerateIdent(node->argNames.at(i));
-			m_Code += ": ";
+			m_Code += ", " + node->argNames.at(i)->GetContents() + ": ";
 			GenerateType(node->argTypes.at(i));
 		}
 		m_Code += "):\n";
@@ -205,7 +200,7 @@ namespace Spliwaca
 
 	void Generator::GenerateStruct(std::shared_ptr<StructNode> node)
 	{
-		m_Code += m_Tabs + "class "; GenerateIdent(node->id); m_Code += ":\n";
+		m_Code += m_Tabs + "class " + node->id->GetContents() + ":\n";
 		m_Tabs += "\t";
 		m_Code += m_Tabs + "def __init__(self";
 
@@ -213,8 +208,7 @@ namespace Spliwaca
 
 		for (uint32_t i = 0; i < node->names.size(); i++)
 		{
-			m_Code += ", ";
-			GenerateIdent(node->names.at(i));
+			m_Code += ", " + node->names.at(i)->GetContents() + ": ";
 			m_Code += ": ";
 			GenerateType(node->types.at(i));
 		}
@@ -224,9 +218,7 @@ namespace Spliwaca
 
 		for (uint32_t i = 0; i < node->names.size(); i++)
 		{
-			m_Code += m_Tabs + "self.";
-			GenerateIdent(node->names.at(i));
-			m_Code += " = ";
+			m_Code += ", " + node->names.at(i)->GetContents() + " = ";
 			GenerateType(node->types.at(i));
 			m_Code += "\n";
 		}
@@ -238,5 +230,156 @@ namespace Spliwaca
 	void Generator::GenerateReturn(std::shared_ptr<ReturnNode> node)
 	{
 		m_Code += m_Tabs + "return "; GenerateList(node->list);
+	}
+	
+	void Generator::GenerateList(std::shared_ptr<ListNode> node)
+	{
+		if (node->Items.at(0)->hasRight)
+		{
+			m_Code += "{";
+		}
+		else if (node->Items.size() > 1)
+		{
+			m_Code += "[";
+		}
+		else
+		{
+			GenerateDictEntry(node->Items.at(0));
+			return;
+		}
+
+		GenerateDictEntry(node->Items.at(0));
+		for (uint32_t i = 1; i < node->Items.size(); i++)
+		{
+			m_Code += ", ";
+			GenerateDictEntry(node->Items.at(i));
+		}
+
+		if (node->Items.at(0)->hasRight)
+		{
+			m_Code += "}";
+		}
+		else if (node->Items.size() > 1)
+		{
+			m_Code += "]";
+		}
+	}
+
+	void Generator::GenerateDictEntry(std::shared_ptr<DictEntryNode> node)
+	{
+		GenerateExpr(node->left);
+		if (node->hasRight)
+		{
+			m_Code.append(": ");
+			GenerateExpr(node->right);
+		}
+	}
+
+	void Generator::GenerateExpr(std::shared_ptr<Expr> node)
+	{
+		switch (node->exprType)
+		{
+		case 1: GenerateBinOp(node->binOpNode); break;
+		case 2: GenerateCreate(node->createNode); break;
+		case 3: GenerateCast(node->castNode); break;
+		case 4: GenerateCall(node->callNode, false); break;
+		case 5: GenerateAnonf(node->anonfNode); break;
+		case 6: GenerateAnonp(node->anonpNode); break;
+		}
+	}
+
+	void Generator::GenerateBinOp(std::shared_ptr<BinOpNode> node)
+	{
+		GenerateFactor(node->left);
+		if (node->opToken)
+		{
+			m_Code += node->opToken->GetContents();
+			GenerateBinOp(node->right);
+		}
+	}
+
+	void Generator::GenerateFactor(std::shared_ptr<FactorNode> node)
+	{
+		if (node->opTokenPresent)
+		{
+			m_Code += node->opToken->GetContents();
+		}
+		GenerateAtom(node->right);
+	}
+
+	void Generator::GenerateAtom(std::shared_ptr<AtomNode> node)
+	{
+		switch (node->type)
+		{
+		case 1:
+		{
+			if (node->token->GetType() == TokenType::Raw)
+				m_Code += ParseRaw(node->token);
+			else if (node->token->GetType() == TokenType::String)
+				m_Code += "\"" + node->token->GetContents() + "\"";
+			else if (node->token->GetType() == TokenType::Complex)
+				m_Code += ParseComplex(node->token);
+			else
+				m_Code += node->token->GetContents();
+			break;
+		}
+		case 2: GenerateList(node->list); break;
+		case 3: m_Code += node->ident->GetContents(); break;
+		}
+
+		if (node->listAccessPresent){
+			for (std::shared_ptr<ListNode> n : node->listAccess->indices)
+			{
+				m_Code += "[";
+				GenerateList(n);
+				m_Code += "]";
+			}
+		}
+	}
+
+	void Generator::GenerateCreate(std::shared_ptr<CreateNode> node)
+	{
+		GenerateType(node->createType); m_Code += "("; GenerateExpr(node->args.at(0));
+
+		for (uint32_t i = 1; i < node->args.size(); i++)
+		{
+			m_Code += ", "; GenerateExpr(node->args.at(i));
+		}
+
+		m_Code += ")";
+	}
+
+	void Generator::GenerateCast(std::shared_ptr<CastNode> node)
+	{
+		GenerateType(node->castType); m_Code += "("; GenerateList(node->list); m_Code += ")";
+	}
+
+	void Generator::GenerateAnonf(std::shared_ptr<AnonfNode> node)
+	{}
+
+	void Generator::GenerateAnonp(std::shared_ptr<AnonpNode> node)
+	{}
+
+	void Generator::GenerateType(std::shared_ptr<TypeNode> node)
+	{
+		if (node->type == 1)
+			m_Code += node->ident->GetContents();
+		else
+			m_Code += node->typeToken->GetContents();
+	}
+
+	/*void Generator::GenerateIdent(std::shared_ptr<IdentNode> node)
+	{
+		m_Code += node->GetContents();
+	}*/
+
+	std::string Generator::ParseRaw(std::shared_ptr<Token> token)
+	{
+		return token->GetContents();
+	}
+
+	std::string Generator::ParseComplex(std::shared_ptr<Token> token)
+	{
+		return std::string();
 	}
 }

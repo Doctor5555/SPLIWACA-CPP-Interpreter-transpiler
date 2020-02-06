@@ -82,7 +82,7 @@ namespace Spliwaca
 	struct CreateNode
 	{
 		std::shared_ptr<TypeNode> createType;
-		std::vector<std::shared_ptr<AtomNode>> args;
+		std::vector<std::shared_ptr<Expr>> args;
 	};
 
 	struct ListAccessNode

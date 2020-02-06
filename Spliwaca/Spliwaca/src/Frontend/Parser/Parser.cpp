@@ -983,10 +983,10 @@ namespace Spliwaca
 
 		if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::With)
 		{
-			node->args.push_back(ConstructAtom());
+			node->args.push_back(ConstructExpr());
 			while (m_Tokens->at(m_TokenIndex)->GetType() == TokenType::Comma)
 			{
-				node->args.push_back(ConstructAtom());
+				node->args.push_back(ConstructExpr());
 			}
 		}
 		return node;
