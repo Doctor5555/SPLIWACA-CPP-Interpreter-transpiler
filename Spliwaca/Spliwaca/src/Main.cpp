@@ -186,8 +186,12 @@ int main()
 
 	for (SyntaxError s : state.SyntaxErrors)
 	{
+		
 		SPLW_CRITICAL("Syntax Error code {2} at line {0}, column {1}", s.GetLineNumber(), s.GetColumnNumber(), s.GetErrorCode());
-		SPLW_WARN("{0}", lexer->GetSplitFileString().at(s.GetLineNumber()));
+		if (s.GetLineNumber() >= lexer->GetSplitFileString().size())
+			SPLW_WARN("Line {0} out of range!", s.GetLineNumber());
+		else
+			SPLW_WARN("{0}", lexer->GetSplitFileString().at(s.GetLineNumber()));
 		SPLW_WARN("{0}{1}", mulString(" ", s.GetColumnNumber() - 1), mulString("^", s.GetColumnSpan()));
 		std::cout << "\n";
 	}

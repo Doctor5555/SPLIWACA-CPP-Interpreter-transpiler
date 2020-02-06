@@ -113,7 +113,10 @@ namespace Spliwaca
 
 	void Generator::GenerateInput(std::shared_ptr<InputNode> node)
 	{
-		m_Code += m_Tabs + "libsplw."; GenerateType(node->type); m_Code += "_" + node->signSpec->GetContents() + "_input()";
+		m_Code += m_Tabs + node->id->GetContents() + " = libsplw."; GenerateType(node->type);
+		if (node->signSpec)
+			m_Code += "_" + node->signSpec->GetContents();
+		m_Code += "_input()";
 	}
 
 	void Generator::GenerateOutput(std::shared_ptr<OutputNode> node)
@@ -153,20 +156,27 @@ namespace Spliwaca
 
 	void Generator::GenerateQuit(std::shared_ptr<QuitNode> node)
 	{
-		m_Code += m_Tabs + "quit("; GenerateAtom(node->returnVal); m_Code += ")";
+		m_Code += m_Tabs + "quit("; 
+		if (node->returnVal)
+			GenerateAtom(node->returnVal); 
+		m_Code += ")";
 	}
 
 	void Generator::GenerateCall(std::shared_ptr<CallNode> node, bool statement)
 	{
 		if (statement)
 			m_Code += m_Tabs; 
-		GenerateExpr(node->function); m_Code += "("; GenerateExpr(node->args.at(0));
-
-		for (uint32_t i = 1; i < node->args.size(); i++)
+		GenerateExpr(node->function); m_Code += "("; 
+		
+		if (node->args.size() != 0)
 		{
-			m_Code += ", "; GenerateExpr(node->args.at(i));
-		}
+			GenerateExpr(node->args.at(0));
 
+			for (uint32_t i = 1; i < node->args.size(); i++)
+			{
+				m_Code += ", "; GenerateExpr(node->args.at(i));
+			}
+		}
 		m_Code += ")";
 	}
 
@@ -302,7 +312,10 @@ namespace Spliwaca
 		GenerateFactor(node->left);
 		if (node->opToken)
 		{
-			m_Code += node->opToken->GetContents();
+			std::string opTokenStr = node->opToken->GetContents();
+			std::transform(opTokenStr.begin(), opTokenStr.end(), opTokenStr.begin(),
+				[](unsigned char c) { return std::tolower(c); });
+			m_Code += " " + opTokenStr + " ";
 			GenerateBinOp(node->right);
 		}
 	}
@@ -442,7 +455,7 @@ namespace Spliwaca
 		std::string allowedChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_0123456789.";
 		for (char c : token->GetContents())
 		{
-			if (!charInStr("$\"", c) && !inIdent)
+			if (!charInStr("$\"\\", c) && !inIdent)
 				code += c;
 			else if (inIdent)
 			{
@@ -456,6 +469,10 @@ namespace Spliwaca
 			else if (c == '"')
 			{
 				code += "\" + \"\\\"\" + fr\"";
+			}
+			else if (c == '\\')
+			{
+				code += "\" + \"\\\\\" + fr\"";
 			}
 			else
 			{

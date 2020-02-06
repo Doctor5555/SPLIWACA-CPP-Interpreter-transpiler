@@ -379,6 +379,8 @@ namespace Spliwaca
 		{
 			RegisterSyntaxError(SyntaxErrorType::expOf, m_Tokens->at(m_TokenIndex));
 		}
+		else
+			IncIndex();
 
 		node->iterableExpr = ConstructList();
 
@@ -475,7 +477,7 @@ namespace Spliwaca
 
 			node->args.push_back(ConstructExpr());
 
-			while (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Newline)
+			while (!itemInVect({ TokenType::Newline, TokenType::RParen }, m_Tokens->at(m_TokenIndex)->GetType()))
 			{
 				if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Comma)
 				{
@@ -568,11 +570,11 @@ namespace Spliwaca
 		//m_ScopeStack.push_back(m_CurrentScope->AddSubScope(node->id->GetContents(), node->id->GetLineNumber(), ScopeType::Procedure));
 		//m_CurrentScope = m_ScopeStack.back();
 
-		if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::ReturnType)
+		if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::As)
 		{
 			if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Takes)
 			{
-				RegisterSyntaxError(SyntaxErrorType::expReturns, m_Tokens->at(m_TokenIndex));
+				RegisterSyntaxError(SyntaxErrorType::expAs, m_Tokens->at(m_TokenIndex));
 			}
 			else
 				IncIndex();
@@ -580,7 +582,7 @@ namespace Spliwaca
 			node->argNames.push_back(ConstructIdentNode());
 			//m_CurrentScope->AddEntry(node->argNames.back()->GetContents(), node->argNames.back()->GetLineNumber());
 
-			while (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::ReturnType)
+			while (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::As)
 			{
 				if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Comma)
 				{
@@ -1082,11 +1084,11 @@ namespace Spliwaca
 		//m_ScopeStack.push_back(m_CurrentScope->AddSubScope("ANONP_line_" + std::to_string(m_Tokens->at(m_TokenIndex)->GetLineNumber()), m_Tokens->at(m_TokenIndex)->GetLineNumber(), ScopeType::Anonp));
 		//m_CurrentScope = m_ScopeStack.back();
 
-		if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::ReturnType)
+		if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::As)
 		{
 			if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Takes)
 			{
-				RegisterSyntaxError(SyntaxErrorType::expReturns, m_Tokens->at(m_TokenIndex));
+				RegisterSyntaxError(SyntaxErrorType::expAs, m_Tokens->at(m_TokenIndex));
 			}
 			else
 				IncIndex();
@@ -1095,7 +1097,7 @@ namespace Spliwaca
 
 			node->argNames.push_back(ConstructIdentNode());
 
-			while (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::ReturnType)
+			while (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::As)
 			{
 				if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Comma)
 				{

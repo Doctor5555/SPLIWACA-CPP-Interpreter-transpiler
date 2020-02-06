@@ -13,24 +13,26 @@ FUNCTION FactRecursive TAKES int i RETURNS int AS
         SET i_1 TO CALL FactRecursive WITH (i-1)
         SET rv TO i * i_1
     END IF
-RETURN rv
+    RETURN rv
+END FUNCTION
 
-FUNCTION FactIterative Takes int i RETURNS int AS
+FUNCTION FactIterative TAKES int i RETURNS int AS
     IF i == 0 DO
         SET rv TO 1
     ELSE DO
         SET rv TO 1
-        FOR j OF i DO
+        FOR j OF (CALL _INTERPRETER.range WITH i) DO
             SET rv TO rv * (i + 1)
         END FOR
     END IF
-RETURN rv
+    RETURN rv
+END FUNCTION
 
-OUTPUT Enter a number to calculate the factorial of: 
-INPUT int number
+OUTPUT Enter a num to calculate the factorial of: 
+INPUT int num
 
-IF number < 0 DO
-    OUTPUT Number cannot be less than 0
+IF num < 0 DO
+    OUTPUT num cannot be less than 0
     QUIT
 END IF
 
@@ -40,11 +42,11 @@ SET timeIterativeBegin TO 0
 SET timeIterativeEnd TO 0
 
 SET timeRecursiveBegin TO CALL _INTERPRETER.time.time
-SET a TO CALL FactRecursive WITH number
+SET a TO CALL FactRecursive WITH num
 SET timeRecursiveEnd TO CALL _INTERPRETER.time.time
 
 SET timeIterativeBegin TO CALL _INTERPRETER.time.time
-SET b TO CALL FactIterative WITH number
+SET b TO CALL FactIterative WITH num
 SET timeIterativeEnd TO CALL _INTERPRETER.time.time
 
 OUTPUT \n
@@ -72,9 +74,10 @@ FUNCTION FibonacciRecursive TAKES int iterations RETURNS int AS
         SET i_2 TO CALL FactRecursive WITH (iterations-2)
         SET rv TO i_1 + i_2
     END IF
-RETURN rv
+    RETURN rv
+END FUNCTION
 
-FUNCTION FibonacciIterative Takes int iterations RETURNS int AS
+FUNCTION FibonacciIterative TAKES int iterations RETURNS int AS
     IF i == 0 DO
         SET rv TO 0
     ELSE DO
@@ -86,13 +89,14 @@ FUNCTION FibonacciIterative Takes int iterations RETURNS int AS
             SET prev TO temp
         END FOR
     END IF
-RETURN rv
+    RETURN rv
+END FUNCTION
 
-OUTPUT Enter a index to calculate the number in the fibonacci sequence: 
-INPUT int number
+OUTPUT Enter a index to calculate the num in the fibonacci sequence: 
+INPUT int num
 
-IF number < 0 DO
-    OUTPUT Number cannot be less than 0
+IF num < 0 DO
+    OUTPUT num cannot be less than 0
     QUIT
 END IF
 
@@ -102,16 +106,16 @@ SET timeIterativeBegin TO 0
 SET timeIterativeEnd TO 0
 
 SET timeRecursiveBegin TO CALL _INTERPRETER.time.time
-SET a TO CALL FibonacciRecursive WITH number
+SET a TO CALL FibonacciRecursive WITH num
 SET timeRecursiveEnd TO CALL _INTERPRETER.time.time
 
 SET timeIterativeBegin TO CALL _INTERPRETER.time.time
-SET b TO CALL FibonacciIterative WITH number
+SET b TO CALL FibonacciIterative WITH num
 SET timeIterativeEnd TO CALL _INTERPRETER.time.time
 
-OUTPUT \n
-OUTPUT Recursive fibonacci result: $a \n
-OUTPUT Iterative fibonacci result: $b \n\n
+OUTPUT
+OUTPUT Recursive fibonacci result: $a
+OUTPUT Iterative fibonacci result: $b
 
 SET timeDiffRecursive TO timeRecursiveEnd - timeRecursiveBegin
 SET timeDiffIterative TO timeIterativeEnd - timeIterativeBegin
