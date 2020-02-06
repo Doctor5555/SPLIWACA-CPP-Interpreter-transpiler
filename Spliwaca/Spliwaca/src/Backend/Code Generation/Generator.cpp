@@ -16,6 +16,15 @@ namespace Spliwaca
 		return false;
 	}
 
+	bool charInStr(const std::string& s, char c)
+	{
+		if (s.find(c) != std::string::npos)
+			return true;
+		else
+			return false;
+	}
+
+
 	std::shared_ptr<Generator> Generator::Create(std::shared_ptr<EntryPoint> entryPoint)
 	{
 		return std::make_shared<Generator>(entryPoint);
@@ -355,10 +364,63 @@ namespace Spliwaca
 	}
 
 	void Generator::GenerateAnonf(std::shared_ptr<AnonfNode> node)
-	{}
+	{
+		uint32_t charIndex = m_Code.size() - 1;
+		std::string code = "";
+		while (m_Code.at(charIndex) != '\n' && charIndex != -1)
+		{
+			code = m_Code.back() + code;
+			m_Code.pop_back();
+			charIndex--;
+		}
+
+		m_Code += m_Tabs + "def anonf_line_" + std::to_string(node->argNames.at(0)->GetLineNumber()) +"_" + std::to_string(std::rand()) + "(" + node->argNames.at(0)->GetContents() + ": "; GenerateType(node->argTypes.at(0));
+		assert(node->argNames.size() == node->argTypes.size());
+
+		for (uint32_t i = 1; i < node->argNames.size(); i++)
+		{
+			m_Code += ", " + node->argNames.at(i)->GetContents() + ": ";
+			GenerateType(node->argTypes.at(i));
+		}
+
+		m_Code += ") -> ";
+		GenerateType(node->returnType);
+		m_Code += ":\n";
+
+		m_Tabs += "\t";
+		GenerateStatements(node->body);
+		m_Tabs.pop_back();
+
+		m_Code += code;
+	}
 
 	void Generator::GenerateAnonp(std::shared_ptr<AnonpNode> node)
-	{}
+	{
+		uint32_t charIndex = m_Code.size() - 1;
+		std::string code = "";
+		while (m_Code.at(charIndex) != '\n' && charIndex != -1)
+		{
+			code = m_Code.back() + code;
+			m_Code.pop_back();
+			charIndex--;
+		}
+
+		m_Code += m_Tabs + "def anonf_line_" + std::to_string(node->argNames.at(0)->GetLineNumber()) + "_" + std::to_string(std::rand()) + "(" + node->argNames.at(0)->GetContents() + ": "; GenerateType(node->argTypes.at(0));
+		assert(node->argNames.size() == node->argTypes.size());
+
+		for (uint32_t i = 1; i < node->argNames.size(); i++)
+		{
+			m_Code += ", " + node->argNames.at(i)->GetContents() + ": ";
+			GenerateType(node->argTypes.at(i));
+		}
+		m_Code += "):\n";
+
+		m_Tabs += "\t";
+		GenerateStatements(node->body);
+		m_Tabs.pop_back();
+
+		m_Code += code;
+	}
 
 	void Generator::GenerateType(std::shared_ptr<TypeNode> node)
 	{
@@ -375,11 +437,45 @@ namespace Spliwaca
 
 	std::string Generator::ParseRaw(std::shared_ptr<Token> token)
 	{
-		return token->GetContents();
+		std::string code = "fr\"";
+		bool inIdent = false;
+		std::string allowedChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_0123456789.";
+		for (char c : token->GetContents())
+		{
+			if (!charInStr("$\"", c) && !inIdent)
+				code += c;
+			else if (inIdent)
+			{
+				if (c == ' ')
+					code += "} ";
+				else if (!charInStr(allowedChars, c))
+					SPLW_CRITICAL("Invalid character {1} in RAW ident on line {0}, ignoring", token->GetLineNumber(), c);
+				else
+					code += c;
+			}
+			else if (c == '"')
+			{
+				code += "\" + \"\\\"\" + fr\"";
+			}
+			else
+			{
+				inIdent = true;
+				code += "{";
+			}
+		}
+		return code + "\"";
 	}
 
 	std::string Generator::ParseComplex(std::shared_ptr<Token> token)
 	{
-		return std::string();
+		std::string code = "";
+		for (char c : token->GetContents())
+		{
+			if (c == 'i')
+				code += 'j';
+			else
+				code += c;
+		}
+		return code;
 	}
 }
