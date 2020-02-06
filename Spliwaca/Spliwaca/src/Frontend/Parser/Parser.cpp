@@ -179,7 +179,7 @@ namespace Spliwaca
 		std::shared_ptr<IfNode> node = std::make_shared<IfNode>();
 		IncIndex();
 
-		node->conditions.push_back(ConstructBinOpNode());
+		node->conditions.push_back(ConstructList());
 		if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Do)
 		{
 			//There must be a "DO"
@@ -208,7 +208,7 @@ namespace Spliwaca
 			if (m_Tokens->at(m_TokenIndex)->GetType() == TokenType::If)
 			{
 				IncIndex();
-				node->conditions.push_back(ConstructBinOpNode());
+				node->conditions.push_back(ConstructList());
 				if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Do)
 				{
 					//There must be a "DO"
@@ -462,7 +462,7 @@ namespace Spliwaca
 	{
 		std::shared_ptr<CallNode> node = std::make_shared<CallNode>();
 		IncIndex();
-		node->function = ConstructAtom();
+		node->function = ConstructExpr();
 
 		if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Newline)
 		{
@@ -473,7 +473,7 @@ namespace Spliwaca
 			else
 				IncIndex();
 
-			node->args.push_back(ConstructAtom());
+			node->args.push_back(ConstructExpr());
 
 			while (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Newline)
 			{
@@ -484,7 +484,7 @@ namespace Spliwaca
 				else
 					IncIndex();
 
-				node->args.push_back(ConstructAtom());
+				node->args.push_back(ConstructExpr());
 			}
 		}
 		return node;

@@ -26,8 +26,8 @@ require -> ...
 
 struct -> {
     class identifier:
-        def __init__(ident1: type1, ident2: type2, ...):
-            self.iden1 = ident1
+        def __init__(self, ident1: type1, ident2: type2, ...):
+            self.ident1 = ident1
             self.ident2 = ident2
             ...
 }

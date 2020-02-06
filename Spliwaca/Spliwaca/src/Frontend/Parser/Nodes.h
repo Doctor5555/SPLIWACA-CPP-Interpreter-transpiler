@@ -7,10 +7,10 @@
 namespace Spliwaca
 {
 	struct Statements;
-	class Expr;
+	struct Expr;
 	struct AtomNode;
 	struct CallNode;
-	class ListNode;
+	struct ListNode;
 	//class BoolExprNode;
 	//class MulExprNode;
 
@@ -171,16 +171,22 @@ namespace Spliwaca
 	};
 	*/
 
-	class BinOpNode
+	struct BinOpNode
 	{
-	public:
-		BinOpNode()
-		{
-		}
-
 		std::shared_ptr<FactorNode> left;
 		std::shared_ptr<Token> opToken;
 		std::shared_ptr<BinOpNode> right;
+	};
+
+	struct Expr
+	{
+		std::shared_ptr<BinOpNode> binOpNode; // exprType: 1
+		std::shared_ptr<CreateNode> createNode; // exprType: 2
+		std::shared_ptr<CastNode> castNode; // exprType: 3
+		std::shared_ptr<CallNode> callNode; // exprType: 4
+		std::shared_ptr<AnonfNode> anonfNode; // exprType: 5
+		std::shared_ptr<AnonpNode> anonpNode; // exprType: 6
+		uint8_t exprType;
 	};
 
 	struct DictEntryNode
@@ -190,63 +196,9 @@ namespace Spliwaca
 		bool hasRight;
 	};
 
-	class ListNode
+	struct ListNode
 	{
-	public:
-		/*VarType GetListReturnType()
-		{
-			if (Items.size() > 1 || Items.at(0)->hasRight)
-			{
-				return VarType::List;
-			}
-			else
-			{
-				//return Items.at(0)->left->GetExprReturnType();
-			}
-		}*/
-
-		ListNode()
-		{
-		}
-
 		std::vector<std::shared_ptr<DictEntryNode>> Items;
-	};
-
-	class Expr
-	{
-	public:
-		/*VarType GetExprReturnType()
-		{
-			switch (exprType)
-			{
-			case 1:
-				return listNode->GetListReturnType();
-			case 2:
-				return createNode->GetCreateType();
-			case 3:
-				return castNode->GetCastType();
-			case 4:
-				return callNode->GetFuncReturnType();
-			case 5:
-				return VarType::Function;
-			case 6:
-				return VarType::Function;
-			default:
-				return VarType::None;
-			}
-		}*/
-
-		Expr()
-		{
-		}
-
-		std::shared_ptr<BinOpNode> binOpNode; // exprType: 1
-		std::shared_ptr<CreateNode> createNode; // exprType: 2
-		std::shared_ptr<CastNode> castNode; // exprType: 3
-		std::shared_ptr<CallNode> callNode; // exprType: 4
-		std::shared_ptr<AnonfNode> anonfNode; // exprType: 5
-		std::shared_ptr<AnonpNode> anonpNode; // exprType: 6
-		uint8_t exprType;
 	};
 
 	struct ProcNode
@@ -280,8 +232,8 @@ namespace Spliwaca
 
 	struct CallNode
 	{
-		std::shared_ptr<AtomNode> function;
-		std::vector<std::shared_ptr<AtomNode>> args;
+		std::shared_ptr<Expr> function;
+		std::vector<std::shared_ptr<Expr>> args;
 	};
 
 	struct QuitNode
@@ -332,7 +284,7 @@ namespace Spliwaca
 
 	struct IfNode
 	{
-		std::vector<std::shared_ptr<BinOpNode>> conditions;
+		std::vector<std::shared_ptr<ListNode>> conditions;
 		std::vector<std::shared_ptr<Statements>> bodies;
 		bool elsePresent;
 	};

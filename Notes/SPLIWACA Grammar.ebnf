@@ -55,7 +55,7 @@ type = identifier|"INT" | "Int" | "int" | "INTEGER" | "Integer" | "integer" | "F
 (*Other expressions: *)
 create = 'CREATE', ident, ['WITH', atom, (',', atom)*];
 cast = 'CAST', type, list;
-call = 'CALL', atom, ['WITH', atom, (',', atom)*];
+call = 'CALL', expr, ['WITH', expr, (',', expr)*];
 anonf = 'ANONF', (('<-'|'TAKES'), type, identifier, (',', type, identifier)*)?, ('->'|'RETURNS'), type, 'AS', '\n'+, statements, '\n'+, 'END FUNCTION\n';
 anonp = 'ANONP', (('<-'|'TAKES'), type, identifier, (',', type, identifier)*)?, 'AS', '\n', statements, 'END PROCEDURE';
 
