@@ -141,7 +141,7 @@ int main()
 	setvbuf(stdout, nullptr, _IOFBF, 1000);
 
 	LOG_INIT();
-	bool printTokenList = false;
+	bool printTokenList = true;
 
 	std::shared_ptr<Lexer> lexer = Lexer::Create("c:/dev/epq spliwaca/test_script.splw");
 	SPLW_INFO("Created lexer.");	

@@ -249,7 +249,6 @@ namespace Spliwaca
 
 	std::shared_ptr<std::vector<std::shared_ptr<Token>>> Lexer::MakeTokens()
 	{
-		PROFILE_SCOPE("MakeTokens()");
 		std::string s = m_FileString;
 
 		std::string intermediate = "";

@@ -904,6 +904,8 @@ namespace Spliwaca
 			{
 				RegisterSyntaxError(SyntaxErrorType::expRParen, m_Tokens->at(m_TokenIndex));
 			}
+			else
+				IncIndex();
 			node->type = 2;
 		}
 		else
