@@ -43,6 +43,7 @@ namespace Spliwaca
 		std::shared_ptr<WhileNode> ConstructWhile();
 		std::shared_ptr<QuitNode> ConstructQuit();
 		std::shared_ptr<CallNode> ConstructCall();
+		std::shared_ptr<ImportNode> ConstructImport();
 		std::shared_ptr<FuncNode> ConstructFunction();
 		std::shared_ptr<ProcNode> ConstructProcedure();
 		std::shared_ptr<StructNode> ConstructStruct();

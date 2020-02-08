@@ -225,6 +225,11 @@ namespace Spliwaca
 		std::vector<std::shared_ptr<IdentNode>> names;
 	};
 
+	struct ImportNode
+	{
+		std::shared_ptr<IdentNode> id;
+	};
+
 	struct ReturnNode
 	{
 		std::shared_ptr<ListNode> list;
@@ -305,6 +310,7 @@ namespace Spliwaca
 		std::shared_ptr<ProcNode> procNode;
 		std::shared_ptr<StructNode> structNode;
 		std::shared_ptr<ReturnNode> returnNode;
+		std::shared_ptr<ImportNode> importNode;
 		uint8_t statementType;
 	};
 

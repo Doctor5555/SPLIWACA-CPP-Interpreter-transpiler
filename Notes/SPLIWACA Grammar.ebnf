@@ -22,7 +22,7 @@ string boolean_op string
 entry_point = (require, '\n')?, statements, EOF;
 
 statements = '\n'+, (statement, ('\n'+, statement)*, '\n')?;
-statement = if|set|input|output|increment|decrement|for|while|quit|call|function|procedure|struct|return;
+statement = if|set|input|output|increment|decrement|for|while|quit|call|function|procedure|struct|return|import;
 
 expr = boolean_expr|create|cast|call|anonf|anonp;
 
@@ -71,6 +71,7 @@ for = 'FOR', identifier, 'OF', expr, 'DO\n', statements, '\nEND FOR';
 while = 'WHILE', boolean_expr, 'DO\n', statements, '\nEND WHILE';
 quit = 'QUIT', atom;
 require = 'REQUIRE', interpreter_name;
+import = 'IMPORT', identifier;
 
 struct = 'STRUCT', identifier, 'AS\n', (type, identifier, ('\n,'|','|',\n'|'\n,\n'))+, '\nEND STRUCTURE';
 
@@ -79,6 +80,7 @@ function = ('FUNCTION', identifier, (('<-'|'TAKES'), type, identifier, ['WITH DE
 procedure = 'PROCEDURE', identifier, (('<-'|'TAKES'), type, identifier, ['WITH DEFAULT', value], (',', type, identifier, ['WITH DEFAULT', value],)*)?, 'AS', '\n', statements, 'END PROCEDURE';
 
 return = 'RETURN', expr;
+
 
 (* Meta: *)
 program = entry_point+ (* This means that we can include other files. *)

@@ -37,6 +37,7 @@ namespace Spliwaca
 		void GenerateProc(std::shared_ptr<ProcNode> node);
 		void GenerateStruct(std::shared_ptr<StructNode> node);
 		void GenerateReturn(std::shared_ptr<ReturnNode> node);
+		void GenerateImport(std::shared_ptr<ImportNode> node);
 		
 		void GenerateList(std::shared_ptr<ListNode> node);
 		void GenerateDictEntry(std::shared_ptr<DictEntryNode> node);

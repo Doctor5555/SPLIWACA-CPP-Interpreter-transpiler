@@ -228,6 +228,7 @@ namespace Spliwaca
 			{"STRUCTURE",           TokenType::Struct},
 			{"STRUCT",              TokenType::Struct},
 			{"BREAK",               TokenType::Break},
+			{"IMPORT",              TokenType::Import},
 			{"//",                  TokenType::SingleLineComment},
 			{"/*",                  TokenType::StartMultiLineComment},
 			{"*/",                  TokenType::EndMultiLineComment},

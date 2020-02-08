@@ -34,13 +34,13 @@ namespace Spliwaca
 	{
 		m_Code = "";
 
-		if (m_EntryPoint->require && !itemInVect({ "cpp_transpiler","CPPTranspiler","Transpiler","transpiler" }, 
-													m_EntryPoint->require->requireType->GetContents()))
+		if (m_EntryPoint->require && !itemInVect({ "cpp_transpiler","CPPTranspiler","Transpiler","transpiler" },
+			m_EntryPoint->require->requireType->GetContents()))
 		{
 			SPLW_CRITICAL("This generator is not compatible with the specified require statement, exiting.");
 			return m_Code;
 		}
-		
+
 		GenerateStatements(m_EntryPoint->statements);
 
 		return m_Code;
@@ -52,20 +52,21 @@ namespace Spliwaca
 		{
 			switch (s->statementType)
 			{
-			case 0:  GenerateIf    (s->ifNode    ); break;
-			case 1:  GenerateSet   (s->setNode   ); break;
-			case 2:  GenerateInput (s->inputNode ); break;
+			case 0:  GenerateIf(s->ifNode); break;
+			case 1:  GenerateSet(s->setNode); break;
+			case 2:  GenerateInput(s->inputNode); break;
 			case 3:  GenerateOutput(s->outputNode); break;
-			case 4:  GenerateInc   (s->incNode   ); break;
-			case 5:  GenerateDec   (s->decNode   ); break;
-			case 6:  GenerateFor   (s->forNode   ); break;
-			case 7:  GenerateWhile (s->whileNode ); break;
-			case 8:  GenerateQuit  (s->quitNode  ); break;
-			case 9:  GenerateCall  (s->callNode, true); break;
-			case 10: GenerateFunc  (s->funcNode  ); break;
-			case 11: GenerateProc  (s->procNode  ); break;
+			case 4:  GenerateInc(s->incNode); break;
+			case 5:  GenerateDec(s->decNode); break;
+			case 6:  GenerateFor(s->forNode); break;
+			case 7:  GenerateWhile(s->whileNode); break;
+			case 8:  GenerateQuit(s->quitNode); break;
+			case 9:  GenerateCall(s->callNode, true); break;
+			case 10: GenerateFunc(s->funcNode); break;
+			case 11: GenerateProc(s->procNode); break;
 			case 12: GenerateStruct(s->structNode); break;
 			case 13: GenerateReturn(s->returnNode); break;
+			case 14: GenerateImport(s->importNode); break;
 			}
 			m_Code += "\n";
 		}
@@ -140,7 +141,7 @@ namespace Spliwaca
 		m_Tabs += "\t";
 
 		GenerateStatements(node->body);
-		
+
 		m_Tabs.pop_back();
 	}
 
@@ -156,18 +157,18 @@ namespace Spliwaca
 
 	void Generator::GenerateQuit(std::shared_ptr<QuitNode> node)
 	{
-		m_Code += m_Tabs + "quit("; 
+		m_Code += m_Tabs + "quit(";
 		if (node->returnVal)
-			GenerateAtom(node->returnVal); 
+			GenerateAtom(node->returnVal);
 		m_Code += ")";
 	}
 
 	void Generator::GenerateCall(std::shared_ptr<CallNode> node, bool statement)
 	{
 		if (statement)
-			m_Code += m_Tabs; 
-		GenerateExpr(node->function); m_Code += "("; 
-		
+			m_Code += m_Tabs;
+		GenerateExpr(node->function); m_Code += "(";
+
 		if (node->args.size() != 0)
 		{
 			GenerateExpr(node->args.at(0));
@@ -250,7 +251,12 @@ namespace Spliwaca
 	{
 		m_Code += m_Tabs + "return "; GenerateList(node->list);
 	}
-	
+
+	void Generator::GenerateImport(std::shared_ptr<ImportNode> node)
+	{
+		m_Code += m_Tabs + "import " + node->id->GetContents();
+	}
+
 	void Generator::GenerateList(std::shared_ptr<ListNode> node)
 	{
 		if (node->Items.at(0)->hasRight)
@@ -312,10 +318,17 @@ namespace Spliwaca
 		GenerateFactor(node->left);
 		if (node->opToken)
 		{
-			std::string opTokenStr = node->opToken->GetContents();
-			std::transform(opTokenStr.begin(), opTokenStr.end(), opTokenStr.begin(),
-				[](unsigned char c) { return std::tolower(c); });
-			m_Code += " " + opTokenStr + " ";
+			if (!itemInVect({ TokenType::Modulo, TokenType::Intdiv }, node->opToken->GetType()))
+			{
+				std::string opTokenStr = node->opToken->GetContents();
+				std::transform(opTokenStr.begin(), opTokenStr.end(), opTokenStr.begin(),
+					[](unsigned char c) { return std::tolower(c); });
+				m_Code += " " + opTokenStr + " ";
+			}
+			else if (node->opToken->GetType() == TokenType::Modulo)
+				m_Code += " % ";
+			else if (node->opToken->GetType() == TokenType::Intdiv)
+				m_Code += " // ";
 			GenerateBinOp(node->right);
 		}
 	}
@@ -341,6 +354,10 @@ namespace Spliwaca
 				m_Code += "\"" + node->token->GetContents() + "\"";
 			else if (node->token->GetType() == TokenType::Complex)
 				m_Code += ParseComplex(node->token);
+			else if (node->token->GetType() == TokenType::True)
+				m_Code += "True";
+			else if (node->token->GetType() == TokenType::False)
+				m_Code += "False";
 			else
 				m_Code += node->token->GetContents();
 			break;
@@ -349,7 +366,8 @@ namespace Spliwaca
 		case 3: m_Code += node->ident->GetContents(); break;
 		}
 
-		if (node->listAccessPresent){
+		if (node->listAccessPresent)
+		{
 			for (std::shared_ptr<ListNode> n : node->listAccess->indices)
 			{
 				m_Code += "[";
@@ -387,7 +405,7 @@ namespace Spliwaca
 			charIndex--;
 		}
 
-		m_Code += m_Tabs + "def anonf_line_" + std::to_string(node->argNames.at(0)->GetLineNumber()) +"_" + std::to_string(std::rand()) + "(" + node->argNames.at(0)->GetContents() + ": "; GenerateType(node->argTypes.at(0));
+		m_Code += m_Tabs + "def anonf_line_" + std::to_string(node->argNames.at(0)->GetLineNumber()) + "_" + std::to_string(std::rand()) + "(" + node->argNames.at(0)->GetContents() + ": "; GenerateType(node->argTypes.at(0));
 		assert(node->argNames.size() == node->argTypes.size());
 
 		for (uint32_t i = 1; i < node->argNames.size(); i++)
@@ -455,12 +473,15 @@ namespace Spliwaca
 		std::string allowedChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_0123456789.";
 		for (char c : token->GetContents())
 		{
-			if (!charInStr("$\"\\", c) && !inIdent)
+			if (!charInStr("$\"", c) && !inIdent)
 				code += c;
 			else if (inIdent)
 			{
 				if (c == ' ')
+				{
 					code += "} ";
+					inIdent = false;
+				}
 				else if (!charInStr(allowedChars, c))
 					SPLW_CRITICAL("Invalid character {1} in RAW ident on line {0}, ignoring", token->GetLineNumber(), c);
 				else
@@ -468,11 +489,8 @@ namespace Spliwaca
 			}
 			else if (c == '"')
 			{
-				code += "\" + \"\\\"\" + fr\"";
-			}
-			else if (c == '\\')
-			{
-				code += "\" + \"\\\\\" + fr\"";
+				//code += "\" + \"\\\"\" + fr\"";
+				code += "\\";
 			}
 			else
 			{
@@ -480,6 +498,8 @@ namespace Spliwaca
 				code += "{";
 			}
 		}
+		if (inIdent)
+			code += "}";
 		return code + "\"";
 	}
 

@@ -1,6 +1,6 @@
 REQUIRE transpiler
 
-CALL _INTERPRETER.eval WITH "import time"
+IMPORT time
 
 //////////////////////////////
 /// FACTORIAL ////////////////
@@ -59,6 +59,7 @@ SET timeDiffIterative TO timeIterativeEnd - timeIterativeBegin
 OUTPUT Time difference recursive: $timeDiffRecursive \n
 OUTPUT Time difference iterative: $timeDiffIterative \n\n
 
+SET b TO True
 
 //////////////////////////////
 /// FIBONACCI ////////////////

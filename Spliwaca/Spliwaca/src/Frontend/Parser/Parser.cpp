@@ -167,6 +167,7 @@ namespace Spliwaca
 		case TokenType::Procedure: s->procNode = ConstructProcedure(); s->statementType = 11; break;
 		case TokenType::Struct: s->structNode = ConstructStruct(); s->statementType = 12; break;
 		case TokenType::Return: s->returnNode = ConstructReturn(); s->statementType = 13; break;
+		case TokenType::Import: s->importNode = ConstructImport(); s->statementType = 14; break;
 		default:
 			RegisterSyntaxError(SyntaxErrorType::expStatement, m_Tokens->at(m_TokenIndex));
 			return nullptr;
@@ -489,6 +490,16 @@ namespace Spliwaca
 				node->args.push_back(ConstructExpr());
 			}
 		}
+		return node;
+	}
+
+	std::shared_ptr<ImportNode> Parser::ConstructImport()
+	{
+		std::shared_ptr<ImportNode> node = std::make_shared<ImportNode>();
+		IncIndex();
+
+		node->id = ConstructIdentNode();
+
 		return node;
 	}
 
@@ -912,7 +923,7 @@ namespace Spliwaca
 		}
 		else
 		{
-			std::vector<TokenType> acceptedAtomTokenTypes = { TokenType::String, TokenType::Raw, TokenType::Int, TokenType::Float, TokenType::Complex, TokenType::Identifier };
+			std::vector<TokenType> acceptedAtomTokenTypes = { TokenType::String, TokenType::Raw, TokenType::Int, TokenType::Float, TokenType::Complex, TokenType::Identifier, TokenType::True, TokenType::False, TokenType::None };
 			TokenType type = m_Tokens->at(m_TokenIndex)->GetType();
 			if (!itemInVect(acceptedAtomTokenTypes, type))
 			{

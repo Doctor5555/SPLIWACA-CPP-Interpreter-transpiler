@@ -94,7 +94,8 @@ namespace Spliwaca
 		BooleanExpr,
 		Break,
 		eof,
-		VarAccessOp
+		VarAccessOp,
+		Import
 	};
 
 	enum class VarType
