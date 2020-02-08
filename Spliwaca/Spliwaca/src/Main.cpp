@@ -170,7 +170,10 @@ int main()
 	for (LexicalError l : state.LexerErrors)
 	{
 		SPLW_CRITICAL("Lexical Error code {2} at line {0}, column {1}", l.GetLineNumber(), l.GetColumnNumber(), l.GetErrorCode());
-		SPLW_WARN("{0}", lexer->GetSplitFileString().at(l.GetLineNumber()));
+		if (l.GetLineNumber() >= lexer->GetSplitFileString().size())
+			SPLW_WARN("Line {0} out of range!", l.GetLineNumber());
+		else
+			SPLW_WARN("{0}", lexer->GetSplitFileString().at(l.GetLineNumber()));
 		SPLW_WARN("{0}{1}", mulString(" ", l.GetColumnNumber() - 1), mulString("^", l.GetColumnSpan()));
 		std::cout << "\n";
 	}
