@@ -1,6 +1,7 @@
 ﻿#include <cstdint>
 #include <string>
 #include <iostream>
+#include <chrono>
 #include <Windows.h>
 #include "Instrumentor.h"
 #include "Log.h"
@@ -133,6 +134,23 @@ bool itemInVect(const std::vector<T>& v, T t)
 	return false;
 }
 
+class Timer
+{
+public:
+	Timer() : beg_(clock_::now()) {}
+	void reset() { beg_ = clock_::now(); }
+	double elapsed() const
+	{
+		return std::chrono::duration_cast<second_>
+			(clock_::now() - beg_).count();
+	}
+
+private:
+	typedef std::chrono::high_resolution_clock clock_;
+	typedef std::chrono::duration<double, std::ratio<1> > second_;
+	std::chrono::time_point<clock_> beg_;
+};
+
 //------------------------------------- End UtilFunctions utility function definitions -------------------------------
 
 int main()
@@ -141,7 +159,9 @@ int main()
 	setvbuf(stdout, nullptr, _IOFBF, 1000);
 
 	LOG_INIT();
-	bool printTokenList = true;
+	bool printTokenList = false;
+
+	Timer lexerTimer = Timer();
 
 	std::shared_ptr<Lexer> lexer = Lexer::Create("c:/dev/epq spliwaca/test_script.splw");
 	SPLW_INFO("Created lexer.");	
@@ -162,6 +182,8 @@ int main()
 	}
 	else
 		SPLW_INFO("Finished constructing tokens.");
+
+	double lexerTime = lexerTimer.elapsed();
 	
 	if (printTokenList == true)
 	{
@@ -179,6 +201,8 @@ int main()
 			i++;
 		}
 	}
+
+	Timer parseTimer = Timer();
 
 	std::shared_ptr<Parser> parser = Parser::Create(tokens);
 	SPLW_INFO("Created Parser.");
@@ -207,14 +231,22 @@ int main()
 	else
 		SPLW_INFO("Finished syntax analysis.");
 
+	double parseTime = parseTimer.elapsed();
+
+	Timer generateTimer = Timer();
+
 	std::shared_ptr<Generator> codeGenerator = Generator::Create(ast);
 	SPLW_INFO("Created Generator");
 
 	std::string finalCode = codeGenerator->GenerateCode();
 
+	double generateTime = generateTimer.elapsed();
+
 	std::cout << finalCode << std::endl;
 
 	SPLW_INFO("Finished code output!");
+
+	SPLW_INFO("\nLexer took: {0} seconds\nParser took: {1} seconds\nGenerator took: {2} seconds", lexerTime, parseTime, generateTime);
 
 	/*
 	ROOT
