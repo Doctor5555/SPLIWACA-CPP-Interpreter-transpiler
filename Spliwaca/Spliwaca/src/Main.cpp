@@ -3,7 +3,7 @@
 #include <iostream>
 #include <chrono>
 #include <Windows.h>
-#include "Instrumentor.h"
+//#include "Instrumentor.h"
 #include "Log.h"
 #include "Frontend/Lexer/Lexer.h"
 #include "Frontend/Lexer/LexicalError.h"

@@ -135,8 +135,8 @@ private:
 };
 
 #ifdef SPLW_DEBUG 
-	#define PROFILE_FUNC() InstrumentationTimer(__FUNCSIG__)
-	#define PROFILE_SCOPE(name) InstrumentationTimer timer##__LINE__(name)
+	#define PROFILE_FUNC() //InstrumentationTimer(__FUNCSIG__)
+	#define PROFILE_SCOPE(name) //InstrumentationTimer timer##__LINE__(name)
 #else
 	#define PROFILE_FUNC()      //InstrumentationTimer(__FUNCSIG__)
 	#define PROFILE_SCOPE(name) //InstrumentationTimer timer##__LINE__(name)
