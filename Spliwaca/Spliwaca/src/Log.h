@@ -34,8 +34,8 @@ namespace Spliwaca
 #else
 #ifdef SPLW_DIST
 
-#define SPLW_TRACE(...)         
-#define SPLW_INFO(...)        
+#define SPLW_TRACE(...)         //::Spliwaca::Log::GetClientLogger()->trace(__VA_ARGS__)
+#define SPLW_INFO(...)          //::Spliwaca::Log::GetClientLogger()->info(__VA_ARGS__)
 #define SPLW_WARN(...)          ::Spliwaca::Log::GetClientLogger()->warn(__VA_ARGS__)
 #define SPLW_ERROR(...)         ::Spliwaca::Log::GetClientLogger()->error(__VA_ARGS__)
 #define SPLW_CRITICAL(...)      ::Spliwaca::Log::GetClientLogger()->critical(__VA_ARGS__)
@@ -43,7 +43,7 @@ namespace Spliwaca
 
 #else
 // Log macros			
-#define SPLW_TRACE(...)         
+#define SPLW_TRACE(...)         //::Spliwaca::Log::GetClientLogger()->trace(__VA_ARGS__)
 #define SPLW_INFO(...)          
 #define SPLW_WARN(...)          
 #define SPLW_ERROR(...)         

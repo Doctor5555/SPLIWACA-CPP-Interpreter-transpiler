@@ -10,12 +10,23 @@
 
 namespace Spliwaca
 {
-	template<typename T>
-	bool itemInVect(const std::vector<T>& v, T t)
+	bool itemInVect(const std::vector<std::string>& v, std::string t)
 	{
-		for (T e : v)
+		for (int i = 0; i < v.size(); i++)
 		{
-			if (e == t)
+			if (v.at(i) == t)
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+
+	bool itemInVect(const std::vector<char>& v, char t)
+	{
+		for (int i = 0; i < v.size(); i++)
+		{
+			if (v.at(i) == t)
 			{
 				return true;
 			}

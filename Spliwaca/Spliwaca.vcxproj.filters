@@ -318,6 +318,7 @@
     <ClInclude Include="vendor\timing\Instrumentor.h">
       <Filter>vendor\timing</Filter>
     </ClInclude>
+    <ClInclude Include="Spliwaca\src\Transpiler.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Spliwaca\src\Backend\Code Generation\Generator.cpp">
@@ -335,5 +336,6 @@
     <ClCompile Include="Spliwaca\src\Main.cpp">
       <Filter>Spliwaca\src</Filter>
     </ClCompile>
+    <ClCompile Include="Spliwaca\src\Transpiler.cpp" />
   </ItemGroup>
 </Project>

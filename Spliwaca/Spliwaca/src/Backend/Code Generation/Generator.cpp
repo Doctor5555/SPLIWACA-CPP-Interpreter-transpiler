@@ -114,10 +114,12 @@ namespace Spliwaca
 
 	void Generator::GenerateInput(std::shared_ptr<InputNode> node)
 	{
-		m_Code += m_Tabs + node->id->GetContents() + " = libsplw."; GenerateType(node->type);
+		/*m_Code += m_Tabs + node->id->GetContents() + " = libsplw."; GenerateType(node->type);
 		if (node->signSpec)
 			m_Code += "_" + node->signSpec->GetContents();
-		m_Code += "_input()";
+		m_Code += "_input()";*/ // @IMPORTANT Add back in when libsplw is made
+
+		m_Code += m_Tabs + node->id->GetContents() + " = "; GenerateType(node->type); m_Code += "(input())"; 
 	}
 
 	void Generator::GenerateOutput(std::shared_ptr<OutputNode> node)

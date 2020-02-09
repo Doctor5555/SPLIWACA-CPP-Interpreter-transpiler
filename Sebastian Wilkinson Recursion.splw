@@ -1,0 +1,119 @@
+REQUIRE python
+CALL _INTERPRETER.eval WITH RAW import time
+
+//////////////////////////////
+/// FACTORIAL ////////////////
+//////////////////////////////
+
+FUNCTION FactRecursive TAKES int i RETURNS int AS
+    IF i == 0 DO
+        SET rv TO 1
+    ELSE DO
+        SET i_1 TO CALL FactRecursive WITH (i-1)
+        SET rv TO i * i_1
+    END IF
+RETURN rv
+
+FUNCTION FactIterative Takes int i RETURNS int AS
+    IF i == 0 DO
+        SET rv TO 1
+    ELSE DO
+        SET rv TO 1
+        FOR j OF i DO
+            SET rv TO rv * (i + 1)
+        END FOR
+    END IF
+RETURN rv
+
+OUTPUT Enter a number to calculate the factorial of: 
+INPUT int number
+
+IF number < 0 DO
+    OUTPUT Number cannot be less than 0
+    QUIT
+END IF
+
+SET timeRecursiveBegin TO 0
+SET timeRecursiveEnd TO 0
+SET timeIterativeBegin TO 0
+SET timeIterativeEnd TO 0
+
+SET timeRecursiveBegin TO CALL _INTERPRETER.time.time
+SET a TO CALL FactRecursive WITH number
+SET timeRecursiveEnd TO CALL _INTERPRETER.time.time
+
+SET timeIterativeBegin TO CALL _INTERPRETER.time.time
+SET b TO CALL FactIterative WITH number
+SET timeIterativeEnd TO CALL _INTERPRETER.time.time
+
+OUTPUT \n
+OUTPUT Recursive factorial result: $a \n
+OUTPUT Iterative factorial result: $b \n\n
+
+SET timeDiffRecursive TO timeRecursiveEnd - timeRecursiveBegin
+SET timeDiffIterative TO timeIterativeEnd - timeIterativeBegin
+
+OUTPUT Time difference recursive: $timeDiffRecursive \n
+OUTPUT Time difference iterative: $timeDiffIterative \n\n
+
+
+//////////////////////////////
+/// FIBONACCI ////////////////
+//////////////////////////////
+
+FUNCTION FibonacciRecursive TAKES int iterations RETURNS int AS
+    IF iterations == 1 OR iterations == 2 DO
+        SET rv TO 1
+    ELSE IF iterations == 0 DO
+        SET rv TO 0
+    ELSE DO
+        SET i_1 TO CALL FactRecursive WITH (iterations-1)
+        SET i_2 TO CALL FactRecursive WITH (iterations-2)
+        SET rv TO i_1 + i_2
+    END IF
+RETURN rv
+
+FUNCTION FibonacciIterative Takes int iterations RETURNS int AS
+    IF i == 0 DO
+        SET rv TO 0
+    ELSE DO
+        SET rv TO 1
+        SET prev TO 0
+        FOR j OF i DO
+            SET temp TO rv
+            SET rv TO rv + prev
+            SET prev TO temp
+        END FOR
+    END IF
+RETURN rv
+
+OUTPUT Enter a index to calculate the number in the fibonacci sequence: 
+INPUT int number
+
+IF number < 0 DO
+    OUTPUT Number cannot be less than 0
+    QUIT
+END IF
+
+SET timeRecursiveBegin TO 0
+SET timeRecursiveEnd TO 0
+SET timeIterativeBegin TO 0
+SET timeIterativeEnd TO 0
+
+SET timeRecursiveBegin TO CALL _INTERPRETER.time.time
+SET a TO CALL FibonacciRecursive WITH number
+SET timeRecursiveEnd TO CALL _INTERPRETER.time.time
+
+SET timeIterativeBegin TO CALL _INTERPRETER.time.time
+SET b TO CALL FibonacciIterative WITH number
+SET timeIterativeEnd TO CALL _INTERPRETER.time.time
+
+OUTPUT \n
+OUTPUT Recursive fibonacci result: $a \n
+OUTPUT Iterative fibonacci result: $b \n\n
+
+SET timeDiffRecursive TO timeRecursiveEnd - timeRecursiveBegin
+SET timeDiffIterative TO timeIterativeEnd - timeIterativeBegin
+
+OUTPUT Time difference recursive: $timeDiffRecursive \n
+OUTPUT Time difference iterative: $timeDiffIterative \n

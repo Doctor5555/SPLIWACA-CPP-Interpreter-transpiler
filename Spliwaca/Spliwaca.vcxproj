@@ -141,6 +141,7 @@
     <ClInclude Include="Spliwaca\src\Frontend\Scopes\Scope.h" />
     <ClInclude Include="Spliwaca\src\Log.h" />
     <ClInclude Include="Spliwaca\src\UtilFunctions.h" />
+    <ClInclude Include="Spliwaca\src\Transpiler.h" />
     <ClInclude Include="vendor\spdlog\include\spdlog\async.h" />
     <ClInclude Include="vendor\spdlog\include\spdlog\async_logger-inl.h" />
     <ClInclude Include="vendor\spdlog\include\spdlog\async_logger.h" />
@@ -225,6 +226,7 @@
     <ClCompile Include="Spliwaca\src\Frontend\Parser\Parser.cpp" />
     <ClCompile Include="Spliwaca\src\Log.cpp" />
     <ClCompile Include="Spliwaca\src\Main.cpp" />
+    <ClCompile Include="Spliwaca\src\Transpiler.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -55,7 +55,7 @@ namespace Spliwaca
 		std::string m_FileString;
 
 		const std::string alphabetCharacters = {
-			"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+			"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_"
 		};
 
 		const std::map<std::string, TokenType> s_KeywordDict = {

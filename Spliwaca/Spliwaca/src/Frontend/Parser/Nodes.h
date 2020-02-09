@@ -3,6 +3,7 @@
 #include <vector>
 #include <string>
 #include "Frontend/Lexer/Token.h"
+#include <Log.h>
 
 namespace Spliwaca
 {
@@ -22,11 +23,27 @@ namespace Spliwaca
 
 		std::string GetContents()
 		{
-			std::string rv = ids.at(0)->GetContents();
-			for (size_t i = 1; i < ids.size(); i++)
+			std::string rv = "";
+			//SPLW_INFO("{0}", ids.at(0)->GetContents());
+			if (ids.at(0)->GetContents() != "_INTERPRETER")
 			{
-				rv.append(".");
-				rv.append(ids.at(i)->GetContents());
+				rv += ids.at(0)->GetContents();
+				for (size_t i = 1; i < ids.size(); i++)
+				{
+					rv += "." + ids.at(i)->GetContents();
+				}
+			}
+			else if (ids.size() > 1)
+			{
+				rv += ids.at(1)->GetContents();
+				for (size_t i = 2; i < ids.size(); i++)
+				{
+					rv += "." + ids.at(i)->GetContents();
+				}
+			}
+			else
+			{
+				SPLW_CRITICAL("Error: attempting to set something to/call _INTERPRETER. This is not allowed!");
 			}
 			return rv;
 		}

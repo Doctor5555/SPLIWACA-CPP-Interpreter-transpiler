@@ -1,0 +1,104 @@
+/* SPLIWACA v1 */
+REQUIRE python
+
+SET mul_0  TO 0, 0, 0, 0, 0
+SET mul_1  TO 0, 0, 0, 0, 1
+SET mul_2  TO 0, 0, 0, 1, 0
+SET mul_3  TO 0, 0, 0, 1, 1
+SET mul_4  TO 0, 0, 1, 0, 0
+SET mul_5  TO 0, 0, 1, 0, 1
+SET mul_6  TO 0, 0, 1, 1, 0
+SET mul_7  TO 0, 0, 1, 1, 1
+SET mul_8  TO 0, 1, 0, 0, 0
+SET mul_9  TO 0, 1, 0, 0, 1
+SET mul_A  TO 0, 1, 0, 1, 0
+SET mul_B  TO 0, 1, 0, 1, 1
+SET mul_C  TO 0, 1, 1, 0, 0
+SET mul_D  TO 0, 1, 1, 0, 1
+SET mul_E  TO 0, 1, 1, 1, 0
+SET mul_F  TO 0, 1, 1, 1, 1
+SET mul_10 TO 1, 0, 0, 0, 0
+SET place_vals TO 10000, 1000, 100, 10, 1
+
+FUNCTION bin_add TAKES str val1, str val2 -> str AS
+	SET index TO 0
+	SET result TO ""
+	SET carry TO false
+	FOR index OF CALL _INTERPRETER.eval WITH "range(len(val1) if len(val1) >= len(val1) else len(val2))" DO
+		IF carry == true DO
+			IF val1[index] == '1' AND val2[index] == '1' DO
+				SET result TO '1' + result
+			ELSE IF val1[index] == '1' OR val2[index] == '1' DO
+				SET result TO '0' + result
+			ELSE DO
+				SET result TO '1' + result
+				SET carry TO false
+		ELSE DO
+			IF val1[index] == '1' AND val2[index] == '1' DO
+				SET result TO '0' + result
+				SET carry TO true
+			ELSE IF val1[index] == '1' OR val2[index] == '1' DO
+				SET result TO '1' + result
+			ELSE DO
+				SET result TO '0' + result
+		END IF
+	ENDFOR
+	RETURN result
+
+FUNCTION LSL TAKES str value, int factor -> str AS
+	PLAINTEXT Get correct mul_X for the factor and set to variable mul_list
+	SET result TO ""
+	SET index TO 0
+	FOR fact OF mul_list DO
+		SET intermediate TO value * fact * place_vals[index]
+		SET result TO CALL bin_add WITH result, CAST str intermediate
+		SET index TO index + 1
+	ENDFOR
+    RETURN CAST str result
+
+FUNCTION LSR TAKES str value, int factor -> str AS
+	PLAINTEXT Get correct mul_X for the factor and set to variable mul_list
+	SET result TO ""
+	SET index TO 4
+	FOR fact OF mul_list DO
+		SET intermediate TO value * fact * (1 / place_vals[index])
+		SET result TO CALL bin_add WITH result, CAST str intermediate
+		SET index TO index - 1
+	ENDFOR
+    RETURN CAST str result
+	RETURN ""
+
+OUTPUT "value> "
+INPUT str value
+
+OUTPUT "\nfactor> "
+INPUT int factor
+
+OUTPUT "\ndirection> "
+INPUT str direction
+
+IF CALL len WITH value > 8 DO
+	OUTPUT Input must have less than 8 bits
+	QUIT
+END IF
+
+FOR char OF value DO
+	IF char != '0' AND char != '1' DO
+		OUTPUT Input must be binary
+		QUIT
+	END IF
+ENDFOR
+
+IF direction == "left" DO
+	SET out TO CALL LSL WITH value, factor
+ELSE IF direction == "right" DO
+	SET out TO CALL LSR WITH value, factor
+    OUTPUT $LSR value, factor
+ELSE DO
+    OUTPUT Invalid direction - either 'left' or 'right'
+END IF
+
+/* Note: This pseudocode is not completely representative of the final version of python as 
+I modified various details in the implementation of the script, and nor would this script fully work
+if I finished the implementation and tried to run it. This is the biggest issue with pseudocode - you
+cannot test it until you implement it. */
