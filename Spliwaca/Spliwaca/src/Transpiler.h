@@ -27,6 +27,46 @@ namespace Spliwaca
 		std::string Run();
 
 	private:
+		std::string GetSyntaxErrorMessage(SyntaxErrorType type)
+		{
+			switch (type)
+			{
+			case expNewline:   // 0
+			case expIdent:         // 1
+			case expStatement:     // 2
+			case expAtom:          // 3
+			case expType:          // 4
+			case expComma:         // 5
+			case expRParen:        // 6
+			case expRSquareParen: // 7
+			case expDo:         // 8
+			case expTo:	          // 9
+			case expOf:	          // 10
+					case expWith          // 11
+					case expTakes        // 12
+					case expReturns       // 13
+					case expAs	          // 14
+					case expRaw          // 15
+					case expEndIf         // 16
+					case expEndFor       // 17
+					case expEndWhile      // 18
+					case expEndFunc	      // 19
+					case expEndProc	      // 20
+					case expEndStruct     // 21
+					case expTypeMod	      // 22
+					case tooManyElse      // 23
+					case unexpEndFunc     // 24
+					case unexpEndProc    // 25
+					case unexpEndIf	      // 26
+					case unexpEndFor      // 27
+					case unexpEndWhile  // 28
+					case unexpEndStruct  // 29
+					case unexpElseIf      // 30
+					case inconsistentDict
+			}
+		}
+
+	private:
 		std::string m_Filename;
 		std::shared_ptr<TranspilerState> m_State;
 		bool m_PrintTokenList;
