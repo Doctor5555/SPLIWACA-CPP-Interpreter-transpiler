@@ -407,7 +407,8 @@ namespace Spliwaca
 			charIndex--;
 		}
 
-		m_Code += m_Tabs + "def anonf_line_" + std::to_string(node->argNames.at(0)->GetLineNumber()) + "_" + std::to_string(std::rand()) + "(" + node->argNames.at(0)->GetContents() + ": "; GenerateType(node->argTypes.at(0));
+		std::string anonf_randomised_name = std::to_string(node->argNames.at(0)->GetLineNumber()) + "_" + std::to_string(std::rand());
+		m_Code += m_Tabs + "def anonf_line_" + anonf_randomised_name + "(" + node->argNames.at(0)->GetContents() + ": "; GenerateType(node->argTypes.at(0));
 		assert(node->argNames.size() == node->argTypes.size());
 
 		for (uint32_t i = 1; i < node->argNames.size(); i++)
@@ -424,7 +425,7 @@ namespace Spliwaca
 		GenerateStatements(node->body);
 		m_Tabs.pop_back();
 
-		m_Code += code;
+		m_Code += code + "anonf_line_" + anonf_randomised_name;
 	}
 
 	void Generator::GenerateAnonp(std::shared_ptr<AnonpNode> node)
@@ -438,7 +439,8 @@ namespace Spliwaca
 			charIndex--;
 		}
 
-		m_Code += m_Tabs + "def anonf_line_" + std::to_string(node->argNames.at(0)->GetLineNumber()) + "_" + std::to_string(std::rand()) + "(" + node->argNames.at(0)->GetContents() + ": "; GenerateType(node->argTypes.at(0));
+		std::string anonf_randomised_name = std::to_string(node->argNames.at(0)->GetLineNumber()) + "_" + std::to_string(std::rand());
+		m_Code += m_Tabs + "def anonf_line_" + anonf_randomised_name + "(" + node->argNames.at(0)->GetContents() + ": "; GenerateType(node->argTypes.at(0));
 		assert(node->argNames.size() == node->argTypes.size());
 
 		for (uint32_t i = 1; i < node->argNames.size(); i++)
@@ -452,7 +454,7 @@ namespace Spliwaca
 		GenerateStatements(node->body);
 		m_Tabs.pop_back();
 
-		m_Code += code;
+		m_Code += code + "def anonf_line_" + anonf_randomised_name;
 	}
 
 	void Generator::GenerateType(std::shared_ptr<TypeNode> node)

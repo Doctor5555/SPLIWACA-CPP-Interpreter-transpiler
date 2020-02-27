@@ -140,8 +140,12 @@ private:
 
 //------------------------------------- End UtilFunctions utility function definitions -------------------------------
 
-int main()
+int main(int argc, char** argv)
 {
+	if (argc != 2) {
+		std::cout << "Usage: transpiler <file>\n";
+		return -1;
+	}
 	Timer totalTimer = Timer();
 
 	SetConsoleOutputCP(CP_UTF8);
@@ -150,11 +154,11 @@ int main()
 	LOG_INIT();
 	bool printTokenList = false;
 
-	Transpiler transpiler = Transpiler("c:/dev/epq spliwaca/test_script.splw", state, printTokenList);
+	Transpiler transpiler = Transpiler(argv[1], state, printTokenList);
 	std::string output = transpiler.Run();
 
 	//std::cout << "\nLexer took: " << lexerTime << " seconds\nParser took: " << parseTime << " seconds\nGenerator took: " << generateTime << " seconds" << std::endl;
-	std::cout << "Total time taken: " << totalTimer.elapsed() << std::endl;
+	std::cout << "#Total time taken: " << totalTimer.elapsed() << std::endl;
 
 	/*
 	ROOT

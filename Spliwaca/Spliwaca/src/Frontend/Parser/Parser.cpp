@@ -31,11 +31,11 @@ namespace Spliwaca
 		ep->require = ConstructRequire();
 
 		// Consume newline after require
-		if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Newline)
+		if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Newline && ep->require)
 		{
 			RegisterSyntaxError(SyntaxErrorType::expNewline, m_Tokens->at(m_TokenIndex));
 		}
-		else
+		else if (ep->require)
 			IncIndex(); 
 
 		//Begin constructing statements
@@ -52,12 +52,11 @@ namespace Spliwaca
 
 	std::shared_ptr<RequireNode> Parser::ConstructRequire()
 	{
-		std::shared_ptr<RequireNode> node = std::make_shared<RequireNode>();
 		if (m_Tokens->at(m_TokenIndex)->GetType() == TokenType::Require)
 		{
+			std::shared_ptr<RequireNode> node = std::make_shared<RequireNode>();
 			IncIndex();
 			node->requireType = ConstructIdentNode();
-			m_TokenIndex++;
 			return node;
 		}
 		return nullptr;
@@ -306,9 +305,15 @@ namespace Spliwaca
 
 		IncIndex();
 		auto type = m_Tokens->at(m_TokenIndex)->GetType();
-		if (type != TokenType::PositiveTypeMod && type != TokenType::NegativeTypeMod && type != TokenType::NonZeroTypeMod && type != TokenType::Type)
+		if (type == TokenType::PositiveTypeMod && type == TokenType::NegativeTypeMod && type == TokenType::NonZeroTypeMod && type == TokenType::Type)
 		{
-			RegisterSyntaxError(SyntaxErrorType::expTypeMod, m_Tokens->at(m_TokenIndex));
+			node->signSpec = m_Tokens->at(m_TokenIndex);
+			IncIndex();
+			if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Type) {
+				RegisterSyntaxError(SyntaxErrorType::expTypeMod, m_Tokens->at(m_TokenIndex));
+			} else {
+				node->type = ConstructTypeNode();
+			}
 		}
 		else if (type == TokenType::Type)
 		{
@@ -316,16 +321,7 @@ namespace Spliwaca
 		}
 		else
 		{
-			node->signSpec = m_Tokens->at(m_TokenIndex);
-			IncIndex();
-			if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Type)
-			{
-				RegisterSyntaxError(SyntaxErrorType::expTypeMod, m_Tokens->at(m_TokenIndex));
-			}
-			else
-			{
-				node->type = ConstructTypeNode();
-			}
+			RegisterSyntaxError(SyntaxErrorType::expTypeMod, m_Tokens->at(m_TokenIndex));
 		}
 		//IncIndex();
 

@@ -7,6 +7,7 @@
 #include "Frontend/Parser/SemanticError.h"
 #include "UtilFunctions.h"
 
+
 namespace Spliwaca
 {
 	struct TranspilerState
@@ -31,38 +32,66 @@ namespace Spliwaca
 		{
 			switch (type)
 			{
-			case expNewline:   // 0
-			case expIdent:         // 1
-			case expStatement:     // 2
-			case expAtom:          // 3
-			case expType:          // 4
-			case expComma:         // 5
-			case expRParen:        // 6
-			case expRSquareParen: // 7
-			case expDo:         // 8
-			case expTo:	          // 9
-			case expOf:	          // 10
-					case expWith          // 11
-					case expTakes        // 12
-					case expReturns       // 13
-					case expAs	          // 14
-					case expRaw          // 15
-					case expEndIf         // 16
-					case expEndFor       // 17
-					case expEndWhile      // 18
-					case expEndFunc	      // 19
-					case expEndProc	      // 20
-					case expEndStruct     // 21
-					case expTypeMod	      // 22
-					case tooManyElse      // 23
-					case unexpEndFunc     // 24
-					case unexpEndProc    // 25
-					case unexpEndIf	      // 26
-					case unexpEndFor      // 27
-					case unexpEndWhile  // 28
-					case unexpEndStruct  // 29
-					case unexpElseIf      // 30
-					case inconsistentDict
+			case SyntaxErrorType::expNewline:   // 0
+				return "Expected newline, got {0}";
+			case SyntaxErrorType::expIdent:         // 1
+				return "Expected identifier, got {0}";
+			case SyntaxErrorType::expStatement:     // 2
+				return "Expected statement beginning, got incompatible token type {0}";
+			case SyntaxErrorType::expAtom:          // 3
+				return "Expected atom (value/list), got incompatible token type {0}";
+			case SyntaxErrorType::expType:          // 4
+				return "Expected type, got {0}";
+			case SyntaxErrorType::expComma:         // 5
+				return "Expected a comma, got {0}";
+			case SyntaxErrorType::expRParen:        // 6
+				return "Expected a right parenthesis, got {0}";
+			case SyntaxErrorType::expRSquareParen: // 7
+				return "Expected right square parenthesis, got {0}";
+			case SyntaxErrorType::expDo:         // 8
+				return "Expected DO, got {0}";
+			case SyntaxErrorType::expTo:	          // 9
+				return "Expected TO, got {0}";
+			case SyntaxErrorType::expOf:	          // 10
+				return "Expected OF, got {0}";
+			case SyntaxErrorType::expWith:          // 11
+				return "Expected WITH, got {0}";
+			case SyntaxErrorType::expTakes:        // 12
+				return "Expected TAKES, got {0}. This error shouldn't happen, since TAKES is optional.";
+			case SyntaxErrorType::expReturns:       // 13
+				return "Expected RETURNS, got {0}. Functions must specify a return type and return a value.";
+			case SyntaxErrorType::expAs:	          // 14
+				return "Expected AS, got {0}";
+			case SyntaxErrorType::expRaw:          // 15
+				return "Expected a raw token i.e. a string. This error should not occur. Got {0}";
+			case SyntaxErrorType::expEndIf:         // 16
+				return "Expected END IF, got {0}. Reached the end of a statement block, but there was an incorrect END statement.";
+			case SyntaxErrorType::expEndFor:       // 17
+				return "Expected END FOR, got {0}. Reached the end of a statement block, but there was an incorrect END statement.";
+			case SyntaxErrorType::expEndWhile:      // 18
+				return "Expected END WHILE, got {0}. Reached the end of a statement block, but there was an incorrect END statement.";
+			case SyntaxErrorType::expEndFunc:	      // 19
+				return "Expected END FUNC, got {0}. Reached the end of a statement block, but there was an incorrect END statement.";
+			case SyntaxErrorType::expEndProc:	      // 20
+				return "Expected END PROC, got {0}. Reached the end of a statement block, but there was an incorrect END statement.";
+			case SyntaxErrorType::expEndStruct:     // 21
+				return "Expected END STRUCT, got {0}. Reached the end of a statement block, but there was an incorrect END statement.";
+			case SyntaxErrorType::expTypeMod:	      // 22
+				return "Expected type or type modifier, got {0}. Input type must be specified and must be a primitive";
+			case SyntaxErrorType::tooManyElse:      // 23
+				return "Got a second ELSE in the if tree. There can only be one ELSE, and it must be last. Got {0}";
+			case SyntaxErrorType::unexpEndFunc:     // 24
+			case SyntaxErrorType::unexpEndProc:    // 25
+			case SyntaxErrorType::unexpEndIf:	      // 26
+			case SyntaxErrorType::unexpEndFor:      // 27
+			case SyntaxErrorType::unexpEndWhile:  // 28
+			case SyntaxErrorType::unexpEndStruct:  // 29
+			case SyntaxErrorType::unexpElseIf:      // 30
+				return "Unexpected end statement. This error is not implemented so please submit a bug report with the code causing it if you get it.";
+			case SyntaxErrorType::inconsistentDict:
+				return "Inconsistend dictionary: All items must be dictionary pairs, or all must be single atoms. It is not permissible to mix them. Got {0}";
+			default:
+				return "Unrecognised or unimplemented error code.";
 			}
 		}
 

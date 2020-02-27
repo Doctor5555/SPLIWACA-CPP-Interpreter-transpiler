@@ -1,5 +1,5 @@
 REQUIRE python
-CALL _INTERPRETER.eval WITH RAW import time
+IMPORT time
 
 //////////////////////////////
 /// FACTORIAL ////////////////

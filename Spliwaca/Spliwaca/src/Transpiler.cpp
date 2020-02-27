@@ -58,9 +58,8 @@ namespace Spliwaca
 
 		for (SyntaxError s : m_State->SyntaxErrors)
 		{
-
 			SPLW_CRITICAL("Syntax Error code {2} at line {0}, column {1}", s.GetLineNumber(), s.GetColumnNumber(), s.GetErrorCode());
-			SPLW_CRITICAL("{0}", GenerateSyntaxErrorMessage(s.GetErrorCode()));
+			SPLW_CRITICAL(GetSyntaxErrorMessage(s.GetErrorCode()), TokenTypeName(s.GetTokenType()));
 			if (s.GetLineNumber() >= lexer->GetSplitFileString().size())
 				SPLW_WARN("Line {0} out of range!", s.GetLineNumber());
 			else
