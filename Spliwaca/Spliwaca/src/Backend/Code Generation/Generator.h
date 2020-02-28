@@ -40,7 +40,7 @@ namespace Spliwaca
 		void GenerateReturn(std::shared_ptr<ReturnNode> node);
 		void GenerateImport(std::shared_ptr<ImportNode> node);
 		
-		void GenerateList(std::shared_ptr<ListNode> node);
+		void GenerateList(std::shared_ptr<ListNode> node, bool fromAtom = false);
 		void GenerateDictEntry(std::shared_ptr<DictEntryNode> node);
 		void GenerateExpr(std::shared_ptr<Expr> node);
 		void GenerateBinOp(std::shared_ptr<BinOpNode> node);

@@ -221,7 +221,7 @@ int main(int argc, char** argv)
 	#ifdef SPLW_WINDOWS
 	system("PAUSE");
 	#else
-		system("read -n 1 -s -p \"Press any key to continue...\n\"");
+		//system("read -n 1 -s -p \"Press any key to continue...\n\"");
 	#endif
 	return 0;
 }

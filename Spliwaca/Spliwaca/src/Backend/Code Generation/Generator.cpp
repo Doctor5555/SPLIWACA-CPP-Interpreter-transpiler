@@ -271,7 +271,7 @@ namespace Spliwaca
 		m_Code += m_Tabs + "import " + node->id->GetContents();
 	}
 
-	void Generator::GenerateList(std::shared_ptr<ListNode> node)
+	void Generator::GenerateList(std::shared_ptr<ListNode> node, bool fromAtom)
 	{
 		if (node->Items.at(0)->hasRight)
 		{
@@ -283,9 +283,13 @@ namespace Spliwaca
 		}
 		else
 		{
-			m_Code += "(";
+			if (fromAtom) {
+				m_Code += "(";
+			}
 			GenerateDictEntry(node->Items.at(0));
-			m_Code += ")";
+			if (fromAtom){
+				m_Code += ")";
+			}
 			return;
 		}
 
@@ -417,7 +421,7 @@ namespace Spliwaca
 				m_Code += node->token->GetContents();
 			break;
 		}
-		case 2: GenerateList(node->list); break;
+		case 2: GenerateList(node->list, true); break;
 		case 3: m_Code += node->ident->GetContents(); break;
 		}
 
