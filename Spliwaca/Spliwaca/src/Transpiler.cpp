@@ -1,6 +1,7 @@
 #include "Transpiler.h"
 #include "Log.h"
 #include <iostream>
+#include <fstream>
 
 namespace Spliwaca
 {
@@ -73,7 +74,11 @@ namespace Spliwaca
 			//if (m_State->MissingVariables.size() == 0)
 			//{
 			//}
+			#ifdef SPLW_WINDOWS
 			system("PAUSE");
+			#else
+			system("read -n 1 -s -p \"Press any key to continue...\n\"");
+			#endif
 			return "";
 		}
 		else
@@ -88,9 +93,19 @@ namespace Spliwaca
 
 		std::string finalCode = codeGenerator->GenerateCode();
 
+		if (m_Output != "") {
+			std::ofstream outputFile;
+			outputFile.open(m_Output, std::ios::trunc);
+			outputFile << finalCode << "\n";
+			outputFile.close();
+		}
+		else {
+			std::cout << finalCode << std::endl;
+		}
+
 		//double generateTime = generateTimer.elapsed();
 
-		std::cout << finalCode << std::endl;
+		//std::cout << finalCode << std::endl;
 
 		SPLW_INFO("Finished code output!");
 

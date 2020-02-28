@@ -1,0 +1,28 @@
+FUNCTION fahrenheit_to_celsius <- FLOAT fahrenheit -> FLOAT AS
+    RETURN (fahrenheit - 32) * 5 / 9
+END FUNCTION
+FUNCTION celsius_to_fahrenheit <- FLOAT celsius -> FLOAT AS
+    RETURN (celsius * 9 / 5) + 32
+END FUNCTION
+FUNCTION tempConvert <- FLOAT temperature, STRING CorF -> FLOAT AS
+    IF CorF = 'C' DO
+        RETURN CALL celsius_to_fahrenheit WITH temperature
+    ELSE DO
+        RETURN CALL fahrenheit_to_celsius WITH temperature
+    END IF
+END FUNCTION
+
+PROCEDURE main AS
+    INPUT FLOAT temp
+    INPUT STRING c_or_f
+    IF c_or_f_in = 'C' DO
+        SET c_or_f TO C
+    ELSE IF c_or_f_in = 'F' DO
+        SET c_or_f TO F
+    ELSE DO
+        OUTPUT $c_or_f_in is not 'C' or 'F'
+        QUIT 1
+    END IF
+    SET temp TO CALL tempConvert WITH user_temp, c_or_f
+    OUTPUT $temp ⁰ $c_or_f
+END PROCEDURE

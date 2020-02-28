@@ -2,9 +2,14 @@
 #include <string>
 #include <iostream>
 #include <chrono>
+
+#ifdef SPLW_WINDOWS
 #include <Windows.h>
+#endif
+
 //#include "Instrumentor.h"
 #include "Transpiler.h"
+#include "Log.h"
 
 using namespace Spliwaca;
 
@@ -142,19 +147,37 @@ private:
 
 int main(int argc, char** argv)
 {
-	if (argc != 2) {
-		std::cout << "Usage: transpiler <file>\n";
+	std::string ifile, ofile;
+	if (argc < 2) {
+		std::cout << "Usage: transpiler FILE [-o OUTFILE]\n";
 		return -1;
 	}
+	else if (argc > 2 && argc != 4) {
+		std::cout << "Usage: transpiler FILE [-o OUTFILE]\n";
+		return -1;
+	}
+	else if (argc == 4 && strcmp(argv[2], "-o")) {
+		std::cout << "Usage: transpiler FILE [-o OUTFILE]\n";
+		return -1;
+	}
+	else if (argc == 4) {
+		ofile = argv[3];
+	}
+	else {
+		ofile = "";
+	}
+	ifile = argv[1];
 	Timer totalTimer = Timer();
 
+	#ifdef SPLW_WINDOWS
 	SetConsoleOutputCP(CP_UTF8);
 	setvbuf(stdout, nullptr, _IOFBF, 1000);
+	#endif
 
 	LOG_INIT();
 	bool printTokenList = false;
 
-	Transpiler transpiler = Transpiler(argv[1], state, printTokenList);
+	Transpiler transpiler = Transpiler(ifile, ofile, state, printTokenList);
 	std::string output = transpiler.Run();
 
 	//std::cout << "\nLexer took: " << lexerTime << " seconds\nParser took: " << parseTime << " seconds\nGenerator took: " << generateTime << " seconds" << std::endl;
@@ -195,7 +218,10 @@ int main(int argc, char** argv)
 		return -1;
 	}
 	*/
-
+	#ifdef SPLW_WINDOWS
 	system("PAUSE");
+	#else
+		system("read -n 1 -s -p \"Press any key to continue...\n\"");
+	#endif
 	return 0;
 }

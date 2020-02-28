@@ -20,8 +20,8 @@ namespace Spliwaca
 	class Transpiler
 	{
 	public:
-		Transpiler(std::string filename, std::shared_ptr<TranspilerState> state, bool printTokenList)
-			: m_Filename(filename), m_State(state), m_PrintTokenList(printTokenList)
+		Transpiler(std::string filename, std::string output, std::shared_ptr<TranspilerState> state, bool printTokenList)
+			: m_Filename(filename), m_Output(output), m_State(state), m_PrintTokenList(printTokenList)
 		{
 		}
 
@@ -97,6 +97,7 @@ namespace Spliwaca
 
 	private:
 		std::string m_Filename;
+		std::string m_Output;
 		std::shared_ptr<TranspilerState> m_State;
 		bool m_PrintTokenList;
 	};

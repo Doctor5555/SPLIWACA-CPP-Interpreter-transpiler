@@ -1,10 +1,16 @@
 # Directories
-.vs/
+\.vs/
+\.vscode/
 bin/
 bin-int/
-.mypy_cache/
+\.mypy_cache/
 
 #Files
-*.user
-*.~lock.*
-Sandbox/imgui.ini
+\.DS_Store
+**/\.DS_Store
+*\.user
+*\.~lock\.*
+Sandbox/imgui\.ini
+transpiler
+*\.out
+\.test\.*
