@@ -32,7 +32,7 @@ namespace Spliwaca
 
 	std::string Generator::GenerateCode()
 	{
-		m_Code = "";
+		m_Code = "import libsplw as __interpreter_lib\n";
 
 		if (m_EntryPoint->require && !itemInVect({ "cpp_transpiler","CPPTranspiler","Transpiler","transpiler" },
 			m_EntryPoint->require->requireType->GetContents()))
@@ -114,12 +114,13 @@ namespace Spliwaca
 
 	void Generator::GenerateInput(std::shared_ptr<InputNode> node)
 	{
-		/*m_Code += m_Tabs + node->id->GetContents() + " = libsplw."; GenerateType(node->type);
+		m_Code += m_Tabs + node->id->GetContents() + " = __interpreter_lib.input('";
 		if (node->signSpec)
-			m_Code += "_" + node->signSpec->GetContents();
-		m_Code += "_input()";*/ // @IMPORTANT Add back in when libsplw is made
+			m_Code += node->signSpec->GetContents() + " ";
+		GenerateType(node->type);
+		m_Code += "')"; //Add back in when __interpreter_lib is made
 
-		m_Code += m_Tabs + node->id->GetContents() + " = "; GenerateType(node->type); m_Code += "(input())"; 
+		//m_Code += m_Tabs + node->id->GetContents() + " = "; GenerateType(node->type); m_Code += "(input())"; 
 	}
 
 	void Generator::GenerateOutput(std::shared_ptr<OutputNode> node)
@@ -159,7 +160,7 @@ namespace Spliwaca
 
 	void Generator::GenerateQuit(std::shared_ptr<QuitNode> node)
 	{
-		m_Code += m_Tabs + "quit(";
+		m_Code += m_Tabs + "exit(";
 		if (node->returnVal)
 			GenerateAtom(node->returnVal);
 		m_Code += ")";
@@ -185,7 +186,12 @@ namespace Spliwaca
 
 	void Generator::GenerateFunc(std::shared_ptr<FuncNode> node)
 	{
-		m_Code += m_Tabs + "def " + node->id->GetContents() + "(" + node->argNames.at(0)->GetContents() + ": "; GenerateType(node->argTypes.at(0));
+		m_Code += m_Tabs + "@__interpreter_lib.type_check\ndef " + node->id->GetContents() + "(";
+		if (node->argNames.size() != 0) {
+			m_Code += node->argNames.at(0)->GetContents() + ": ";
+			GenerateType(node->argTypes.at(0));
+		}
+
 		assert(node->argNames.size() == node->argTypes.size());
 
 		for (uint32_t i = 1; i < node->argNames.size(); i++)
@@ -200,12 +206,18 @@ namespace Spliwaca
 
 		m_Tabs += "\t";
 		GenerateStatements(node->body);
+		m_Code += m_Tabs + "raise __interpreter_lib.FunctionEndError";
 		m_Tabs.pop_back();
 	}
 
 	void Generator::GenerateProc(std::shared_ptr<ProcNode> node)
 	{
-		m_Code += m_Tabs + "def " + node->id->GetContents() + "(" + node->argNames.at(0)->GetContents() + ": "; GenerateType(node->argTypes.at(0));
+		m_Code += m_Tabs + "@__interpreter_lib.type_check\ndef " + node->id->GetContents() + "(";
+		if (node->argNames.size() != 0) {
+			m_Code += node->argNames.at(0)->GetContents() + ": ";
+			GenerateType(node->argTypes.at(0));
+		}
+
 		assert(node->argNames.size() == node->argTypes.size());
 
 		for (uint32_t i = 1; i < node->argNames.size(); i++)
@@ -213,7 +225,7 @@ namespace Spliwaca
 			m_Code += ", " + node->argNames.at(i)->GetContents() + ": ";
 			GenerateType(node->argTypes.at(i));
 		}
-		m_Code += "):\n";
+		m_Code += ") -> __builtins__.None:\n";
 
 		m_Tabs += "\t";
 		GenerateStatements(node->body);
@@ -271,7 +283,9 @@ namespace Spliwaca
 		}
 		else
 		{
+			m_Code += "(";
 			GenerateDictEntry(node->Items.at(0));
+			m_Code += ")";
 			return;
 		}
 
@@ -320,17 +334,56 @@ namespace Spliwaca
 		GenerateFactor(node->left);
 		if (node->opToken)
 		{
-			if (!itemInVect({ TokenType::Modulo, TokenType::Intdiv }, node->opToken->GetType()))
-			{
-				std::string opTokenStr = node->opToken->GetContents();
-				std::transform(opTokenStr.begin(), opTokenStr.end(), opTokenStr.begin(),
-					[](unsigned char c) { return std::tolower(c); });
-				m_Code += " " + opTokenStr + " ";
+			std::string opTokenStr = "";
+			//std::transform(opTokenStr.begin(), opTokenStr.end(), opTokenStr.begin(),
+			//	[](unsigned char c) { return std::tolower(c); });
+			switch (node->opToken->GetType()) {
+			case TokenType::Is:
+				opTokenStr = "is"; break;
+			case TokenType::Not:
+				opTokenStr = "not"; break;
+			case TokenType::And:
+				opTokenStr = "and"; break;
+			case TokenType::Or:
+				opTokenStr = "or"; break;
+			case TokenType::Equal:
+				opTokenStr = "=="; break;
+			case TokenType::NotEqual:
+				opTokenStr = "!="; break;
+			case TokenType::LessThan:
+				opTokenStr = "<"; break;
+			case TokenType::GreaterThan:
+				opTokenStr = ">"; break;
+			case TokenType::LessThanEqual:
+				opTokenStr = "<="; break;
+			case TokenType::GreaterThanEqual:
+				opTokenStr = ">="; break;
+			case TokenType::Multiply:
+				opTokenStr = "*"; break;
+			case TokenType::Divide:
+				opTokenStr = "/"; break;
+			case TokenType::Intdiv:
+				opTokenStr = "//"; break;
+			case TokenType::Plus:
+				opTokenStr = "+"; break;
+			case TokenType::Minus:
+				opTokenStr = "-"; break;
+			case TokenType::Modulo:
+				opTokenStr = "%"; break;
+			case TokenType::Xor:
+				opTokenStr = "^"; break;
+			case TokenType::BitwiseAnd:
+				opTokenStr = "&"; break;
+			case TokenType::BitwiseOr:
+				opTokenStr = "|"; break;
+			case TokenType::ShiftRight:
+				opTokenStr = ">>"; break;
+			case TokenType::ShiftLeft:
+				opTokenStr = "<<"; break;
+			default:
+				SPLW_CRITICAL("Bug: Operator {0} not handled", node->opToken->GetContents());
 			}
-			else if (node->opToken->GetType() == TokenType::Modulo)
-				m_Code += " % ";
-			else if (node->opToken->GetType() == TokenType::Intdiv)
-				m_Code += " // ";
+			m_Code += " " + opTokenStr + " ";
 			GenerateBinOp(node->right);
 		}
 	}
@@ -357,9 +410,9 @@ namespace Spliwaca
 			else if (node->token->GetType() == TokenType::Complex)
 				m_Code += ParseComplex(node->token);
 			else if (node->token->GetType() == TokenType::True)
-				m_Code += "True";
+				m_Code += "__builtins__.True";
 			else if (node->token->GetType() == TokenType::False)
-				m_Code += "False";
+				m_Code += "__builtins__.False";
 			else
 				m_Code += node->token->GetContents();
 			break;
@@ -408,7 +461,11 @@ namespace Spliwaca
 		}
 
 		std::string anonf_randomised_name = std::to_string(node->argNames.at(0)->GetLineNumber()) + "_" + std::to_string(std::rand());
-		m_Code += m_Tabs + "def anonf_line_" + anonf_randomised_name + "(" + node->argNames.at(0)->GetContents() + ": "; GenerateType(node->argTypes.at(0));
+		m_Code += m_Tabs + "@__interpreter_lib.type_check\ndef anonf_line_" + anonf_randomised_name + "(";
+		if (node->argNames.size() != 0) {
+			m_Code += node->argNames.at(0)->GetContents() + ": ";
+			GenerateType(node->argTypes.at(0));
+		}
 		assert(node->argNames.size() == node->argTypes.size());
 
 		for (uint32_t i = 1; i < node->argNames.size(); i++)
@@ -423,6 +480,7 @@ namespace Spliwaca
 
 		m_Tabs += "\t";
 		GenerateStatements(node->body);
+		m_Code += m_Tabs + "raise __interpreter_lib.FunctionEndError";
 		m_Tabs.pop_back();
 
 		m_Code += code + "anonf_line_" + anonf_randomised_name;
@@ -439,8 +497,12 @@ namespace Spliwaca
 			charIndex--;
 		}
 
-		std::string anonf_randomised_name = std::to_string(node->argNames.at(0)->GetLineNumber()) + "_" + std::to_string(std::rand());
-		m_Code += m_Tabs + "def anonf_line_" + anonf_randomised_name + "(" + node->argNames.at(0)->GetContents() + ": "; GenerateType(node->argTypes.at(0));
+		std::string anonp_randomised_name = std::to_string(node->argNames.at(0)->GetLineNumber()) + "_" + std::to_string(std::rand());
+		m_Code += m_Tabs + "@__interpreter_lib.type_check\ndef anonp_line_" + anonp_randomised_name + "(";
+		if (node->argNames.size() != 0) {
+			m_Code += node->argNames.at(0)->GetContents() + ": ";
+			GenerateType(node->argTypes.at(0));
+		}
 		assert(node->argNames.size() == node->argTypes.size());
 
 		for (uint32_t i = 1; i < node->argNames.size(); i++)
@@ -448,21 +510,41 @@ namespace Spliwaca
 			m_Code += ", " + node->argNames.at(i)->GetContents() + ": ";
 			GenerateType(node->argTypes.at(i));
 		}
-		m_Code += "):\n";
+		m_Code += ") -> __builtins__.None:\n";
 
 		m_Tabs += "\t";
 		GenerateStatements(node->body);
 		m_Tabs.pop_back();
 
-		m_Code += code + "def anonf_line_" + anonf_randomised_name;
+		m_Code += code + "anonp_line_" + anonp_randomised_name;
 	}
 
 	void Generator::GenerateType(std::shared_ptr<TypeNode> node)
 	{
 		if (node->type == 1)
 			m_Code += node->ident->GetContents();
-		else
-			m_Code += node->typeToken->GetContents();
+		else {
+			m_Code += "__builtins__.";
+			std::string typeTokenStr = node->typeToken->GetContents();
+			std::transform(typeTokenStr.begin(), typeTokenStr.end(), typeTokenStr.begin(),
+				[](unsigned char c) { return std::tolower(c); });
+			if (typeTokenStr == "string")
+				typeTokenStr = "str";
+			else if (typeTokenStr == "real")
+				typeTokenStr = "float";
+			else if (typeTokenStr == "number")
+				typeTokenStr = "float";
+			else if (typeTokenStr == "integer")
+				typeTokenStr = "int";
+			else if (typeTokenStr == "dictionary")
+				typeTokenStr = "dict";
+			else if (typeTokenStr == "mapping")
+				typeTokenStr = "dict";
+			else if (typeTokenStr == "map")
+				typeTokenStr = "dict";
+
+			m_Code += typeTokenStr;
+		}
 	}
 
 	/*void Generator::GenerateIdent(std::shared_ptr<IdentNode> node)

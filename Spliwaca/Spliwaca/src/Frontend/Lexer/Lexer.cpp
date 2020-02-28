@@ -152,7 +152,7 @@ namespace Spliwaca
 				m_StoredColumnNumber = m_ColumnNumber;
 				m_StoredLineNumber = m_LineNumber;
 			}
-			else if (tokenContents == " " || tokenContents == "\t" || tokenContents == "\f" || tokenContents == "") // Whitespace
+			else if (tokenContents == std::string(1, ' ') || tokenContents == "\t" || tokenContents == "\f" || tokenContents == "" || tokenContents == std::string(1, '\ufeff')) // Whitespace
 			{
 			}
 			else
@@ -266,13 +266,18 @@ namespace Spliwaca
 		std::string s = m_FileString;
 
 		std::string intermediate = "";
-		std::vector<char> splitChars = { ' ', '\n', '\t', '\f', '(', ')', '[', ']', '+', '-', '/', '*', '!', '=', '%', '^', '&', '|', '<', '>', ',', '"', '\'', '.', ':' };
+		std::vector<char> splitChars = { ' ', '\uffef', '\ufeff', '\n', '\t', '\f', '(', ')', '[', ']', '+', '-', '/', '*', '!', '=', '%', '^', '&', '|', '<', '>', ',', '"', '\'', '.', ':' };
 		std::vector<std::string> splitDuoStrings = { "/*", "*/", "//", "**", "??", "==", "!=", "<=", ">=", "<<", ">>", "<-", "->", "||", "\\'", "\\\"" };
-		std::vector<std::string> splitTrioStrings = { "=/=" };
+		std::vector<std::string> splitTrioStrings = { "=/=", "===" };
 
 		int i = 0;
 		while (true)
 		{
+			if (s[i] == 'ï' || s[i] == '»' || s[i] == '¿') {
+				i++;
+				continue;
+			}
+
 			std::string c = std::string(1, s[i]);
 			std::string duo = c; (i < s.size() - 1) ? duo += s[i + 1] : duo += "";
 			std::string trio = duo; (i < s.size() - 2) ? trio += s[i + 2] : trio += "";
@@ -298,7 +303,7 @@ namespace Spliwaca
 				intermediate = "";
 				i++;
 			}
-			else if (itemInVect(splitChars, c[0]))
+			else if (itemInVect(splitChars, c[0]) || s_KeywordDict.find(c) != s_KeywordDict.end())
 			{
 				if (c != "." || charInStr(alphabetCharacters, intermediate[0]))
 				{

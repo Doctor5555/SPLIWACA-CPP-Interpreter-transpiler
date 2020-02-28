@@ -1,122 +1,28 @@
-IMPORT time
-
-//////////////////////////////
-/// FACTORIAL ////////////////
-//////////////////////////////
-
-FUNCTION FactRecursive TAKES int i RETURNS int AS
-    IF i == 0 DO
-        SET rv TO 1
+﻿FUNCTION fahrenheit_to_celsius <- FLOAT fahrenheit -> FLOAT AS
+    RETURN (fahrenheit - 32) * 5 / 9
+END FUNCTION
+FUNCTION celsius_to_fahrenheit <- FLOAT celsius -> FLOAT AS
+    RETURN (celsius * 9 / 5) + 32
+END FUNCTION
+FUNCTION tempConvert <- FLOAT temperature, STRING CorF -> FLOAT AS
+    IF CorF = 'C' DO
+        RETURN CALL celsius_to_fahrenheit WITH temperature
     ELSE DO
-        SET i_1 TO CALL FactRecursive WITH (i-1)
-        SET rv TO i * i_1
+        RETURN CALL fahrenheit_to_celsius WITH temperature
     END IF
-    RETURN rv
 END FUNCTION
 
-FUNCTION FactIterative TAKES int i RETURNS int AS
-    IF i == 0 DO
-        SET rv TO 1
+PROCEDURE main AS
+    INPUT FLOAT temp
+    INPUT STRING c_or_f
+    IF c_or_f_in = 'C' DO
+        SET c_or_f TO C
+    ELSE IF c_or_f_in = 'F' DO
+        SET c_or_f TO F
     ELSE DO
-        SET rv TO 1
-        FOR j OF i DO
-            SET rv TO rv * (i + 1)
-        END FOR
+        OUTPUT $c_or_f_in is not 'C' or 'F'
+        QUIT 1
     END IF
-    RETURN rv
-END FUNCTION
-
-OUTPUT Enter a number to calculate the factorial of: 
-INPUT INT num
-
-IF num < 0 DO
-    OUTPUT Number cannot be less than 0
-    QUIT
-END IF
-
-SET timeRecursiveBegin TO 0
-SET timeRecursiveEnd TO 0
-SET timeIterativeBegin TO 0
-SET timeIterativeEnd TO 0
-
-SET timeRecursiveBegin TO CALL _INTERPRETER.time.time
-SET a TO CALL FactRecursive WITH num
-SET timeRecursiveEnd TO CALL _INTERPRETER.time.time
-
-SET timeIterativeBegin TO CALL _INTERPRETER.time.time
-SET b TO CALL FactIterative WITH num
-SET timeIterativeEnd TO CALL _INTERPRETER.time.time
-
-OUTPUT \n
-OUTPUT Recursive factorial result: $a \n
-OUTPUT Iterative factorial result: $b \n\n
-
-SET timeDiffRecursive TO timeRecursiveEnd - timeRecursiveBegin
-SET timeDiffIterative TO timeIterativeEnd - timeIterativeBegin
-
-OUTPUT Time difference recursive: $timeDiffRecursive \n
-OUTPUT Time difference iterative: $timeDiffIterative \n\n
-
-
-//////////////////////////////
-/// FIBONACCI ////////////////
-//////////////////////////////
-
-FUNCTION FibonacciRecursive TAKES int iterations RETURNS int AS
-    IF iterations == 1 OR iterations == 2 DO
-        SET rv TO 1
-    ELSE IF iterations == 0 DO
-        SET rv TO 0
-    ELSE DO
-        SET i_1 TO CALL FactRecursive WITH (iterations-1)
-        SET i_2 TO CALL FactRecursive WITH (iterations-2)
-        SET rv TO i_1 + i_2
-    END IF
-    RETURN rv
-END FUNCTION
-
-FUNCTION FibonacciIterative TAKES int iterations RETURNS int AS
-    IF i == 0 DO
-        SET rv TO 0
-    ELSE DO
-        SET rv TO 1
-        SET prev TO 0
-        FOR j OF i DO
-            SET temp TO rv
-            SET rv TO rv + prev
-            SET prev TO temp
-        END FOR
-    END IF
-    RETURN rv
-END FUNCTION
-
-OUTPUT Enter a index to calculate the number in the fibonacci sequence: 
-INPUT int num
-
-IF num < 0 DO
-    OUTPUT Number cannot be less than 0
-    QUIT
-END IF
-
-SET timeRecursiveBegin TO 0
-SET timeRecursiveEnd TO 0
-SET timeIterativeBegin TO 0
-SET timeIterativeEnd TO 0
-
-SET timeRecursiveBegin TO CALL _INTERPRETER.time.time
-SET a TO CALL FibonacciRecursive WITH num
-SET timeRecursiveEnd TO CALL _INTERPRETER.time.time
-
-SET timeIterativeBegin TO CALL _INTERPRETER.time.time
-SET b TO CALL FibonacciIterative WITH num
-SET timeIterativeEnd TO CALL _INTERPRETER.time.time
-
-OUTPUT \n
-OUTPUT Recursive fibonacci result: $a \n
-OUTPUT Iterative fibonacci result: $b \n\n
-
-SET timeDiffRecursive TO timeRecursiveEnd - timeRecursiveBegin
-SET timeDiffIterative TO timeIterativeEnd - timeIterativeBegin
-
-OUTPUT Time difference recursive: $timeDiffRecursive \n
-OUTPUT Time difference iterative: $timeDiffIterative \n
+    SET temp TO CALL tempConvert WITH user_temp, c_or_f
+    OUTPUT $temp ⁰ $c_or_f
+END PROCEDURE

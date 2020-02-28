@@ -207,6 +207,7 @@ namespace Spliwaca
 		inline std::string GetContents() { return m_Contents; }
 		inline uint32_t GetLineNumber() { return m_LineNumber; }
 		inline uint32_t GetCharacterNumber() { return m_CharacterNumber; }
+		inline void AppendContents(std::string a) { m_Contents += a; }
 
 		inline const std::string& ToString() const { return "[Token " + std::to_string(m_LineNumber) + "," + std::to_string(m_CharacterNumber) + ": " + TokenTypeName(m_Type) + ": " + m_Contents + "]"; }
 	private:

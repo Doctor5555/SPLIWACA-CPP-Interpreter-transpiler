@@ -19,6 +19,7 @@ namespace Spliwaca
 		std::shared_ptr<EntryPoint> m_EntryPoint;
 		std::string m_Tabs;
 		std::string m_Code;
+		std::string m_CurrentFuncNameLine;
 
 	private:
 		void GenerateStatements(std::shared_ptr<Statements> s);

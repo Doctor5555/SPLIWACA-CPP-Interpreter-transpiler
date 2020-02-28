@@ -16,6 +16,7 @@ namespace Spliwaca
 		std::shared_ptr<std::vector<std::shared_ptr<Token>>> MakeTokens();
 		inline const std::string GetFileString() const { return m_FileString; }
 		inline const std::vector<std::string> GetSplitFileString() const { return split(m_FileString, '\n'); }
+		inline const bool IsStringInKeywords(std::string string) const { return s_KeywordDict.find(string) != s_KeywordDict.end(); }
 
 	private:
 		Lexer(std::string file);
@@ -128,6 +129,7 @@ namespace Spliwaca
 			{"IS",                  TokenType::Is},
 			{"≣",                   TokenType::Is},
 			{"≡",                   TokenType::Is},
+			{"===",                 TokenType::Is},
 			{"NOT",                 TokenType::Not},
 			{"!",                   TokenType::Not},
 			{"AND",                 TokenType::And},

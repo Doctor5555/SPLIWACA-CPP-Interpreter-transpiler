@@ -35,7 +35,7 @@ namespace Spliwaca
 			}
 			else if (ids.size() > 1)
 			{
-				rv += ids.at(1)->GetContents();
+				rv += "__builtins__." + ids.at(1)->GetContents();
 				for (size_t i = 2; i < ids.size(); i++)
 				{
 					rv += "." + ids.at(i)->GetContents();
@@ -65,7 +65,10 @@ namespace Spliwaca
 		{
 		}
 
-		//~IdentNode() = default;
+	private:
+		std::string GetIdContents(int index) {
+
+		}
 	};
 
 	struct TypeNode

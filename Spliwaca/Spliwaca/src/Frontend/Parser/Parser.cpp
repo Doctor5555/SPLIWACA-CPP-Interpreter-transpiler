@@ -612,7 +612,7 @@ namespace Spliwaca
 
 		node->body = ConstructStatements();
 
-		if (m_Tokens->at(m_TokenIndex)->GetType() == TokenType::End && m_Tokens->at((uint64_t)m_TokenIndex + (uint64_t)1)->GetType() == TokenType::Function)
+		if (m_Tokens->at(m_TokenIndex)->GetType() == TokenType::End && m_Tokens->at((uint64_t)m_TokenIndex + (uint64_t)1)->GetType() == TokenType::Procedure)
 		{
 			//m_CurrentScope->CloseScope(m_Tokens->at(m_TokenIndex)->GetLineNumber());
 			IncIndex(); IncIndex();
@@ -1129,7 +1129,7 @@ namespace Spliwaca
 
 		node->body = ConstructStatements();
 
-		if (m_Tokens->at(m_TokenIndex)->GetType() == TokenType::End && m_Tokens->at((uint64_t)m_TokenIndex + (uint64_t)1)->GetType() == TokenType::Function)
+		if (m_Tokens->at(m_TokenIndex)->GetType() == TokenType::End && m_Tokens->at((uint64_t)m_TokenIndex + (uint64_t)1)->GetType() == TokenType::Procedure)
 		{
 			//m_CurrentScope->CloseScope(m_Tokens->at(m_TokenIndex)->GetLineNumber());
 			IncIndex(); IncIndex();
@@ -1165,8 +1165,9 @@ namespace Spliwaca
 	std::shared_ptr<IdentNode> Parser::ConstructIdentNode()
 	{
 		std::shared_ptr<IdentNode> node = std::make_shared<IdentNode>();
-
-		if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Identifier)
+		
+		char first = m_Tokens->at(m_TokenIndex)->GetContents()[0];
+		if (!(first >= 0x41 && first <= 0x5a) && !(first >= 0x61 && first <= 0x7a))
 		{
 			RegisterSyntaxError(SyntaxErrorType::expIdent, m_Tokens->at(m_TokenIndex));
 		}
@@ -1179,12 +1180,10 @@ namespace Spliwaca
 		while (m_Tokens->at(m_TokenIndex)->GetType() == TokenType::VarAccessOp)
 		{
 			IncIndex();
-			if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Identifier)
-			{
+			first = m_Tokens->at(m_TokenIndex)->GetContents()[0];
+			if (!(first >= 0x41 && first <= 0x5a) && !(first >= 0x61 && first <= 0x7a)) {
 				RegisterSyntaxError(SyntaxErrorType::expIdent, m_Tokens->at(m_TokenIndex));
-			}
-			else
-			{
+			} else {
 				node->ids.push_back(m_Tokens->at(m_TokenIndex));
 				IncIndex();
 			}
