@@ -32,7 +32,7 @@ namespace Spliwaca
 
 	std::string Generator::GenerateCode()
 	{
-		m_Code = "import libsplw as __interpreter_lib\n";
+		m_Code = "import libsplw\n";
 
 		if (m_EntryPoint->require && !itemInVect({ "cpp_transpiler","CPPTranspiler","Transpiler","transpiler" },
 			m_EntryPoint->require->requireType->GetContents()))
@@ -114,11 +114,11 @@ namespace Spliwaca
 
 	void Generator::GenerateInput(std::shared_ptr<InputNode> node)
 	{
-		m_Code += m_Tabs + node->id->GetContents() + " = __interpreter_lib.input('";
+		m_Code += m_Tabs + node->id->GetContents() + " = libsplw.input('";
 		if (node->signSpec)
 			m_Code += node->signSpec->GetContents() + " ";
 		GenerateType(node->type);
-		m_Code += "')"; //Add back in when __interpreter_lib is made
+		m_Code += "')"; //Add back in when libsplw is made
 
 		//m_Code += m_Tabs + node->id->GetContents() + " = "; GenerateType(node->type); m_Code += "(input())"; 
 	}
@@ -186,7 +186,7 @@ namespace Spliwaca
 
 	void Generator::GenerateFunc(std::shared_ptr<FuncNode> node)
 	{
-		m_Code += m_Tabs + "@__interpreter_lib.type_check\ndef " + node->id->GetContents() + "(";
+		m_Code += m_Tabs + "@libsplw.type_check\ndef " + node->id->GetContents() + "(";
 		if (node->argNames.size() != 0) {
 			m_Code += node->argNames.at(0)->GetContents() + ": ";
 			GenerateType(node->argTypes.at(0));
@@ -206,13 +206,13 @@ namespace Spliwaca
 
 		m_Tabs += "\t";
 		GenerateStatements(node->body);
-		m_Code += m_Tabs + "raise __interpreter_lib.FunctionEndError";
+		m_Code += m_Tabs + "raise libsplw.FunctionEndError";
 		m_Tabs.pop_back();
 	}
 
 	void Generator::GenerateProc(std::shared_ptr<ProcNode> node)
 	{
-		m_Code += m_Tabs + "@__interpreter_lib.type_check\ndef " + node->id->GetContents() + "(";
+		m_Code += m_Tabs + "@libsplw.type_check\ndef " + node->id->GetContents() + "(";
 		if (node->argNames.size() != 0) {
 			m_Code += node->argNames.at(0)->GetContents() + ": ";
 			GenerateType(node->argTypes.at(0));
@@ -225,7 +225,7 @@ namespace Spliwaca
 			m_Code += ", " + node->argNames.at(i)->GetContents() + ": ";
 			GenerateType(node->argTypes.at(i));
 		}
-		m_Code += ") -> __builtins__.None:\n";
+		m_Code += ") -> None:\n";
 
 		m_Tabs += "\t";
 		GenerateStatements(node->body);
@@ -414,9 +414,9 @@ namespace Spliwaca
 			else if (node->token->GetType() == TokenType::Complex)
 				m_Code += ParseComplex(node->token);
 			else if (node->token->GetType() == TokenType::True)
-				m_Code += "__builtins__.True";
+				m_Code += "True";
 			else if (node->token->GetType() == TokenType::False)
-				m_Code += "__builtins__.False";
+				m_Code += "False";
 			else
 				m_Code += node->token->GetContents();
 			break;
@@ -465,7 +465,7 @@ namespace Spliwaca
 		}
 
 		std::string anonf_randomised_name = std::to_string(node->argNames.at(0)->GetLineNumber()) + "_" + std::to_string(std::rand());
-		m_Code += m_Tabs + "@__interpreter_lib.type_check\ndef anonf_line_" + anonf_randomised_name + "(";
+		m_Code += m_Tabs + "@libsplw.type_check\ndef anonf_line_" + anonf_randomised_name + "(";
 		if (node->argNames.size() != 0) {
 			m_Code += node->argNames.at(0)->GetContents() + ": ";
 			GenerateType(node->argTypes.at(0));
@@ -484,7 +484,7 @@ namespace Spliwaca
 
 		m_Tabs += "\t";
 		GenerateStatements(node->body);
-		m_Code += m_Tabs + "raise __interpreter_lib.FunctionEndError";
+		m_Code += m_Tabs + "raise libsplw.FunctionEndError";
 		m_Tabs.pop_back();
 
 		m_Code += code + "anonf_line_" + anonf_randomised_name;
@@ -502,7 +502,7 @@ namespace Spliwaca
 		}
 
 		std::string anonp_randomised_name = std::to_string(node->argNames.at(0)->GetLineNumber()) + "_" + std::to_string(std::rand());
-		m_Code += m_Tabs + "@__interpreter_lib.type_check\ndef anonp_line_" + anonp_randomised_name + "(";
+		m_Code += m_Tabs + "@libsplw.type_check\ndef anonp_line_" + anonp_randomised_name + "(";
 		if (node->argNames.size() != 0) {
 			m_Code += node->argNames.at(0)->GetContents() + ": ";
 			GenerateType(node->argTypes.at(0));
@@ -514,7 +514,7 @@ namespace Spliwaca
 			m_Code += ", " + node->argNames.at(i)->GetContents() + ": ";
 			GenerateType(node->argTypes.at(i));
 		}
-		m_Code += ") -> __builtins__.None:\n";
+		m_Code += ") -> None:\n";
 
 		m_Tabs += "\t";
 		GenerateStatements(node->body);
@@ -528,7 +528,7 @@ namespace Spliwaca
 		if (node->type == 1)
 			m_Code += node->ident->GetContents();
 		else {
-			m_Code += "__builtins__.";
+			//m_Code += "__builtins__.";
 			std::string typeTokenStr = node->typeToken->GetContents();
 			std::transform(typeTokenStr.begin(), typeTokenStr.end(), typeTokenStr.begin(),
 				[](unsigned char c) { return std::tolower(c); });

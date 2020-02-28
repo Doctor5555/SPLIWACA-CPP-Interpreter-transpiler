@@ -1,30 +1,24 @@
 import libsplw
-global_reserved = libsplw.VariableHolder()
-global_reserved.set('global_reserved', 1)
-global_reserved.get('global_reserved') # returns 1
-@__interpreter_lib.type_check
-def fahrenheit_to_celsius(fahrenheit: __builtins__.float) -> __builtins__.float:
-	fahrenheit_to_celsius_scope_reserved = libsplw.VariableHolder(global_reserved)
+@libsplw.type_check
+def fahrenheit_to_celsius(fahrenheit: float) -> float:
 	return (fahrenheit - 32) * 5 / 9
-	raise __interpreter_lib.FunctionEndError
-
-@__interpreter_lib.type_check
-def celsius_to_fahrenheit(celsius: __builtins__.float) -> __builtins__.float:
+	raise libsplw.FunctionEndError
+@libsplw.type_check
+def celsius_to_fahrenheit(celsius: float) -> float:
 	return (celsius * 9 / 5) + 32
-	raise __interpreter_lib.FunctionEndError
-
-@__interpreter_lib.type_check
-def tempConvert(temperature: __builtins__.float, CorF: __builtins__.str) -> __builtins__.float:
+	raise libsplw.FunctionEndError
+@libsplw.type_check
+def tempConvert(temperature: float, CorF: str) -> float:
 	if CorF == "C":
 		return celsius_to_fahrenheit(temperature)
 	else:
 		return fahrenheit_to_celsius(temperature)
 
-	raise __interpreter_lib.FunctionEndError
-@__interpreter_lib.type_check
-def main() -> __builtins__.None:
-	temp = __interpreter_lib.input('__builtins__.float')
-	c_or_f = __interpreter_lib.input('__builtins__.str')
+	raise libsplw.FunctionEndError
+@libsplw.type_check
+def main() -> None:
+	temp = libsplw.input('float')
+	c_or_f = libsplw.input('str')
 	if c_or_f_in == "C":
 		c_or_f = C
 	elif c_or_f_in == "F":
