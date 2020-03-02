@@ -38,10 +38,10 @@ project "Spliwaca"
 	
 	files
 	{
-		"c:/dev/EPQ Spliwaca/Spliwaca/Spliwaca/src/**.h",
-		"c:/dev/EPQ Spliwaca/Spliwaca/Spliwaca/src/**.cpp",
-		"c:/dev/EPQ Spliwaca/Spliwaca/vendor/timing/**.h",
-		"c:/dev/EPQ Spliwaca/Spliwaca/vendor/spdlog/include/**.h"
+		"Spliwaca/Spliwaca/src/**.h",
+		"Spliwaca/Spliwaca/src/**.cpp",
+		"Spliwaca/vendor/timing/**.h",
+		"Spliwaca/vendor/spdlog/include/**.h"
 	}
 	
 	defines
@@ -51,7 +51,7 @@ project "Spliwaca"
 	
 	includedirs
 	{
-		"C:/dev/EPQ Spliwaca/Spliwaca/Spliwaca/src",
+		"Spliwaca/Spliwaca/src",
 		"%{IncludeDir.spdlog}",
 		"%{IncludeDir.timing}"
 	}
