@@ -32,7 +32,7 @@ namespace Spliwaca
 
 	std::string Generator::GenerateCode()
 	{
-		m_Code = "import libsplw\n";
+		m_Code = "import libsplw\nglobal_vars = libsplw.VariableHolder()\n\n";
 
 		if (m_EntryPoint->require && !itemInVect({ "cpp_transpiler","CPPTranspiler","Transpiler","transpiler" },
 			m_EntryPoint->require->requireType->GetContents()))
@@ -418,7 +418,7 @@ namespace Spliwaca
 			else if (node->token->GetType() == TokenType::False)
 				m_Code += "False";
 			else
-				m_Code += node->token->GetContents();
+				m_Code += StripLeadingZeros(node->token->GetContents());
 			break;
 		}
 		case 2: GenerateList(node->list, true); break;
@@ -603,6 +603,15 @@ namespace Spliwaca
 			else
 				code += c;
 		}
-		return code;
+		return StripLeadingZeros(code);
+	}
+
+	std::string Generator::StripLeadingZeros(std::string token) {
+		uint64_t EndOfLeadingZeros = 0;
+		while (token[EndOfLeadingZeros] == '0' || token[EndOfLeadingZeros] == '_')
+			EndOfLeadingZeros++;
+		if (token[EndOfLeadingZeros] == '.')
+			EndOfLeadingZeros--;
+		return token.substr(EndOfLeadingZeros);
 	}
 }
