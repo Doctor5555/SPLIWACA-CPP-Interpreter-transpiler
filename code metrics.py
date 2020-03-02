@@ -79,7 +79,7 @@ def Str(Int: int, Len: int):
     return Str
 
 
-path = "c:\\dev\\EPQ Spliwaca"
+path = "c:\\dev\\SPLIWACA-CPP-interpreter-transpiler"
 
 files = []
 # r=root, d=directories, f = files
@@ -88,21 +88,24 @@ for r, d, f in os.walk(path):
         if "vendor" in dir:
             d.remove(dir)
     for file in f:
-        if ".h" in file:
+        if file[-2:] == ".h":
             files.append(os.path.join(r, file))
-        if ".cpp" in file:
+        if file[-4:] == ".cpp":
             files.append(os.path.join(r, file))
 
 data = []
 
 longest_file_name_length = 0
 for f in files:
-    open_file = open(f)
-    lines = open_file.readlines()
-    metrics = calculateMetrics(lines, f)
-    data.append(metrics)
-    if len(metrics.filename) > longest_file_name_length:
-        longest_file_name_length = len(metrics.filename)
+    open_file = open(f, encoding="utf8")
+    try:
+        lines = open_file.readlines()
+        metrics = calculateMetrics(lines, f)
+        data.append(metrics)
+        if len(metrics.filename) > longest_file_name_length:
+            longest_file_name_length = len(metrics.filename)
+    except UnicodeDecodeError:
+        print(f)
     open_file.close()
 
 total_lines = 0
