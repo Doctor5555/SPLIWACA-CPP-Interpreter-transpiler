@@ -84,6 +84,9 @@
     <ClInclude Include="Spliwaca\src\Log.h">
       <Filter>Spliwaca\src</Filter>
     </ClInclude>
+    <ClInclude Include="Spliwaca\src\Transpiler.h">
+      <Filter>Spliwaca\src</Filter>
+    </ClInclude>
     <ClInclude Include="Spliwaca\src\UtilFunctions.h">
       <Filter>Spliwaca\src</Filter>
     </ClInclude>
@@ -318,7 +321,6 @@
     <ClInclude Include="vendor\timing\Instrumentor.h">
       <Filter>vendor\timing</Filter>
     </ClInclude>
-    <ClInclude Include="Spliwaca\src\Transpiler.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Spliwaca\src\Backend\Code Generation\Generator.cpp">
@@ -336,6 +338,9 @@
     <ClCompile Include="Spliwaca\src\Main.cpp">
       <Filter>Spliwaca\src</Filter>
     </ClCompile>
-    <ClCompile Include="Spliwaca\src\Transpiler.cpp" />
+    <ClCompile Include="Spliwaca\src\Transpiler.cpp">
+      <Filter>Spliwaca\src</Filter>
+    </ClCompile>
+    <ClCompile Include="Spliwaca\src\Frontend\Parser\IdentNode.cpp" />
   </ItemGroup>
 </Project>

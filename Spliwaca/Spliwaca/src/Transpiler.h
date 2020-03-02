@@ -14,7 +14,7 @@ namespace Spliwaca
 	{
 		std::vector<LexicalError> LexerErrors;
 		std::vector<SyntaxError> SyntaxErrors;
-		//std::vector<MissingVariable> MissingVariables;
+		std::vector<SemanticError> SemanticErrors;
 	};
 
 	class Transpiler

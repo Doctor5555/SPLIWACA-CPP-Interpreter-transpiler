@@ -85,7 +85,7 @@ files = []
 # r=root, d=directories, f = files
 for r, d, f in os.walk(path):
     for dir in d:
-        if "vendor" in dir:
+        if "vendor" in dir or "Notes" in dir:
             d.remove(dir)
     for file in f:
         if ".h" in file:
@@ -97,12 +97,15 @@ data = []
 
 longest_file_name_length = 0
 for f in files:
-    open_file = open(f)
-    lines = open_file.readlines()
-    metrics = calculateMetrics(lines, f)
-    data.append(metrics)
-    if len(metrics.filename) > longest_file_name_length:
-        longest_file_name_length = len(metrics.filename)
+    open_file = open(f, encoding="utf8")
+    try:
+        lines = open_file.readlines()
+        metrics = calculateMetrics(lines, f)
+        data.append(metrics)
+        if len(metrics.filename) > longest_file_name_length:
+            longest_file_name_length = len(metrics.filename)
+    except UnicodeDecodeError:
+        print(f)
     open_file.close()
 
 total_lines = 0

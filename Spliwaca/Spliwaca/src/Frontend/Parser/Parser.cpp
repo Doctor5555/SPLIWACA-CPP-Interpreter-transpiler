@@ -1,8 +1,23 @@
 #include "Parser.h"
 #include "UtilFunctions.h"
+#include "SemanticError.h"
 
 namespace Spliwaca
 {
+#define startSet() ast->semanticState->set = true
+#define startIncDec() ast->semanticState->incdec = true
+#define inSet() ast->semanticState->set
+#define inIncDec() ast->semanticState->incdec
+#define endSet()   ast->semanticState->set = false
+#define endIncDec()   ast->semanticState->incdec = false
+#define endScope() while (ast->semanticState->currentScope[ast->semanticState->currentScope.size() - 1] != '.') \
+				       ast->semanticState->currentScope.pop_back(); \
+			       ast->semanticState->currentScope.pop_back()
+
+#define UNDEF_AT_FIRST_USE 0b1
+#define GLOBAL_READ 0b10
+#define GLOBAL_MOD 0b100
+
 	template<typename T>
 	bool itemInVect(const std::vector<T>& v, T t)
 	{
@@ -10,6 +25,16 @@ namespace Spliwaca
 		{
 			if (e == t)
 			{
+				return true;
+			}
+		}
+		return false;
+	}
+
+	bool charInStr(const std::string &s, char c) {
+		//PROFILE_FUNC();
+		for (char ch : s) {
+			if (ch == c) {
 				return true;
 			}
 		}
@@ -24,6 +49,8 @@ namespace Spliwaca
 	std::shared_ptr<EntryPoint> Parser::ConstructAST()
 	{
 		std::shared_ptr<EntryPoint> ep = std::make_shared<EntryPoint>();
+		ep->semanticState = new SemanticState();
+		ast = ep;
 		//m_MainScope = std::make_shared<Scope>("Main", 0, ScopeType::Main);
 		//m_CurrentScope = m_MainScope;
 		//m_ScopeStack.push_back(m_MainScope);
@@ -250,6 +277,7 @@ namespace Spliwaca
 	{
 		std::shared_ptr<SetNode> node = std::make_shared<SetNode>();
 		IncIndex();
+		startSet();
 		node->id = ConstructIdentNode();
 
 		if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::To)
@@ -260,6 +288,7 @@ namespace Spliwaca
 			IncIndex();
 
 		node->list = ConstructList();
+
 		//VarType varType;
 		/*switch (node->expr->exprType)
 		{
@@ -351,6 +380,7 @@ namespace Spliwaca
 	{
 		std::shared_ptr<IncNode> node = std::make_shared<IncNode>();
 		IncIndex();
+		startIncDec();
 		node->id = ConstructIdentNode();
 		return node;
 	}
@@ -358,6 +388,7 @@ namespace Spliwaca
 	std::shared_ptr<DecNode> Parser::ConstructDecrement()
 	{
 		std::shared_ptr<DecNode> node = std::make_shared<DecNode>();
+		startIncDec();
 		IncIndex();
 		node->id = ConstructIdentNode();
 		return node;
@@ -1166,8 +1197,9 @@ namespace Spliwaca
 	{
 		std::shared_ptr<IdentNode> node = std::make_shared<IdentNode>();
 		
+		//Construct the actual node
 		char first = m_Tokens->at(m_TokenIndex)->GetContents()[0];
-		if (!(first >= 0x41 && first <= 0x5a) && !(first >= 0x61 && first <= 0x7a))
+		if (!(first >= 0x41 && first <= 0x5a) && !(first >= 0x61 && first <= 0x7a) && !(m_Tokens->at(m_TokenIndex)->GetType() == TokenType::Identifier))
 		{
 			RegisterSyntaxError(SyntaxErrorType::expIdent, m_Tokens->at(m_TokenIndex));
 		}
@@ -1177,17 +1209,47 @@ namespace Spliwaca
 			IncIndex();
 		}
 
+		node->accessPresent = false;
 		while (m_Tokens->at(m_TokenIndex)->GetType() == TokenType::VarAccessOp)
 		{
+			node->accessPresent = true;
 			IncIndex();
 			first = m_Tokens->at(m_TokenIndex)->GetContents()[0];
-			if (!(first >= 0x41 && first <= 0x5a) && !(first >= 0x61 && first <= 0x7a)) {
+			if (!(first >= 0x41 && first <= 0x5a) && !(first >= 0x61 && first <= 0x7a) && !(m_Tokens->at(m_TokenIndex)->GetType() == TokenType::Identifier)) {
 				RegisterSyntaxError(SyntaxErrorType::expIdent, m_Tokens->at(m_TokenIndex));
 			} else {
 				node->ids.push_back(m_Tokens->at(m_TokenIndex));
 				IncIndex();
 			}
 		}
+
+		//Semantic analysis stuff
+		if (inCurrentScope(node->GetContents())) {
+			endSet();
+			endIncDec();
+			return node;
+		}
+		else if (inSet() && node->accessPresent == false) {
+			registerVariable(node->GetContents(), node->GetLineNumber(), 0);
+		}
+		else if (inIncDec() && node->accessPresent == false) {
+			RegisterSemanticError(SemanticErrorType::AttemptingToModifyAGlobalOutsideOfGlobalScope, node->GetLineNumber(), node->GetColumnNumber(), node->GetContents().size(), TokenType::Identifier);
+		}
+		else if (inSet() || inIncDec()) {
+			registerVariable(node->GetContents(), node->GetLineNumber(), GLOBAL_MOD | (inGlobalScope(node->GetContents()) ? 0 : UNDEF_AT_FIRST_USE));
+		}
+		else if (inGlobalScope(node->GetContents())) {
+			registerVariable(node->GetContents(), node->GetLineNumber(), GLOBAL_READ);
+		}
+		else {
+			registerVariable(node->GetContents(), node->GetLineNumber(), UNDEF_AT_FIRST_USE);
+		}
+
+		if (inSet())
+			endSet();
+		if (inIncDec())
+			endIncDec();
+
 		return node;
 	}
 }

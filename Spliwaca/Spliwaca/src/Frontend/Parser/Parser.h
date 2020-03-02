@@ -24,6 +24,37 @@ namespace Spliwaca
 		std::shared_ptr<std::vector<std::shared_ptr<Token>>> m_Tokens;
 		uint32_t m_TokenIndex;
 
+		std::shared_ptr<EntryPoint> ast;
+
+		inline void startScope(std::string name, int lineNumber) {
+			ast->semanticState->currentScope += "." + name;
+			ast->semanticState->variables[ast->semanticState->currentScope] = makeVarInfo(0, lineNumber, 0);
+		}
+		inline bool inCurrentScope(std::string name) {
+			return ast->semanticState->variables.find(ast->semanticState->currentScope + "." + name) != ast->semanticState->variables.end();
+		}
+		inline bool inGlobalScope(std::string name) {
+			return ast->semanticState->variables.find(name) != ast->semanticState->variables.end();
+		}
+		inline void registerVariable(std::string name, int lineNumber, char flags) {
+			ast->semanticState->variables[ast->semanticState->currentScope + "." + name] = makeVarInfo(1, lineNumber, flags);
+		}
+		inline void setCallable(std::string name) {
+			if (ast->semanticState->variables.find(ast->semanticState->currentScope + "." + name)->second.Flags.GlobalMod) {
+				ast->semanticState->variables[name].type = 0;
+				ast->semanticState->variables[ast->semanticState->currentScope + "." + name].type = 0;
+			}
+			else
+				ast->semanticState->variables[ast->semanticState->currentScope + "." + name].type = 0;
+		}
+
+		VarInfo makeVarInfo(int type, int declLine, char flags) {
+			VarInfo info = VarInfo();
+			info.type = type;
+			info.declLine = declLine;
+			info.flags = flags;
+			return info;
+		}
 		//std::shared_ptr<Scope> m_MainScope;
 		//std::vector<std::shared_ptr<Scope>> m_ScopeStack;
 		//std::shared_ptr<Scope> m_CurrentScope;

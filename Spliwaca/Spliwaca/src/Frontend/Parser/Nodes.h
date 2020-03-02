@@ -4,6 +4,7 @@
 #include <string>
 #include "Frontend/Lexer/Token.h"
 #include <Log.h>
+#include <map>
 
 namespace Spliwaca
 {
@@ -20,55 +21,21 @@ namespace Spliwaca
 	public:
 
 		std::vector<std::shared_ptr<Token>> ids;
+		bool accessPresent = true;
 
-		std::string GetContents()
-		{
-			std::string rv = "";
-			//SPLW_INFO("{0}", ids.at(0)->GetContents());
-			if (ids.at(0)->GetContents() != "_INTERPRETER")
-			{
-				rv += ids.at(0)->GetContents();
-				for (size_t i = 1; i < ids.size(); i++)
-				{
-					rv += "." + ids.at(i)->GetContents();
-				}
-			}
-			else if (ids.size() > 1)
-			{
-				rv += /*"__builtins__." +*/ ids.at(1)->GetContents();
-				for (size_t i = 2; i < ids.size(); i++)
-				{
-					rv += "." + ids.at(i)->GetContents();
-				}
-			}
-			else
-			{
-				SPLW_CRITICAL("Error: attempting to set something to/call _INTERPRETER. This is not allowed!");
-			}
-			return rv;
-		}
+		std::string GetContents();
 
-		uint32_t GetLineNumber()
-		{
-			return ids.at(0)->GetLineNumber();
-		}
-		uint32_t GetColumnNumber()
-		{
-			return ids.at(0)->GetCharacterNumber();
-		}
-		uint32_t GetIdentAccessNum()
-		{
-			return ids.size();
-		}
+		inline uint32_t GetLineNumber() { return ids.at(0)->GetLineNumber(); }
+		inline uint32_t GetColumnNumber() { return ids.at(0)->GetCharacterNumber(); }
+		inline uint32_t GetIdentAccessNum() { return ids.size(); }
 
 		IdentNode()
 		{
 		}
 
 	private:
-		std::string GetIdContents(int index) {
+		std::string cachedContents = "";
 
-		}
 	};
 
 	struct TypeNode
@@ -344,9 +311,33 @@ namespace Spliwaca
 		std::shared_ptr<IdentNode> requireType;
 	};
 
+	struct VarInfo {
+		int type; // 0: Callable, 1: Variable
+		int declLine;
+		union {
+			char flags;
+			struct flags {
+				char UndefinedAtFirstUse : 1;
+				char GlobalRead : 1;
+				char GlobalMod : 1;
+				
+			} Flags;
+		};
+	};
+
+	struct SemanticState {
+		std::string currentScope = "globals";
+		std::map<std::string, VarInfo> variables = {};
+		std::string setVar = "";
+		bool set = false;
+		bool incdec = false;
+	};
+
 	struct EntryPoint
 	{
 		std::shared_ptr<RequireNode> require;
 		std::shared_ptr<Statements> statements;
+
+		SemanticState *semanticState;
 	};
 }

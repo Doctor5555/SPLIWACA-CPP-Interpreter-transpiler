@@ -159,20 +159,20 @@ namespace Spliwaca
             {
                 std::smatch m;
                 //Use regexes
-                if (std::regex_search(tokenContents, m, std::regex("[a-zA-Z_][a-zA-Z0-9_]*(\\.[a-zA-Z_][a-zA-Z0-9_]*)*")) && m[0] == tokenContents) // Matches identifier regex
+                if (std::regex_search(tokenContents, m, std::regex("[a-zA-Z_][a-zA-Z0-9_]*|[0-9_]+[a-zA-Z][a-zA-Z0-9_]*")) && m[0] == tokenContents) // Matches identifier regex
                 {
                     //Matched
                     m_Tokens->push_back(std::make_shared<Token>(Token(TokenType::Identifier, tokenContents.c_str(), m_LineNumber, m_ColumnNumber)));
                 }
-                else if (std::regex_search(tokenContents, m, std::regex("[0-9]+(\\.[0-9]+)?i")) && m[0] == tokenContents) // Matches complex regex
+                else if (std::regex_search(tokenContents, m, std::regex("(\\d{1,3}(_\\d{3})+|\\d+)(\\.[0-9]+)?i")) && m[0] == tokenContents) // Matches complex regex
                 {
                     m_Tokens->push_back(std::make_shared<Token>(Token(TokenType::Complex, tokenContents.c_str(), m_LineNumber, m_ColumnNumber)));
                 }
-                else if (std::regex_search(tokenContents, m, std::regex("[0-9]+\\.[0-9]+")) && m[0] == tokenContents) // Matches float regex
+                else if (std::regex_search(tokenContents, m, std::regex("(\\d{1,3}(_\\d{3})+|\\d+)\\.[0-9]+")) && m[0] == tokenContents) // Matches float regex
                 {
                     m_Tokens->push_back(std::make_shared<Token>(Token(TokenType::Float, tokenContents.c_str(), m_LineNumber, m_ColumnNumber)));
                 }
-                else if (std::regex_search(tokenContents, m, std::regex("[0-9]+")) && m[0] == tokenContents) // Matches int regex
+                else if (std::regex_search(tokenContents, m, std::regex("\\d{1,3}(_\\d{3})+|\\d+")) && m[0] == tokenContents) // Matches int regex
                 {
                     m_Tokens->push_back(std::make_shared<Token>(Token(TokenType::Int, tokenContents.c_str(), m_LineNumber, m_ColumnNumber)));
                 }

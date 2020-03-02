@@ -1,0 +1,39 @@
+vector<string> functions; // Functions are allowed to be nested and nested functions will be registered as a.b.c.etc
+map<string, type> variables; // Variables are registered with scope name at the start (except for globals, which have nothing.). All functions are also placed in here, with type Callable. 
+                             //Normal variables have type Variable until type checking in the generator.
+string current_scope; // New identifiers search here to check if they already exist, and also in global scope. Used in generator as variables are checked.
+
+Every variable is checked in the parser. SET statements add to the variable map if necessary. Ident nodes actually handle this, and know if a set is active through a state flag.
+If a SET statement is attempting to set a field of a variable that does not yet exist, then the parser will assume this is a global struct that has not yet been defined and set a flag to confirm this in the generator.
+If something attempts to read or modify a global, then the parser will set a flag to ensure this is considered in the generator in case it is shadowed.
+If something does not yet exist, then a flag will be set to confirm this in the generator and, if necessary, attmpt to import it.
+
+A flag is set to check globals when something does not yet exist. This flag is unset when the first SET statement concerning the variable is reached.
+
+Type-checking is not done in the parser. It waits until the generator, where the entire tree is known and a bin-op tree can be traversed to retrieve type information.
+When a variable is set to a struct, all components of the struct are set in the variable map as variable.field_name. This is done recursively.
+Functions will act as set statements to set a variable in the dict to the function.
+Defined as:
+def func_1() -> None:
+    #do stuff
+    ...
+scope_vars["func_name"] = func_1
+
+std::vector<int> if_layer_stack; //Layers of if statements
+Layer popped off at end of if statement.
+map<string, int> variables_changed_type; // variables which change type in the if statement, where the int in the tuple is the if statement layer index.
+If a variable changes type more than once, then a warning will be generated about an ambiguously-typed variable.
+
+Whenever a variable is encountered, it will be checked in 
+
+Out-of-order transpilation is not a thing.
+
+A = libsplw.make_struct_class(('a', 'b'), {'a':int,'b':str}, 'A')
+B = libsplw.make_struct_class(('a', 'b'), {'a':int,'b':A}, 'B')
+setattr(getattr(b, 'b'), 'a', 2)
+
+setattr(getattr(getattr(scope_vars['b'], 'b'), 'c'), 'a')
+
+In SET statement, if the right is an anonf or anonp, set callable.
+All STRUCT declarations in global scope go at the top of the file, just after imports.
+During CALL generation, the generator will check if the function had any global accesses, and if so, that those global variables are defined before the call.

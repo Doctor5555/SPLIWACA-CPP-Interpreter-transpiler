@@ -55,7 +55,7 @@ namespace Spliwaca
 
 		std::shared_ptr<Parser> parser = Parser::Create(tokens);
 		SPLW_INFO("Created Parser.");
-		std::shared_ptr<Spliwaca::EntryPoint> ast = parser->ConstructAST();
+		std::shared_ptr<EntryPoint> ast = parser->ConstructAST();
 
 		for (SyntaxError s : m_State->SyntaxErrors)
 		{

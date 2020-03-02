@@ -48,9 +48,14 @@ int RegisterSyntaxError(SyntaxErrorType errorCode, uint32_t lineNumber, uint32_t
 	return 1;
 }
 
-int RegisterSemanticsError(uint32_t lineNumber, uint32_t columnNumber)
+int RegisterSemanticError(SemanticErrorType errorCode, std::shared_ptr<Spliwaca::Token> token)
 {
-	//state->SemanticErrors.push_back(MissingVariable(lineNumber, columnNumber));
+	state->SemanticErrors.push_back(SemanticError(errorCode, token));
+	return 1;
+}
+
+int RegisterSemanticError(SemanticErrorType errorCode, uint32_t lineNumber, uint32_t columnNumber, size_t columnSpan, Spliwaca::TokenType type) {
+	state->SemanticErrors.push_back({ errorCode, lineNumber, columnNumber, columnSpan, type });
 	return 1;
 }
 
@@ -167,6 +172,7 @@ int main(int argc, char** argv)
 		ofile = "";
 	}
 	ifile = argv[1];
+
 	Timer totalTimer = Timer();
 
 	#ifdef SPLW_WINDOWS

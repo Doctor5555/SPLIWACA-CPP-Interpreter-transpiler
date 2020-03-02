@@ -57,6 +57,7 @@ namespace Spliwaca
 
 		std::string ParseRaw(std::shared_ptr<Token> token);
 		std::string ParseComplex(std::shared_ptr<Token> token);
+		std::string StripLeadingZeros(std::string token);
 	};
 
 	/*std::shared_ptr<IfNode> ifNode;

@@ -78,6 +78,12 @@ project "Spliwaca"
 		{
 			("{COPY} %{cfg.buildtarget.relpath} \"../bin/" .. outputdir .. "/Sandbox/\"")
 		}]]
+	
+	filter "system:windows"
+		systemversion "latest"
+		defines {
+			"SPLW_WINDOWS"
+		}
 		
 	filter "configurations:Debug"
 		defines "SPLW_DEBUG"
