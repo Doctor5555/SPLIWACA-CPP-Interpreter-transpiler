@@ -418,6 +418,7 @@ namespace Spliwaca
 				m_Code += "False";
 			else
 				m_Code += StripLeadingZeros(node->token->GetContents());
+
 			break;
 		}
 		case 2: GenerateList(node->list, true); break;

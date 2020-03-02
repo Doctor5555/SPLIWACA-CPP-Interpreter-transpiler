@@ -316,7 +316,7 @@ namespace Spliwaca
 		int declLine;
 		union {
 			char flags;
-			struct flags {
+			struct {
 				char UndefinedAtFirstUse : 1;
 				char GlobalRead : 1;
 				char GlobalMod : 1;
