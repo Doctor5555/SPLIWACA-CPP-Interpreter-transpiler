@@ -91,7 +91,10 @@ namespace Spliwaca
 		std::shared_ptr<Generator> codeGenerator = Generator::Create(ast);
 		SPLW_INFO("Created Generator");
 
-		std::string finalCode = codeGenerator->GenerateCode();
+		int errorCode;
+		std::string finalCode = codeGenerator->GenerateCode(errorCode);
+		if (errorCode)
+			return "";
 
 		if (m_Output != "") {
 			std::ofstream outputFile;

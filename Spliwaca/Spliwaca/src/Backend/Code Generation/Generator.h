@@ -9,17 +9,19 @@ namespace Spliwaca
 		static std::shared_ptr<Generator> Create(std::shared_ptr<EntryPoint> entryPoint);
 		~Generator() = default;
 
-		std::string GenerateCode();
+		std::string GenerateCode(int &errorCode);
 
 		Generator(std::shared_ptr<EntryPoint> ep)
 			: m_EntryPoint(ep), m_Tabs(""), m_Code("")
 		{}
-	private:
 
+	private:
 		std::shared_ptr<EntryPoint> m_EntryPoint;
 		std::string m_Tabs;
 		std::string m_Code;
 		std::string m_CurrentFuncNameLine;
+
+		bool allowPyAndPipImports = false;
 
 	private:
 		void GenerateStatements(std::shared_ptr<Statements> s);
@@ -53,7 +55,6 @@ namespace Spliwaca
 		void GenerateAnonp(std::shared_ptr<AnonpNode> node);
 		
 		void GenerateType(std::shared_ptr<TypeNode> node);
-		//void GenerateIdent(std::shared_ptr<IdentNode> node);
 
 		std::string ParseRaw(std::shared_ptr<Token> token);
 		std::string ParseComplex(std::shared_ptr<Token> token);

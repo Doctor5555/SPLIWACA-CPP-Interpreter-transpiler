@@ -16,30 +16,35 @@ namespace Spliwaca
 		return false;
 	}
 
-	bool charInStr(const std::string& s, char c)
+/*	bool charInStr(const std::string& s, char c)
 	{
 		if (s.find(c) != std::string::npos)
 			return true;
 		else
 			return false;
-	}
-
+	}*/
 
 	std::shared_ptr<Generator> Generator::Create(std::shared_ptr<EntryPoint> entryPoint)
 	{
 		return std::make_shared<Generator>(entryPoint);
 	}
 
-	std::string Generator::GenerateCode()
+	std::string Generator::GenerateCode(int& errorCode)
 	{
 		m_Code = "import libsplw\nglobal_vars = libsplw.VariableHolder()\n\n";
 
-		if (m_EntryPoint->require && !itemInVect({ "cpp_transpiler","CPPTranspiler","Transpiler","transpiler" },
-			m_EntryPoint->require->requireType->GetContents()))
-		{
+		if (m_EntryPoint->require && m_EntryPoint->require->requireType->GetContents() == "transpiler_py"){
+			allowPyAndPipImports = true;
+		}
+		else if (m_EntryPoint->require->requireType->GetContents() == "transpiler" || m_EntryPoint->requirePresent == false) {
+
+		}
+		else if (m_EntryPoint->require) {
 			SPLW_CRITICAL("This generator is not compatible with the specified require statement, exiting.");
+			errorCode = 1;
 			return m_Code;
 		}
+
 
 		GenerateStatements(m_EntryPoint->statements);
 
@@ -109,18 +114,43 @@ namespace Spliwaca
 
 	void Generator::GenerateSet(std::shared_ptr<SetNode> node)
 	{
-		m_Code += m_Tabs + node->id->GetContents() + " = ";  GenerateList(node->list);
+		if (node->id->accessPresent) {
+			bool interpreter_var = false;
+			std::string getattrTree = node->id->GenerateGetattrTree(interpreter_var, true);
+			if (!interpreter_var) {
+				m_Code += m_Tabs + "setattr(" + getattrTree + ", \"" + node->id->GetFinalId() + "\", "; GenerateList(node->list); m_Code += ")";
+			}
+			else {
+				m_Code += m_Tabs + getattrTree + " = "; GenerateList(node->list);
+			}
+		}
+		else {
+			m_Code += m_Tabs + "scope_vars[\"" + node->id->GetContents() + "\"] = ";  GenerateList(node->list);
+		}
 	}
 
 	void Generator::GenerateInput(std::shared_ptr<InputNode> node)
 	{
-		m_Code += m_Tabs + node->id->GetContents() + " = libsplw.input('";
-		if (node->signSpec)
-			m_Code += node->signSpec->GetContents() + " ";
-		GenerateType(node->type);
-		m_Code += "')"; //Add back in when libsplw is made
-
-		//m_Code += m_Tabs + node->id->GetContents() + " = "; GenerateType(node->type); m_Code += "(input())"; 
+		if (node->id->accessPresent) {
+			bool interpreter_var = false;
+			std::string getattrTree = node->id->GenerateGetattrTree(interpreter_var, true);
+			if (!interpreter_var) {
+				m_Code += m_Tabs + "setattr(" + getattrTree + ", \"" + node->id->GetFinalId() + "\", libsplw.handle_input('";
+			}
+			else {
+				m_Code += m_Tabs + getattrTree + " = libsplw.handle_input('";
+			}
+			if (node->signSpec)
+				m_Code += node->signSpec->GetContents() + " ";
+			GenerateType(node->type);
+			m_Code += "')";
+		} else {
+			m_Code += m_Tabs + "scope_vars[\"" + node->id->GetContents() + "\"] = libsplw.handle_input('";
+			if (node->signSpec)
+				m_Code += node->signSpec->GetContents() + " ";
+			GenerateType(node->type);
+			m_Code += "')";
+		}
 	}
 
 	void Generator::GenerateOutput(std::shared_ptr<OutputNode> node)
@@ -130,17 +160,53 @@ namespace Spliwaca
 
 	void Generator::GenerateInc(std::shared_ptr<IncNode> node)
 	{
-		m_Code += m_Tabs + node->id->GetContents() + " += 1";
+		if (node->id->accessPresent) {
+			bool interpreter_var = false;
+			std::string getAttrTree = node->id->GenerateGetattrTree(interpreter_var, true);
+			if (interpreter_var) {
+				m_Code += m_Tabs + getAttrTree + " += 1";
+			}
+			else {
+				m_Code += m_Tabs + "setattr(" + getAttrTree + ", \"" + node->id->GetFinalId() + "\", " + node->id->GenerateGetattrTree() + " + 1)";
+			}
+		} else {
+			m_Code += m_Tabs + "scope_vars[\"" + node->id->GetContents() + "\"] += 1";
+		}
 	}
 
 	void Generator::GenerateDec(std::shared_ptr<DecNode> node)
 	{
-		m_Code += m_Tabs + node->id->GetContents() + " -= 1";
+		if (node->id->accessPresent) {
+			bool interpreter_var = false;
+			std::string getAttrTree = node->id->GenerateGetattrTree(interpreter_var, true);
+			if (interpreter_var) {
+				m_Code += m_Tabs + getAttrTree + " -= 1";
+			} else {
+				m_Code += m_Tabs + "setattr(" + getAttrTree + ", \"" + node->id->GetFinalId() + "\", " + node->id->GenerateGetattrTree() + " - 1)";
+			}
+		} else {
+			m_Code += m_Tabs + "scope_vars[\"" + node->id->GetContents() + "\"] -= 1";
+		}
 	}
 
 	void Generator::GenerateFor(std::shared_ptr<ForNode> node)
 	{
-		m_Code += m_Tabs + "for " + node->id->GetContents() + " in "; GenerateList(node->iterableExpr); m_Code += ":\n";
+		if (node->id->accessPresent) {
+			bool interpreter_var = false;
+			std::string getAttrTree = node->id->GenerateGetattrTree(interpreter_var, true);
+			if (interpreter_var) {
+				m_Code += m_Tabs + "for " + getAttrTree + " in "; GenerateList(node->iterableExpr); m_Code += ":\n";
+			} else {
+				std::string for_var = "__for_var_line_" + std::to_string(node->id->GetLineNumber());
+				m_Code += m_Tabs + "for " + for_var + " in "; GenerateList(node->iterableExpr); m_Code += ":\n";
+				m_Code += m_Tabs + "    setattr(" + getAttrTree + ", " + node->id->GetFinalId() + ", " + for_var + ")";
+			}
+		}
+		else {
+			std::string for_var = "__for_var_line_" + std::to_string(node->id->GetLineNumber());
+			m_Code += m_Tabs + "for " + for_var + " in "; GenerateList(node->iterableExpr); m_Code += ":\n";
+			m_Code += m_Tabs + "    scope_vars[\"" + node->id->GetContents() + "\"] = " + for_var;
+		}
 		m_Tabs += "    ";
 
 		GenerateStatements(node->body);
