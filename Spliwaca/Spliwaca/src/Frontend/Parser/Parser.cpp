@@ -926,6 +926,7 @@ namespace Spliwaca
 				//If it doesn't start with an ident, then it isn't an identifier, and if it isn't any of the others, then it must be an error
 				RegisterSyntaxError(SyntaxErrorType::expAtom, m_Tokens->at(m_TokenIndex));
 				node->type = 0;
+				IncIndex();
 			}
 			else if (type == TokenType::Identifier)
 			{
