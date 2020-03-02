@@ -88,22 +88,22 @@ namespace Spliwaca
 			GenerateList(node->conditions.at(i));
 			m_Code += ":\n";
 
-			m_Tabs.append("\t");
+			m_Tabs += "    ";
 
 			GenerateStatements(node->bodies.at(i));
 
-			m_Tabs.pop_back();
+			m_Tabs = m_Tabs.substr(0, m_Tabs.size() - 4);
 		}
 
 		if (node->elsePresent)
 		{
 			m_Code += m_Tabs + "else:\n";
 
-			m_Tabs.append("\t");
+			m_Tabs += "    ";
 
 			GenerateStatements(node->bodies.back());
 
-			m_Tabs.pop_back();
+			m_Tabs = m_Tabs.substr(0, m_Tabs.size() - 4);
 		}
 	}
 
@@ -141,21 +141,21 @@ namespace Spliwaca
 	void Generator::GenerateFor(std::shared_ptr<ForNode> node)
 	{
 		m_Code += m_Tabs + "for " + node->id->GetContents() + " in "; GenerateList(node->iterableExpr); m_Code += ":\n";
-		m_Tabs += "\t";
+		m_Tabs += "    ";
 
 		GenerateStatements(node->body);
 
-		m_Tabs.pop_back();
+		m_Tabs = m_Tabs.substr(0, m_Tabs.size() - 4);
 	}
 
 	void Generator::GenerateWhile(std::shared_ptr<WhileNode> node)
 	{
 		m_Code += m_Tabs + "while "; GenerateBinOp(node->condition); m_Code += ":\n";
-		m_Tabs += "\t";
+		m_Tabs += "    ";
 
 		GenerateStatements(node->body);
 
-		m_Tabs.pop_back();
+		m_Tabs = m_Tabs.substr(0, m_Tabs.size() - 4);
 	}
 
 	void Generator::GenerateQuit(std::shared_ptr<QuitNode> node)
@@ -204,10 +204,10 @@ namespace Spliwaca
 		GenerateType(node->returnType);
 		m_Code += ":\n";
 
-		m_Tabs += "\t";
+		m_Tabs += "    ";
 		GenerateStatements(node->body);
 		m_Code += m_Tabs + "raise libsplw.FunctionEndError";
-		m_Tabs.pop_back();
+		m_Tabs = m_Tabs.substr(0, m_Tabs.size() - 4);
 	}
 
 	void Generator::GenerateProc(std::shared_ptr<ProcNode> node)
@@ -227,15 +227,15 @@ namespace Spliwaca
 		}
 		m_Code += ") -> None:\n";
 
-		m_Tabs += "\t";
+		m_Tabs += "    ";
 		GenerateStatements(node->body);
-		m_Tabs.pop_back();
+		m_Tabs = m_Tabs.substr(0, m_Tabs.size() - 4);
 	}
 
 	void Generator::GenerateStruct(std::shared_ptr<StructNode> node)
 	{
 		m_Code += m_Tabs + "class " + node->id->GetContents() + ":\n";
-		m_Tabs += "\t";
+		m_Tabs += "    ";
 		m_Code += m_Tabs + "def __init__(self";
 
 		assert(node->names.size() == node->types.size());
@@ -248,7 +248,7 @@ namespace Spliwaca
 		}
 		m_Code += "):\n";
 
-		m_Tabs += "\t";
+		m_Tabs += "    ";
 
 		for (uint32_t i = 0; i < node->names.size(); i++)
 		{
@@ -257,8 +257,8 @@ namespace Spliwaca
 			m_Code += "\n";
 		}
 
-		m_Tabs.pop_back();
-		m_Tabs.pop_back();
+		m_Tabs = m_Tabs.substr(0, m_Tabs.size() - 4);
+		m_Tabs = m_Tabs.substr(0, m_Tabs.size() - 4);
 	}
 
 	void Generator::GenerateReturn(std::shared_ptr<ReturnNode> node)
@@ -482,10 +482,10 @@ namespace Spliwaca
 		GenerateType(node->returnType);
 		m_Code += ":\n";
 
-		m_Tabs += "\t";
+		m_Tabs += "    ";
 		GenerateStatements(node->body);
 		m_Code += m_Tabs + "raise libsplw.FunctionEndError";
-		m_Tabs.pop_back();
+		m_Tabs = m_Tabs.substr(0, m_Tabs.size() - 4);
 
 		m_Code += code + "anonf_line_" + anonf_randomised_name;
 	}
@@ -516,9 +516,9 @@ namespace Spliwaca
 		}
 		m_Code += ") -> None:\n";
 
-		m_Tabs += "\t";
+		m_Tabs += "    ";
 		GenerateStatements(node->body);
-		m_Tabs.pop_back();
+		m_Tabs = m_Tabs.substr(0, m_Tabs.size() - 4);
 
 		m_Code += code + "anonp_line_" + anonp_randomised_name;
 	}
