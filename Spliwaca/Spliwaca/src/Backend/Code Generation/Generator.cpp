@@ -749,7 +749,7 @@ namespace Spliwaca
 		uint64_t EndOfLeadingZeros = 0;
 		while (token[EndOfLeadingZeros] == '0' || token[EndOfLeadingZeros] == '_')
 			EndOfLeadingZeros++;
-		if (token[EndOfLeadingZeros] == '.')
+		if (token.size() <= EndOfLeadingZeros || token[EndOfLeadingZeros] == '.')
 			EndOfLeadingZeros--;
 		return token.substr(EndOfLeadingZeros);
 	}
