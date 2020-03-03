@@ -36,7 +36,7 @@ namespace Spliwaca
 		if (m_EntryPoint->require && m_EntryPoint->require->requireType->GetContents() == "transpiler_py"){
 			allowPyAndPipImports = true;
 		}
-		else if (m_EntryPoint->require->requireType->GetContents() == "transpiler" || m_EntryPoint->requirePresent == false) {
+		else if (m_EntryPoint->requirePresent == false || m_EntryPoint->require->requireType->GetContents() == "transpiler") {
 
 		}
 		else if (m_EntryPoint->require) {
