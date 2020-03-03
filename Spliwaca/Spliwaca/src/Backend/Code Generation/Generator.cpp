@@ -746,6 +746,7 @@ namespace Spliwaca
 			else if (inIdent) {
 				if (c == ' ') {
 					if (validIdentifier(ident)) {
+						identNode->ids.push_back(std::make_shared<Token>(TokenType::Identifier, ident.c_str(), token->GetLineNumber(), token->GetCharacterNumber()));
 						code += identNode->GenerateGetattrTree();
 					}
 					else {
@@ -755,6 +756,7 @@ namespace Spliwaca
 					code += "} ";
 					inIdent = false;
 					ident = "";
+					identNode = std::make_shared<IdentNode>();
 				}
 				else if (c == '.') {
 					identNode->ids.push_back(std::make_shared<Token>(TokenType::Identifier, ident.c_str(), token->GetLineNumber(), token->GetCharacterNumber()));
