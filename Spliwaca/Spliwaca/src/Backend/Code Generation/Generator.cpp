@@ -31,10 +31,10 @@ namespace Spliwaca
 
 	std::string Generator::GenerateCode(int& errorCode)
 	{
-		m_Code = "import libsplw\nglobal_vars = libsplw.VariableHolder()\n\n";
+		m_Code = "import libsplw\nscope_vars = libsplw.default_scope.copy()\n\n";
 
 		if (m_EntryPoint->require && m_EntryPoint->require->requireType->GetContents() == "transpiler_py"){
-			allowPyAndPipImports = true;
+			m_AllowPyAndPipImports = true;
 		}
 		else if (m_EntryPoint->requirePresent == false || m_EntryPoint->require->requireType->GetContents() == "transpiler") {
 
@@ -45,8 +45,11 @@ namespace Spliwaca
 			return m_Code;
 		}
 
-
 		GenerateStatements(m_EntryPoint->statements);
+
+		if (m_AbortPrint) {
+			errorCode = 1;
+		}
 
 		return m_Code;
 	}
@@ -197,13 +200,13 @@ namespace Spliwaca
 			if (interpreter_var) {
 				m_Code += m_Tabs + "for " + getAttrTree + " in "; GenerateList(node->iterableExpr); m_Code += ":\n";
 			} else {
-				std::string for_var = "__for_var_line_" + std::to_string(node->id->GetLineNumber());
+				std::string for_var = "__for_var_line_" + std::to_string(node->id->GetLineNumber()) + "_char_" + std::to_string(node->id->GetColumnNumber());
 				m_Code += m_Tabs + "for " + for_var + " in "; GenerateList(node->iterableExpr); m_Code += ":\n";
 				m_Code += m_Tabs + "    setattr(" + getAttrTree + ", " + node->id->GetFinalId() + ", " + for_var + ")";
 			}
 		}
 		else {
-			std::string for_var = "__for_var_line_" + std::to_string(node->id->GetLineNumber());
+			std::string for_var = "__for_var_line_" + std::to_string(node->id->GetLineNumber()) + "_char_" + std::to_string(node->id->GetColumnNumber());
 			m_Code += m_Tabs + "for " + for_var + " in "; GenerateList(node->iterableExpr); m_Code += ":\n";
 			m_Code += m_Tabs + "    scope_vars[\"" + node->id->GetContents() + "\"] = " + for_var;
 		}
@@ -236,13 +239,11 @@ namespace Spliwaca
 	{
 		if (statement)
 			m_Code += m_Tabs;
-		GenerateExpr(node->function); m_Code += "(";
+		GenerateExpr(node->function); m_Code += "(scope_vars";
 
 		if (node->args.size() != 0)
 		{
-			GenerateExpr(node->args.at(0));
-
-			for (uint32_t i = 1; i < node->args.size(); i++)
+			for (uint32_t i = 0; i < node->args.size(); i++)
 			{
 				m_Code += ", "; GenerateExpr(node->args.at(i));
 			}
@@ -252,18 +253,16 @@ namespace Spliwaca
 
 	void Generator::GenerateFunc(std::shared_ptr<FuncNode> node)
 	{
-		m_Code += m_Tabs + "@libsplw.type_check\ndef " + node->id->GetContents() + "(";
-		if (node->argNames.size() != 0) {
-			m_Code += node->argNames.at(0)->GetContents() + ": ";
-			GenerateType(node->argTypes.at(0));
-		}
+		std::string func_name = "__func_name_line_" + std::to_string(node->id->GetLineNumber()) + "_char_" + std::to_string(node->id->GetColumnNumber());
+		m_Code += m_Tabs + "@libsplw.type_check\ndef " + func_name + "(prev_scope_vars: dict";
 
 		assert(node->argNames.size() == node->argTypes.size());
 
-		for (uint32_t i = 1; i < node->argNames.size(); i++)
+		for (uint32_t i = 0; i < node->argNames.size(); i++)
 		{
-			m_Code += ", " + node->argNames.at(i)->GetContents() + ": ";
+			m_Code += ", arg" + std::to_string(i) + ": ";
 			GenerateType(node->argTypes.at(i));
+			//node->argNames.at(i)->GetContents()
 		}
 
 		m_Code += ") -> ";
@@ -271,60 +270,106 @@ namespace Spliwaca
 		m_Code += ":\n";
 
 		m_Tabs += "    ";
+
+		m_Code += m_Tabs + "scope_vars = prev_scope_vars.copy()\n";
+		for (uint32_t i = 0; i < node->argNames.size(); i++) {
+			if (node->argNames[i]->accessPresent) {
+				SPLW_ERROR("Attempting to pass an argument name with an access present. This is not allowed. Line: {0}, arg: {1}", node->argNames[i]->GetLineNumber(), node->argNames[i]->GetContents());
+				m_AbortPrint = true;
+			}
+			else {
+				m_Code += m_Tabs + "scope_vars['" + node->argNames[i]->GetContents() + "'] = arg" + std::to_string(i) + "\n";
+			}
+		}
+
 		GenerateStatements(node->body);
-		m_Code += m_Tabs + "raise libsplw.FunctionEndError";
+		m_Code += m_Tabs + "raise libsplw.FunctionEndError\n";
 		m_Tabs = m_Tabs.substr(0, m_Tabs.size() - 4);
+		if (node->id->accessPresent) {
+			SPLW_ERROR("Attempting to define a function with an access in the function name. This is not allowed. Line: {0}, Name: {1}", node->id->GetLineNumber(), node->id->GetContents());
+			m_AbortPrint = true;
+		}
+		else {
+			m_Code += m_Tabs + "scope_vars['" + node->id->GetContents() + "'] = " + func_name + "\n";
+		}
 	}
 
 	void Generator::GenerateProc(std::shared_ptr<ProcNode> node)
 	{
-		m_Code += m_Tabs + "@libsplw.type_check\ndef " + node->id->GetContents() + "(";
-		if (node->argNames.size() != 0) {
-			m_Code += node->argNames.at(0)->GetContents() + ": ";
-			GenerateType(node->argTypes.at(0));
-		}
+		std::string func_name = "__func_name_line_" + std::to_string(node->id->GetLineNumber()) + "_char_" + std::to_string(node->id->GetColumnNumber());
+		m_Code += m_Tabs + "@libsplw.type_check\ndef " + func_name + "(prev_scope_vars: dict";
 
 		assert(node->argNames.size() == node->argTypes.size());
 
-		for (uint32_t i = 1; i < node->argNames.size(); i++)
+		for (uint32_t i = 0; i < node->argNames.size(); i++)
 		{
-			m_Code += ", " + node->argNames.at(i)->GetContents() + ": ";
+			m_Code += ", arg" + std::to_string(i) + ": ";
 			GenerateType(node->argTypes.at(i));
+			//node->argNames.at(i)->GetContents()
 		}
+
 		m_Code += ") -> None:\n";
 
 		m_Tabs += "    ";
+
+		m_Code += m_Tabs + "scope_vars = prev_scope_vars.copy()\n";
+		for (uint32_t i = 0; i < node->argNames.size(); i++) {
+			if (node->argNames[i]->accessPresent) {
+				SPLW_ERROR("Attempting to pass an argument name with an access present. This is not allowed. Line: {0}, arg: {1}", node->argNames[i]->GetLineNumber(), node->argNames[i]->GetContents());
+				m_AbortPrint = true;
+			}
+			else {
+				m_Code += m_Tabs + "scope_vars['" + node->argNames[i]->GetContents() + "'] = arg" + std::to_string(i) + "\n";
+			}
+		}
+
 		GenerateStatements(node->body);
+		m_Code += m_Tabs + "raise libsplw.FunctionEndError\n";
 		m_Tabs = m_Tabs.substr(0, m_Tabs.size() - 4);
+		if (node->id->accessPresent) {
+			SPLW_ERROR("Attempting to define a procedure with an access in the procedure name. This is not allowed. Line: {0}, Name: {1}", node->id->GetLineNumber(), node->id->GetContents());
+			m_AbortPrint = true;
+		}
+		else {
+			m_Code += m_Tabs + "scope_vars['" + node->id->GetContents() + "'] = " + func_name + "\n";
+		}
 	}
 
 	void Generator::GenerateStruct(std::shared_ptr<StructNode> node)
 	{
-		m_Code += m_Tabs + "class " + node->id->GetContents() + ":\n";
-		m_Tabs += "    ";
-		m_Code += m_Tabs + "def __init__(self";
-
-		assert(node->names.size() == node->types.size());
-
-		for (uint32_t i = 0; i < node->names.size(); i++)
-		{
-			m_Code += ", " + node->names.at(i)->GetContents() + ": ";
-			m_Code += ": ";
-			GenerateType(node->types.at(i));
+		//scope_vars['A'] = libsplw.make_struct_class(('x', 'y', 'z'), {'x':int, 'y':int, 'z':int}, 'A')
+		if (node->id->accessPresent) {
+			SPLW_ERROR("Attempting to define a struct with an access in the struct name. This is not allowed. Line: {0}, Name: {1}", node->id->GetLineNumber(), node->id->GetContents());
+			m_AbortPrint = true;
 		}
-		m_Code += "):\n";
+		if (node->names.size() != node->types.size()) {
+			SPLW_CRITICAL("Mismatched types and names in struct declaration. This should not be possible. Struct beginning line: {0}", node->id->GetLineNumber());
+			m_AbortPrint = true;
+		}
+		m_Code += m_Tabs + "scope_vars['" + node->id->GetContents() + "'] = libsplw.make_struct_class((";
 
-		m_Tabs += "    ";
-
-		for (uint32_t i = 0; i < node->names.size(); i++)
-		{
-			m_Code += ", " + node->names.at(i)->GetContents() + " = ";
-			GenerateType(node->types.at(i));
-			m_Code += "\n";
+		if (node->names.size() != 0) {
+			m_Code += "'" + node->names[0]->GetContents() + "'";
+		}
+		else {
+			SPLW_WARN("Structure has no members. This should not be necessary. Structure beginning Line: {0}, Name: {1}", node->id->GetLineNumber(), node->id->GetContents());
+		}
+		for (uint32_t i = 1; i < node->names.size(); i++) {
+			m_Code += ", '" + node->names[i]->GetContents() + "'";
 		}
 
-		m_Tabs = m_Tabs.substr(0, m_Tabs.size() - 4);
-		m_Tabs = m_Tabs.substr(0, m_Tabs.size() - 4);
+		m_Code += "), {";
+
+		if (node->names.size() != 0) {
+			m_Code += "'" + node->names.at(0)->GetContents() + "': ";
+			GenerateType(node->types.at(0));
+		}
+		for (uint32_t i = 1; i < node->names.size(); i++)
+		{
+			m_Code += ", '" + node->names.at(i)->GetContents() + "': ";
+			GenerateType(node->types.at(i));
+		}
+		m_Code += "}, '" + node->id->GetContents() + "')";
 	}
 
 	void Generator::GenerateReturn(std::shared_ptr<ReturnNode> node)
@@ -488,7 +533,7 @@ namespace Spliwaca
 			break;
 		}
 		case 2: GenerateList(node->list, true); break;
-		case 3: m_Code += node->ident->GetContents(); break;
+		case 3: m_Code += node->ident->GenerateGetattrTree(); break;
 		}
 
 		if (node->listAccessPresent)
@@ -530,18 +575,16 @@ namespace Spliwaca
 			charIndex--;
 		}
 
-		std::string anonf_randomised_name = std::to_string(node->argNames.at(0)->GetLineNumber()) + "_" + std::to_string(std::rand());
-		m_Code += m_Tabs + "@libsplw.type_check\ndef anonf_line_" + anonf_randomised_name + "(";
-		if (node->argNames.size() != 0) {
-			m_Code += node->argNames.at(0)->GetContents() + ": ";
-			GenerateType(node->argTypes.at(0));
-		}
+		std::string anonf_name = "__anonf_line_" + std::to_string(node->argNames.at(0)->GetLineNumber()) + "_" + std::to_string(node->argNames[0]->GetColumnNumber());
+		m_Code += m_Tabs + "@libsplw.type_check\ndef " + anonf_name + "(prev_scope_vars: dict";
+
 		assert(node->argNames.size() == node->argTypes.size());
 
-		for (uint32_t i = 1; i < node->argNames.size(); i++)
+		for (uint32_t i = 0; i < node->argNames.size(); i++)
 		{
-			m_Code += ", " + node->argNames.at(i)->GetContents() + ": ";
+			m_Code += ", arg" + std::to_string(i) + ": ";
 			GenerateType(node->argTypes.at(i));
+			//node->argNames.at(i)->GetContents()
 		}
 
 		m_Code += ") -> ";
@@ -549,11 +592,23 @@ namespace Spliwaca
 		m_Code += ":\n";
 
 		m_Tabs += "    ";
-		GenerateStatements(node->body);
-		m_Code += m_Tabs + "raise libsplw.FunctionEndError";
-		m_Tabs = m_Tabs.substr(0, m_Tabs.size() - 4);
 
-		m_Code += code + "anonf_line_" + anonf_randomised_name;
+		m_Code += m_Tabs + "scope_vars = prev_scope_vars.copy()\n";
+		for (uint32_t i = 0; i < node->argNames.size(); i++) {
+			if (node->argNames[i]->accessPresent) {
+				SPLW_ERROR("Attempting to pass an argument name with an access present. This is not allowed. Line: {0}, arg: {1}", node->argNames[i]->GetLineNumber(), node->argNames[i]->GetContents());
+				m_AbortPrint = true;
+			}
+			else {
+				m_Code += m_Tabs + "scope_vars['" + node->argNames[i]->GetContents() + "'] = arg" + std::to_string(i) + "\n";
+			}
+		}
+
+		GenerateStatements(node->body);
+		m_Code += m_Tabs + "raise libsplw.FunctionEndError\n";
+		m_Tabs = m_Tabs.substr(0, m_Tabs.size() - 4);
+		
+		m_Code += code + anonf_name;
 	}
 
 	void Generator::GenerateAnonp(std::shared_ptr<AnonpNode> node)
@@ -567,32 +622,50 @@ namespace Spliwaca
 			charIndex--;
 		}
 
-		std::string anonp_randomised_name = std::to_string(node->argNames.at(0)->GetLineNumber()) + "_" + std::to_string(std::rand());
-		m_Code += m_Tabs + "@libsplw.type_check\ndef anonp_line_" + anonp_randomised_name + "(";
-		if (node->argNames.size() != 0) {
-			m_Code += node->argNames.at(0)->GetContents() + ": ";
-			GenerateType(node->argTypes.at(0));
-		}
+		std::string anonp_name = "__anonp_line_" + std::to_string(node->argNames.at(0)->GetLineNumber()) + "_" + std::to_string(node->argNames[0]->GetColumnNumber());
+		m_Code += m_Tabs + "@libsplw.type_check\ndef " + anonp_name + "(prev_scope_vars: dict";
+
 		assert(node->argNames.size() == node->argTypes.size());
 
-		for (uint32_t i = 1; i < node->argNames.size(); i++)
+		for (uint32_t i = 0; i < node->argNames.size(); i++)
 		{
-			m_Code += ", " + node->argNames.at(i)->GetContents() + ": ";
+			m_Code += ", arg" + std::to_string(i) + ": ";
 			GenerateType(node->argTypes.at(i));
+			//node->argNames.at(i)->GetContents()
 		}
+
 		m_Code += ") -> None:\n";
 
 		m_Tabs += "    ";
-		GenerateStatements(node->body);
-		m_Tabs = m_Tabs.substr(0, m_Tabs.size() - 4);
 
-		m_Code += code + "anonp_line_" + anonp_randomised_name;
+		m_Code += m_Tabs + "scope_vars = prev_scope_vars.copy()\n";
+		for (uint32_t i = 0; i < node->argNames.size(); i++) {
+			if (node->argNames[i]->accessPresent) {
+				SPLW_ERROR("Attempting to pass an argument name with an access present. This is not allowed. Line: {0}, arg: {1}", node->argNames[i]->GetLineNumber(), node->argNames[i]->GetContents());
+				m_AbortPrint = true;
+			}
+			else {
+				m_Code += m_Tabs + "scope_vars['" + node->argNames[i]->GetContents() + "'] = arg" + std::to_string(i) + "\n";
+			}
+		}
+
+		GenerateStatements(node->body);
+		m_Code += m_Tabs + "raise libsplw.FunctionEndError\n";
+		m_Tabs = m_Tabs.substr(0, m_Tabs.size() - 4);
+		
+		m_Code += code + anonp_name;
 	}
 
 	void Generator::GenerateType(std::shared_ptr<TypeNode> node)
 	{
-		if (node->type == 1)
-			m_Code += node->ident->GetContents();
+		if (node->type == 1) {
+			if (node->ident->accessPresent) {
+				m_Code += node->ident->GenerateGetattrTree();
+			}
+			else {
+				m_Code += node->ident->GetContents();
+			}
+		}
 		else {
 			//m_Code += "__builtins__.";
 			std::string typeTokenStr = node->typeToken->GetContents();

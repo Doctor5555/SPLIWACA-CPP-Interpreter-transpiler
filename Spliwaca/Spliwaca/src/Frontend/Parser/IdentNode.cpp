@@ -36,14 +36,19 @@ namespace Spliwaca {
         if (ids.at(0)->GetContents() == "_INTERPRETER") {
             return GetContents();
         }
-        std::string rv = "scope_vars[" + ids.at(0)->GetContents();
+        std::string rv = "scope_vars['" + ids.at(0)->GetContents() + "']";
 
-        for (int i = 1; i < ids.size() - 1; i++) {
-            rv = "getattr(" + rv + ", \"" + ids[i]->GetContents() + "\")";
+        if (accessPresent) {
+            for (int i = 1; i < ids.size() - 1; i++) {
+                rv = "getattr(" + rv + ", \"" + ids[i]->GetContents() + "\")";
+            }
+
+            cachedGetattrMinusOne = rv;
+        
+            cachedGetattr = "getattr(" + rv + ", \"" + ids.at(ids.size() - 1)->GetContents() + "\")";
         }
-
-        cachedGetattrMinusOne = rv;
-        cachedGetattr = "getattr(" + rv + ", \"" + ids.at(ids.size() - 1)->GetContents() + "\")";
+        else
+            cachedGetattr = rv;
 
         return minus_one ? cachedGetattrMinusOne : cachedGetattr;
     }

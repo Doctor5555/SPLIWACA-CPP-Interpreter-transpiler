@@ -1,0 +1,14 @@
+
+
+SET continue TO true
+SET dice TO 7
+SET attempts TO 0
+WHILE continue == true DO 
+WHILE dice != 6 DO 
+SET dice TO (CALL random WITH 1, 6) 
+OUTPUT $dice
+		 INC attempts END WHILE 
+	OUTPUT that took $attempts attempts
+OUTPUT do you want to rerun 	
+INPUT BOOL continue
+END WHILE

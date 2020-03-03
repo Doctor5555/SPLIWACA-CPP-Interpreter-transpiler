@@ -21,7 +21,8 @@ namespace Spliwaca
 		std::string m_Code;
 		std::string m_CurrentFuncNameLine;
 
-		bool allowPyAndPipImports = false;
+		bool m_AllowPyAndPipImports = false;
+		bool m_AbortPrint = false;
 
 	private:
 		void GenerateStatements(std::shared_ptr<Statements> s);

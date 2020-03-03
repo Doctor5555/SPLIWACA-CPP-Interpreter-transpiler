@@ -453,7 +453,7 @@ namespace Spliwaca
 		std::shared_ptr<QuitNode> node = std::make_shared<QuitNode>();
 		IncIndex();
 		if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Newline)
-			node->returnVal = ConstructAtom();
+			node->returnVal = ConstructAtom(true);
 		return node;
 	}
 
@@ -463,14 +463,9 @@ namespace Spliwaca
 		IncIndex();
 		node->function = ConstructExpr();
 
-		if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Newline)
+		if (m_Tokens->at(m_TokenIndex)->GetType() == TokenType::With)
 		{
-			if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::With)
-			{
-				RegisterSyntaxError(SyntaxErrorType::expWith, m_Tokens->at(m_TokenIndex));
-			}
-			else
-				IncIndex();
+			IncIndex();
 
 			node->args.push_back(ConstructExpr());
 
@@ -642,13 +637,6 @@ namespace Spliwaca
 		
 
 		if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::As)
-		{
-			RegisterSyntaxError(SyntaxErrorType::expAs, m_Tokens->at(m_TokenIndex));
-		}
-		else
-			IncIndex();
-
-		if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Newline)
 		{
 			RegisterSyntaxError(SyntaxErrorType::expAs, m_Tokens->at(m_TokenIndex));
 		}
@@ -902,7 +890,7 @@ namespace Spliwaca
 		return node;
 	}
 
-	std::shared_ptr<AtomNode> Parser::ConstructAtom()
+	std::shared_ptr<AtomNode> Parser::ConstructAtom(bool quit)
 	{
 		std::shared_ptr<AtomNode> node = std::make_shared<AtomNode>();
 		if (m_Tokens->at(m_TokenIndex)->GetType() == TokenType::LParen)
@@ -921,14 +909,16 @@ namespace Spliwaca
 		{
 			std::vector<TokenType> acceptedAtomTokenTypes = { TokenType::String, TokenType::Raw, TokenType::Int, TokenType::Float, TokenType::Complex, TokenType::Identifier, TokenType::True, TokenType::False, TokenType::None };
 			TokenType type = m_Tokens->at(m_TokenIndex)->GetType();
-			if (!itemInVect(acceptedAtomTokenTypes, type))
+			if (!itemInVect(acceptedAtomTokenTypes, type) && (m_Tokens->at(m_TokenIndex)->GetContents()[0] & ~0x20) >= 'A' && (m_Tokens->at(m_TokenIndex)->GetContents()[0] & ~0x20) <= 'Z')
 			{
-				//If it doesn't start with an ident, then it isn't an identifier, and if it isn't any of the others, then it must be an error
+				//If it doesn't start with a valid ident, then it isn't an identifier, and if it isn't any of the others, then it must be an error
+				if (quit)
+					return nullptr;
 				RegisterSyntaxError(SyntaxErrorType::expAtom, m_Tokens->at(m_TokenIndex));
 				node->type = 0;
 				IncIndex();
 			}
-			else if (type == TokenType::Identifier)
+			else if (type == TokenType::Identifier || ((m_Tokens->at(m_TokenIndex)->GetContents()[0] & ~0x20) >= 'A' && (m_Tokens->at(m_TokenIndex)->GetContents()[0] & ~0x20) <= 'Z' && type != TokenType::String && type != TokenType::Raw && type != TokenType::True && type != TokenType::False))
 			{
 				//std::shared_ptr<IdentNode> ident = ConstructIdentNode();
 				node->ident = ConstructIdentNode();

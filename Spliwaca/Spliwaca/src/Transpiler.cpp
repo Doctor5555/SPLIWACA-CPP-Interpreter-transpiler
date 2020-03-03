@@ -15,7 +15,7 @@ namespace Spliwaca
 
 		for (LexicalError l : m_State->LexerErrors)
 		{
-			SPLW_CRITICAL("Lexical Error code {2} at line {0}, column {1}", l.GetLineNumber(), l.GetColumnNumber(), l.GetErrorCode());
+			SPLW_ERROR("Lexical Error code {2} at line {0}, column {1}", l.GetLineNumber(), l.GetColumnNumber(), l.GetErrorCode());
 			if (l.GetLineNumber() >= lexer->GetSplitFileString().size())
 				SPLW_WARN("Line {0} out of range!", l.GetLineNumber());
 			else
@@ -59,8 +59,8 @@ namespace Spliwaca
 
 		for (SyntaxError s : m_State->SyntaxErrors)
 		{
-			SPLW_CRITICAL("Syntax Error code {2} at line {0}, column {1}", s.GetLineNumber(), s.GetColumnNumber(), s.GetErrorCode());
-			SPLW_CRITICAL(GetSyntaxErrorMessage(s.GetErrorCode()), TokenTypeName(s.GetTokenType()));
+			SPLW_ERROR("Syntax Error code {2} at line {0}, column {1}", s.GetLineNumber(), s.GetColumnNumber(), s.GetErrorCode());
+			SPLW_ERROR(GetSyntaxErrorMessage(s.GetErrorCode()), TokenTypeName(s.GetTokenType()));
 			if (s.GetLineNumber() >= lexer->GetSplitFileString().size())
 				SPLW_WARN("Line {0} out of range!", s.GetLineNumber());
 			else
@@ -93,8 +93,10 @@ namespace Spliwaca
 
 		int errorCode = 0;
 		std::string finalCode = codeGenerator->GenerateCode(errorCode);
-		if (errorCode)
+		if (errorCode) {
+			SPLW_CRITICAL("Errors detected during generation. Aborting.");
 			return "";
+		}
 
 		if (m_Output != "") {
 			std::ofstream outputFile;

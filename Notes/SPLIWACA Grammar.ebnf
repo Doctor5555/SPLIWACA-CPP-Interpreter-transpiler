@@ -37,7 +37,7 @@ add_expr = mul_expr, ['+'|'-', add_expr]; (* -> 1 + 1 + 1 + - 1 *)
 mul_expr = divmod_expr, ['*'|'/', mul_expr];
 divmod_expr = power, ['%'|'DIVI', divmod_expr];
 power = factor, ['**', factor];
-factor = ['+'|'-'], atom;
+factor = ['+'|'-'], atom | atom 'TO' atom ['STEP' atom];
 atom = (string|raw|int|float|complex|identifier|('(', list, ')')), list_access?;
 
 list_access = ('[', expr, ']')*;
