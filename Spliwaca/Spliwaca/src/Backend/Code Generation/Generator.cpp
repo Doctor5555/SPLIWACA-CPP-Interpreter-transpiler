@@ -741,7 +741,7 @@ namespace Spliwaca
 		std::string ident = "";
 		for (char c : token->GetContents())
 		{
-			if (!charInStr("$\"", c) && !inIdent)
+			if (!inIdent && !charInStr("$\"", c))
 				code += c;
 			else if (inIdent) {
 				if (c == ' ') {
@@ -778,8 +778,16 @@ namespace Spliwaca
 				code += "{";
 			}
 		}
-		if (inIdent)
+		if (inIdent) {
+			if (validIdentifier(ident)) {
+				identNode->ids.push_back(std::make_shared<Token>(TokenType::Identifier, ident.c_str(), token->GetLineNumber(), token->GetCharacterNumber()));
+				code += identNode->GenerateGetattrTree();
+			} else {
+				SPLW_ERROR("Invalid identifier in RAW token, line {0}, char {1}", token->GetLineNumber(), token->GetCharacterNumber());
+				m_AbortPrint = true;
+			}
 			code += "}";
+		}
 		return code + "\"";
 	}
 
