@@ -1168,7 +1168,7 @@ namespace Spliwaca
 		std::shared_ptr<IdentNode> node = std::make_shared<IdentNode>();
 		
 		char first = m_Tokens->at(m_TokenIndex)->GetContents()[0];
-		if (!(first >= 0x41 && first <= 0x5a) && !(first >= 0x61 && first <= 0x7a))
+		if (!(first >= 0x41 && first <= 0x5a) && !(first >= 0x61 && first <= 0x7a) && !(m_Tokens->at(m_TokenIndex)->GetType() == TokenType::Identifier))
 		{
 			RegisterSyntaxError(SyntaxErrorType::expIdent, m_Tokens->at(m_TokenIndex));
 		}
@@ -1182,12 +1182,13 @@ namespace Spliwaca
 		{
 			IncIndex();
 			first = m_Tokens->at(m_TokenIndex)->GetContents()[0];
-			if (!(first >= 0x41 && first <= 0x5a) && !(first >= 0x61 && first <= 0x7a)) {
+			if (!(first >= 0x41 && first <= 0x5a) && !(first >= 0x61 && first <= 0x7a) && !(m_Tokens->at(m_TokenIndex)->GetType() == TokenType::Identifier)) {
 				RegisterSyntaxError(SyntaxErrorType::expIdent, m_Tokens->at(m_TokenIndex));
 			} else {
 				node->ids.push_back(m_Tokens->at(m_TokenIndex));
 				IncIndex();
 			}
+			node->accessPresent = true;
 		}
 		return node;
 	}

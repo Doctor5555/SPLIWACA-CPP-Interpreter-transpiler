@@ -21,7 +21,7 @@ namespace Spliwaca
 	public:
 
 		std::vector<std::shared_ptr<Token>> ids;
-		bool accessPresent = true;
+		bool accessPresent = false;
 
 		std::string GetContents();
 		std::string GenerateGetattrTree(bool &interpreter_var, bool minus_one = false);
