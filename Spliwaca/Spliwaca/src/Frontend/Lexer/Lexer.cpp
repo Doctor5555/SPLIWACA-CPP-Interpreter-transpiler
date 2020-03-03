@@ -159,7 +159,7 @@ namespace Spliwaca
             {
                 std::smatch m;
                 //Use regexes
-                if (std::regex_search(tokenContents, m, std::regex("(\d|_)+(\.\d+)?i")) && m[0] == tokenContents) // Matches complex regex
+                if (std::regex_search(tokenContents, m, std::regex("(\\d|_)+(\\.\\d+)?i")) && m[0] == tokenContents) // Matches complex regex
                 {
                     if (std::regex_search(tokenContents, m, std::regex("(\\d{1,3}(_\\d{3})+|\\d+)(\\.[0-9]+)?i")) && m[0] != tokenContents)
                         SPLW_WARN("Style Warning, line {0}, char {1}: Complex literals should have underscores treated as commas.");
@@ -177,16 +177,29 @@ namespace Spliwaca
                         SPLW_WARN("Style Warning, line {0}, char {1}: Integer literals should have underscores treated as commas.");
                     m_Tokens->push_back(std::make_shared<Token>(Token(TokenType::Int, tokenContents.c_str(), m_LineNumber, m_ColumnNumber)));
                 }
-                else if (!std::regex_search(tokenContents, m, std::regex("\\d+"))) // Matches identifier regex
-                {
-                    //Matched
-                    m_Tokens->push_back(std::make_shared<Token>(Token(TokenType::Identifier, tokenContents.c_str(), m_LineNumber, m_ColumnNumber)));
-                }
                 else
                 {
-                    //Error unexpected characters.
-                    SPLW_ERROR("Lexical Error: Unexpected characters: {0}", tokenContents);
-                    RegisterLexicalError(0, m_LineNumber, m_ColumnNumber, tokenContents.size());
+                    char invalidChars[] = { '~', '\\', ';', '#', '$', '@', '`', ',', '?', '!', '%', '^', '<', '|', '\'', '&', ')', '*', '/', '+', '[', ']', '.', '"', '=', '{', '}', ':', '>', '_', '(', '-'};
+                    bool valid = true;
+                    int index = 0;
+                    for (char c : tokenContents) {
+                        for (char d : invalidChars) {
+                            if (c == d) {
+                                valid = false;
+                                break;
+                            }
+                        }
+                        if (valid == false)
+                            break;
+                        index++;
+                    }
+                    if (valid)
+                        m_Tokens->push_back(std::make_shared<Token>(Token(TokenType::Identifier, tokenContents.c_str(), m_LineNumber, m_ColumnNumber)));
+                    else {
+                        //Error unexpected characters.
+                        SPLW_ERROR("Lexical Error: Unexpected character {0} in string: {1}", tokenContents[index], tokenContents);
+                        RegisterLexicalError(0, m_LineNumber, m_ColumnNumber, tokenContents.size());
+                    }
                 }
             }
         }
