@@ -159,16 +159,22 @@ namespace Spliwaca
             {
                 std::smatch m;
                 //Use regexes
-                if (std::regex_search(tokenContents, m, std::regex("(\\d{1,3}(_\\d{3})+|\\d+)(\\.[0-9]+)?i")) && m[0] == tokenContents) // Matches complex regex
+                if (std::regex_search(tokenContents, m, std::regex("(\d|_)+(\.\d+)?i")) && m[0] == tokenContents) // Matches complex regex
                 {
+                    if (std::regex_search(tokenContents, m, std::regex("(\\d{1,3}(_\\d{3})+|\\d+)(\\.[0-9]+)?i")) && m[0] != tokenContents)
+                        SPLW_WARN("Style Warning, line {0}, char {1}: Complex literals should have underscores treated as commas.");
                     m_Tokens->push_back(std::make_shared<Token>(Token(TokenType::Complex, tokenContents.c_str(), m_LineNumber, m_ColumnNumber)));
                 }
-                else if (std::regex_search(tokenContents, m, std::regex("(\\d{1,3}(_\\d{3})+|\\d+)\\.[0-9]+")) && m[0] == tokenContents) // Matches float regex
+                else if (std::regex_search(tokenContents, m, std::regex("(\\d|_)+\\.\\d+")) && m[0] == tokenContents) // Matches float regex
                 {
+                    if (std::regex_search(tokenContents, m, std::regex("(\\d{1,3}(_\\d{3})+|\\d+)\\.[0-9]+")) && m[0] != tokenContents)
+                        SPLW_WARN("Style Warning, line {0}, char {1}: Float literals should have underscores treated as commas.");
                     m_Tokens->push_back(std::make_shared<Token>(Token(TokenType::Float, tokenContents.c_str(), m_LineNumber, m_ColumnNumber)));
                 }
-                else if (std::regex_search(tokenContents, m, std::regex("\\d{1,3}(_\\d{3})+|\\d+")) && m[0] == tokenContents) // Matches int regex
+                else if (std::regex_search(tokenContents, m, std::regex("(\\d+_*)+")) && m[0] == tokenContents) // Matches int regex
                 {
+                    if (std::regex_search(tokenContents, m, std::regex("\\d{1,3}(_\\d{3})+|\\d+")) && m[0] != tokenContents)
+                        SPLW_WARN("Style Warning, line {0}, char {1}: Integer literals should have underscores treated as commas.");
                     m_Tokens->push_back(std::make_shared<Token>(Token(TokenType::Int, tokenContents.c_str(), m_LineNumber, m_ColumnNumber)));
                 }
                 else if (!std::regex_search(tokenContents, m, std::regex("\\d+"))) // Matches identifier regex
