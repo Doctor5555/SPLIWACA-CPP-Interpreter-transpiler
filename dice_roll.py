@@ -3,7 +3,7 @@ scope_vars = libsplw.default_scope.copy()
 
 scope_vars["continue"] = True
 scope_vars["dice"] = 7
-scope_vars["attempts"] = 
+scope_vars["attempts"] = 0
 while scope_vars['continue'] == True:
     while scope_vars['dice'] != 6:
         scope_vars["dice"] = (scope_vars['random'](scope_vars, 1, 6))

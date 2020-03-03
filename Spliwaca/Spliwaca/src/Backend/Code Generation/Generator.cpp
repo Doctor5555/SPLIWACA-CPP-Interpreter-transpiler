@@ -1,5 +1,6 @@
 #include "Generator.h"
 #include "UtilFunctions.h"
+#include <regex>
 
 namespace Spliwaca
 {
@@ -695,31 +696,79 @@ namespace Spliwaca
 		m_Code += node->GetContents();
 	}*/
 
+	bool validIdentifier(std::string id) {
+		std::smatch m;
+		if (std::regex_search(id, m, std::regex("(\\d|_)+(\\.\\d+)?i")) && m[0] == id) // Matches complex regex
+        {
+			return false;
+        }
+        else if (std::regex_search(id, m, std::regex("(\\d|_)+\\.\\d+")) && m[0] == id) // Matches float regex
+        {
+            return false;
+        }
+        else if (std::regex_search(id, m, std::regex("(\\d+_*)+")) && m[0] == id) // Matches int regex
+        {
+            return false;
+        }
+        else
+        {
+            char invalidChars[] = { '~', '\\', ';', '#', '$', '@', '`', ',', '?', '.', '!', '%', '^', '<', '|', '\'', '&', ')', '*', '/', '+', '[', ']', '"', '=', '{', '}', ':', '>', '(', '-'};
+            bool valid = true;
+            int index = 0;
+            for (char c : id) {
+                for (char d : invalidChars) {
+                    if (c == d) {
+                        valid = false;
+                        break;
+                    }
+                }
+                if (valid == false)
+                    break;
+                index++;
+            }
+            if (valid)
+                return true;
+            else
+				return false;
+		}
+	}
+
 	std::string Generator::ParseRaw(std::shared_ptr<Token> token)
 	{
 		std::string code = "fr\"";
 		bool inIdent = false;
-		std::string allowedChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_0123456789.";
+		std::shared_ptr<IdentNode> identNode = std::make_shared<IdentNode>();
+		std::string ident = "";
 		for (char c : token->GetContents())
 		{
 			if (!charInStr("$\"", c) && !inIdent)
 				code += c;
-			else if (inIdent)
-			{
-				if (c == ' ')
-				{
+			else if (inIdent) {
+				if (c == ' ') {
+					if (validIdentifier(ident)) {
+						code += identNode->GenerateGetattrTree();
+					}
+					else {
+						SPLW_ERROR("Invalid identifier in RAW token, line {0}, char {1}", token->GetLineNumber(), token->GetCharacterNumber());
+						m_AbortPrint = true;
+					}
 					code += "} ";
 					inIdent = false;
+					ident = "";
 				}
-				else if (!charInStr(allowedChars, c))
-					SPLW_CRITICAL("Invalid character {1} in RAW ident on line {0}, ignoring", token->GetLineNumber(), c);
-				else
-					code += c;
+				else if (c == '.') {
+					identNode->ids.push_back(std::make_shared<Token>(TokenType::Identifier, ident.c_str(), token->GetLineNumber(), token->GetCharacterNumber()));
+					identNode->accessPresent = true;
+					ident = "";
+				}
+				else {
+					ident += c;
+				}
 			}
 			else if (c == '"')
 			{
-				//code += "\" + \"\\\"\" + fr\"";
-				code += "\\";
+				code += "\" + \"\\\"\" + fr\"";
+				//code += "\\" + c;
 			}
 			else
 			{
