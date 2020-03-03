@@ -419,7 +419,6 @@ namespace Spliwaca
 
 		node->condition = ConstructBinOpNode();
 		
-		IncIndex();
 		if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Do)
 		{
 			RegisterSyntaxError(SyntaxErrorType::expDo, m_Tokens->at(m_TokenIndex));
