@@ -906,7 +906,7 @@ namespace Spliwaca
 		}
 		else
 		{
-			std::vector<TokenType> acceptedAtomTokenTypes = { TokenType::String, TokenType::Raw, TokenType::Int, TokenType::Float, TokenType::Complex, TokenType::Identifier, TokenType::True, TokenType::False, TokenType::None };
+			std::vector<TokenType> acceptedAtomTokenTypes = { TokenType::String, TokenType::Raw, TokenType::Int, TokenType::Float, TokenType::Complex, TokenType::Identifier, TokenType::None };
 			TokenType type = m_Tokens->at(m_TokenIndex)->GetType();
 			if (!itemInVect(acceptedAtomTokenTypes, type) && (m_Tokens->at(m_TokenIndex)->GetContents()[0] & ~0x20) >= 'A' && (m_Tokens->at(m_TokenIndex)->GetContents()[0] & ~0x20) <= 'Z')
 			{
@@ -917,7 +917,7 @@ namespace Spliwaca
 				node->type = 0;
 				IncIndex();
 			}
-			else if (type == TokenType::Identifier || ((m_Tokens->at(m_TokenIndex)->GetContents()[0] & ~0x20) >= 'A' && (m_Tokens->at(m_TokenIndex)->GetContents()[0] & ~0x20) <= 'Z' && type != TokenType::String && type != TokenType::Raw && type != TokenType::True && type != TokenType::False))
+			else if (type == TokenType::Identifier || ((m_Tokens->at(m_TokenIndex)->GetContents()[0] & ~0x20) >= 'A' && (m_Tokens->at(m_TokenIndex)->GetContents()[0] & ~0x20) <= 'Z' && type != TokenType::String && type != TokenType::Raw))
 			{
 				//std::shared_ptr<IdentNode> ident = ConstructIdentNode();
 				node->ident = ConstructIdentNode();

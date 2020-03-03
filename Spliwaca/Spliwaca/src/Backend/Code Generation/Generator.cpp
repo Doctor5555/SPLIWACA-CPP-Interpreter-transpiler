@@ -508,7 +508,56 @@ namespace Spliwaca
 	{
 		if (node->opTokenPresent)
 		{
-			m_Code += node->opToken->GetContents();
+			std::string opTokenStr = "";
+			//std::transform(opTokenStr.begin(), opTokenStr.end(), opTokenStr.begin(),
+			//	[](unsigned char c) { return std::tolower(c); });
+			switch (node->opToken->GetType()) {
+			case TokenType::Is:
+				opTokenStr = "is"; break;
+			case TokenType::Not:
+				opTokenStr = "not"; break;
+			case TokenType::And:
+				opTokenStr = "and"; break;
+			case TokenType::Or:
+				opTokenStr = "or"; break;
+			case TokenType::Equal:
+				opTokenStr = "=="; break;
+			case TokenType::NotEqual:
+				opTokenStr = "!="; break;
+			case TokenType::LessThan:
+				opTokenStr = "<"; break;
+			case TokenType::GreaterThan:
+				opTokenStr = ">"; break;
+			case TokenType::LessThanEqual:
+				opTokenStr = "<="; break;
+			case TokenType::GreaterThanEqual:
+				opTokenStr = ">="; break;
+			case TokenType::Multiply:
+				opTokenStr = "*"; break;
+			case TokenType::Divide:
+				opTokenStr = "/"; break;
+			case TokenType::Intdiv:
+				opTokenStr = "//"; break;
+			case TokenType::Plus:
+				opTokenStr = "+"; break;
+			case TokenType::Minus:
+				opTokenStr = "-"; break;
+			case TokenType::Modulo:
+				opTokenStr = "%"; break;
+			case TokenType::Xor:
+				opTokenStr = "^"; break;
+			case TokenType::BitwiseAnd:
+				opTokenStr = "&"; break;
+			case TokenType::BitwiseOr:
+				opTokenStr = "|"; break;
+			case TokenType::ShiftRight:
+				opTokenStr = ">>"; break;
+			case TokenType::ShiftLeft:
+				opTokenStr = "<<"; break;
+			default:
+				SPLW_CRITICAL("Bug: Operator {0} not handled", node->opToken->GetContents());
+			}
+			m_Code += " " + opTokenStr + " ";
 		}
 		GenerateAtom(node->right);
 	}
