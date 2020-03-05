@@ -168,6 +168,9 @@ namespace Spliwaca
 		case TokenType::Struct: s->structNode = ConstructStruct(); s->statementType = 12; break;
 		case TokenType::Return: s->returnNode = ConstructReturn(); s->statementType = 13; break;
 		case TokenType::Import: s->importNode = ConstructImport(); s->statementType = 14; break;
+		case TokenType::NoImport: s->statementType = 15; IncIndex(); break;
+		case TokenType::NoInstall: s->statementType = 16; IncIndex(); break;
+		case TokenType::NoBare: s->statementType = 17; IncIndex(); break;
 		default:
 			RegisterSyntaxError(SyntaxErrorType::expStatement, m_Tokens->at(m_TokenIndex));
 			return nullptr;

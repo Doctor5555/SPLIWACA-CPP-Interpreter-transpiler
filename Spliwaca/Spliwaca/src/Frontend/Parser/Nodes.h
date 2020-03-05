@@ -16,6 +16,16 @@ namespace Spliwaca
 	//class BoolExprNode;
 	//class MulExprNode;
 
+	class ImportConfig {
+	public:
+		ImportConfig(bool allowImport, bool allowPyImport, bool allowInstall, bool allowBare)
+			: allowImport(allowImport), allowPyImport(allowPyImport), allowInstall(allowInstall), allowBare(allowBare) {}
+		bool allowImport;
+		bool allowPyImport;
+		bool allowInstall;
+		bool allowBare;
+	};
+
 	class IdentNode
 	{
 	public:
@@ -24,8 +34,8 @@ namespace Spliwaca
 		bool accessPresent = false;
 
 		std::string GetContents();
-		std::string GenerateGetattrTree(const struct ImportConfig importConfig, bool &interpreter_var, bool minus_one = false);
-		std::string GenerateGetattrTree(const struct ImportConfig importConfig, bool minus_one = false);
+		std::string GenerateGetattrTree(ImportConfig *importConfig, bool &interpreter_var, bool minus_one = false);
+		std::string GenerateGetattrTree(ImportConfig *importConfig, bool minus_one = false);
 		std::string GetFinalId();
 
 		inline uint32_t GetLineNumber() { return ids.at(0)->GetLineNumber(); }

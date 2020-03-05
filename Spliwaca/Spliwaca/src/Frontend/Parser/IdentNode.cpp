@@ -1,5 +1,4 @@
 #include "Nodes.h"
-#include "Backend/Code Generation/Generator.h"
 
 namespace Spliwaca {
 	std::string IdentNode::GetContents() {
@@ -31,7 +30,7 @@ namespace Spliwaca {
         return "False";
     }
 
-    std::string IdentNode::GenerateGetattrTree(ImportConfig importConfig, bool &interpreter_var, bool minus_one) {
+    std::string IdentNode::GenerateGetattrTree(ImportConfig *importConfig, bool &interpreter_var, bool minus_one) {
         if (cachedGetattrMinusOne != "" && minus_one)
             return cachedGetattrMinusOne;
         if (cachedGetattr != "")
@@ -44,7 +43,8 @@ namespace Spliwaca {
         if (ids.at(0)->GetContents() == "_INTERPRETER" && ids.size() > 1) {
             return GetContents();
         }
-        std::string rv = "libsplw.get_safe(scope_vars, '" + ids.at(0)->GetContents() + "', " + boolToString(importConfig.allowImport) + ", " + boolToString(importConfig.allowInstall) + ", " + boolToString(importConfig.allowBare) + ")";
+        SPLW_INFO("{0}, {1}, {2}, {3}", importConfig->allowImport, importConfig->allowPyImport, importConfig->allowPyImport, importConfig->allowBare);
+        std::string rv = "libsplw.get_safe(scope_vars, '" + ids.at(0)->GetContents() + "', " + boolToString(importConfig->allowImport) + ", " + boolToString(importConfig->allowPyImport) + ", " + boolToString(importConfig->allowInstall) + ", " + boolToString(importConfig->allowBare) + ")";
 
         if (accessPresent) {
             for (int i = 1; i < ids.size() - 1; i++) {
@@ -61,7 +61,7 @@ namespace Spliwaca {
         return minus_one ? cachedGetattrMinusOne : cachedGetattr;
     }
 
-	std::string IdentNode::GenerateGetattrTree(ImportConfig importConfig, bool minus_one) {
+	std::string IdentNode::GenerateGetattrTree(ImportConfig *importConfig, bool minus_one) {
         bool dummy_var = false;
         return GenerateGetattrTree(importConfig, dummy_var, false);
     }

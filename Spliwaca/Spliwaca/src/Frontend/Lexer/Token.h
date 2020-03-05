@@ -95,7 +95,10 @@ namespace Spliwaca
 		Break,
 		eof,
 		VarAccessOp,
-		Import
+		Import,
+		NoImport,
+		NoInstall,
+		NoBare
 	};
 
 	enum class VarType

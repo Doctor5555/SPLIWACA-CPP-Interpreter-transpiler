@@ -1,4 +1,9 @@
 
+FUNCTION my_func TAKES INT a, INT b RETURNS INT AS
+	NOIMPORT
+	SET my_a TO a
+	OUTPUT $my_a
+END FUNC
 
 SET continue TO true
 WHILE continue == true DO

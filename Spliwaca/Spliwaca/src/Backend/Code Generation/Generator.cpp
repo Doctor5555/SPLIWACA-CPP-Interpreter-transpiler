@@ -35,10 +35,10 @@ namespace Spliwaca
 		m_Code = "import libsplw\nscope_vars = libsplw.default_scope.copy()\n\n";
 
 		if (m_EntryPoint->require && m_EntryPoint->require->requireType->GetContents() == "transpiler_py"){
-			m_ScopeImportConfigs.push_back(ImportConfig(true, true, true));
+			m_ScopeImportConfigs.push_back(new ImportConfig(true, true, true, true));
 		}
 		else if (m_EntryPoint->requirePresent == false || m_EntryPoint->require->requireType->GetContents() == "transpiler") {
-			m_ScopeImportConfigs.push_back(ImportConfig(true, false, true));
+			m_ScopeImportConfigs.push_back(new ImportConfig(true, false, false, true));
 		}
 		else if (m_EntryPoint->require) {
 			SPLW_CRITICAL("This generator is not compatible with the specified require statement, exiting.");
@@ -59,6 +59,8 @@ namespace Spliwaca
 	{
 		for (std::shared_ptr<Statement> s : statements->statements)
 		{
+			ImportConfig *importConfig = getCurrentImportConfig();
+			SPLW_INFO("{0}, {1}, {2}, {3}", importConfig->allowImport, importConfig->allowPyImport, importConfig->allowPyImport, importConfig->allowBare);
 			switch (s->statementType)
 			{
 			case 0:  GenerateIf(s->ifNode); break; //Line numbers done
@@ -76,8 +78,10 @@ namespace Spliwaca
 			case 12: GenerateStruct(s->structNode); m_Code += "  # Source line " + std::to_string(s->lineNumber+1) + "\n"; break;
 			case 13: GenerateReturn(s->returnNode); m_Code += "  # Source line " + std::to_string(s->lineNumber+1) + "\n"; break;
 			case 14: GenerateImport(s->importNode); m_Code += "  # Source line " + std::to_string(s->lineNumber+1) + "\n"; break;
+			case 15: m_ScopeImportConfigs.at(m_ScopeImportConfigs.size() - 1)->allowImport = false;
+			case 16: m_ScopeImportConfigs.at(m_ScopeImportConfigs.size() - 1)->allowInstall = false;
+			case 17: m_ScopeImportConfigs.at(m_ScopeImportConfigs.size() - 1)->allowBare = false;
 			}
-			
 		}
 	}
 
@@ -271,6 +275,10 @@ namespace Spliwaca
 		m_Code += ": # Source line " + std::to_string(node->lineNumber + 1) + "\n";
 
 		m_Tabs += "    ";
+		ImportConfig *oldConfig = getCurrentImportConfig();
+		ImportConfig *newConfig = new ImportConfig(true, true, true, true);
+		m_ScopeImportConfigs.push_back(newConfig);
+		SPLW_INFO("Current allow bare state: {0}", getCurrentImportConfig()->allowBare);
 
 		m_Code += m_Tabs + "scope_vars = prev_scope_vars.copy()\n";
 		for (uint32_t i = 0; i < node->argNames.size(); i++) {
@@ -293,6 +301,7 @@ namespace Spliwaca
 		else {
 			m_Code += m_Tabs + "scope_vars['" + node->id->GetContents() + "'] = " + func_name + "\n";
 		}
+		m_ScopeImportConfigs.pop_back();
 	}
 
 	void Generator::GenerateProc(std::shared_ptr<ProcNode> node)
@@ -312,6 +321,7 @@ namespace Spliwaca
 		m_Code += ") -> None: # Source line " + std::to_string(node->lineNumber + 1) + "\n";
 
 		m_Tabs += "    ";
+		m_ScopeImportConfigs.push_back(getCurrentImportConfig());
 
 		m_Code += m_Tabs + "scope_vars = prev_scope_vars.copy()\n";
 		for (uint32_t i = 0; i < node->argNames.size(); i++) {
@@ -334,6 +344,7 @@ namespace Spliwaca
 		else {
 			m_Code += m_Tabs + "scope_vars['" + node->id->GetContents() + "'] = " + func_name + "\n";
 		}
+		m_ScopeImportConfigs.pop_back();
 	}
 
 	void Generator::GenerateStruct(std::shared_ptr<StructNode> node)
@@ -593,6 +604,7 @@ namespace Spliwaca
 		m_Code += ":\n";
 
 		m_Tabs += "    ";
+		m_ScopeImportConfigs.push_back(getCurrentImportConfig());
 
 		m_Code += m_Tabs + "scope_vars = prev_scope_vars.copy()\n";
 		for (uint32_t i = 0; i < node->argNames.size(); i++) {
@@ -610,6 +622,7 @@ namespace Spliwaca
 		m_Tabs = m_Tabs.substr(0, m_Tabs.size() - 4);
 		
 		m_Code += code + anonf_name;
+		m_ScopeImportConfigs.pop_back();
 	}
 
 	void Generator::GenerateAnonp(std::shared_ptr<AnonpNode> node)
@@ -638,6 +651,7 @@ namespace Spliwaca
 		m_Code += ") -> None:\n";
 
 		m_Tabs += "    ";
+		m_ScopeImportConfigs.push_back(getCurrentImportConfig());
 
 		m_Code += m_Tabs + "scope_vars = prev_scope_vars.copy()\n";
 		for (uint32_t i = 0; i < node->argNames.size(); i++) {
@@ -655,6 +669,7 @@ namespace Spliwaca
 		m_Tabs = m_Tabs.substr(0, m_Tabs.size() - 4);
 		
 		m_Code += code + anonp_name;
+		m_ScopeImportConfigs.pop_back();
 	}
 
 	void Generator::GenerateType(std::shared_ptr<TypeNode> node)
