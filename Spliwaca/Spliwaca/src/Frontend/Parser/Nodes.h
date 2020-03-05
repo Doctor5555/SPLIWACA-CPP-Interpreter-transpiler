@@ -16,6 +16,16 @@ namespace Spliwaca
 	//class BoolExprNode;
 	//class MulExprNode;
 
+	class ImportConfig {
+	public:
+		ImportConfig(bool allowImport, bool allowPyImport, bool allowInstall, bool allowBare)
+			: allowImport(allowImport), allowPyImport(allowPyImport), allowInstall(allowInstall), allowBare(allowBare) {}
+		bool allowImport;
+		bool allowPyImport;
+		bool allowInstall;
+		bool allowBare;
+	};
+
 	class IdentNode
 	{
 	public:
@@ -24,8 +34,8 @@ namespace Spliwaca
 		bool accessPresent = false;
 
 		std::string GetContents();
-		std::string GenerateGetattrTree(bool &interpreter_var, bool minus_one = false);
-		std::string GenerateGetattrTree(bool minus_one = false);
+		std::string GenerateGetattrTree(ImportConfig *importConfig, bool &interpreter_var, bool minus_one = false);
+		std::string GenerateGetattrTree(ImportConfig *importConfig, bool minus_one = false);
 		std::string GetFinalId();
 
 		inline uint32_t GetLineNumber() { return ids.at(0)->GetLineNumber(); }
@@ -199,6 +209,7 @@ namespace Spliwaca
 		std::vector<std::shared_ptr<TypeNode>> argTypes;
 		std::vector<std::shared_ptr<IdentNode>> argNames;
 		std::shared_ptr<Statements> body;
+		uint32_t lineNumber;
 	};
 
 	struct FuncNode
@@ -208,6 +219,7 @@ namespace Spliwaca
 		std::vector<std::shared_ptr<IdentNode>> argNames;
 		std::shared_ptr<TypeNode> returnType;
 		std::shared_ptr<Statements> body;
+		uint32_t lineNumber;
 	};
 
 	struct StructNode
@@ -215,6 +227,7 @@ namespace Spliwaca
 		std::shared_ptr<IdentNode> id;
 		std::vector<std::shared_ptr<TypeNode>> types;
 		std::vector<std::shared_ptr<IdentNode>> names;
+		uint32_t lineNumber;
 	};
 
 	struct ImportNode
@@ -242,6 +255,7 @@ namespace Spliwaca
 	{
 		std::shared_ptr<BinOpNode> condition;
 		std::shared_ptr<Statements> body;
+		uint32_t lineNumber;
 	};
 
 	struct ForNode
@@ -249,6 +263,7 @@ namespace Spliwaca
 		std::shared_ptr<IdentNode> id;
 		std::shared_ptr<ListNode> iterableExpr;
 		std::shared_ptr<Statements> body;
+		uint32_t lineNumber;
 	};
 
 	struct DecNode
@@ -284,6 +299,7 @@ namespace Spliwaca
 		std::vector<std::shared_ptr<ListNode>> conditions;
 		std::vector<std::shared_ptr<Statements>> bodies;
 		bool elsePresent;
+		std::vector<uint32_t> lineNumbers;
 	};
 
 	struct Statement
@@ -304,6 +320,7 @@ namespace Spliwaca
 		std::shared_ptr<ReturnNode> returnNode;
 		std::shared_ptr<ImportNode> importNode;
 		uint8_t statementType;
+		uint32_t lineNumber;
 	};
 
 	struct Statements

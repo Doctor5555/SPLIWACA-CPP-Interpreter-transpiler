@@ -150,6 +150,7 @@ namespace Spliwaca
 	std::shared_ptr<Statement> Parser::ConstructStatement()
 	{
 		std::shared_ptr<Statement> s = std::make_shared<Statement>();
+		s->lineNumber = m_Tokens->at(m_TokenIndex)->GetLineNumber();
 		switch (m_Tokens->at(m_TokenIndex)->GetType())
 		{
 		case TokenType::If: s->ifNode = ConstructIf(); s->statementType = 0; break;
@@ -167,6 +168,9 @@ namespace Spliwaca
 		case TokenType::Struct: s->structNode = ConstructStruct(); s->statementType = 12; break;
 		case TokenType::Return: s->returnNode = ConstructReturn(); s->statementType = 13; break;
 		case TokenType::Import: s->importNode = ConstructImport(); s->statementType = 14; break;
+		case TokenType::NoImport: s->statementType = 15; IncIndex(); break;
+		case TokenType::NoInstall: s->statementType = 16; IncIndex(); break;
+		case TokenType::NoBare: s->statementType = 17; IncIndex(); break;
 		default:
 			RegisterSyntaxError(SyntaxErrorType::expStatement, m_Tokens->at(m_TokenIndex));
 			return nullptr;
@@ -177,6 +181,7 @@ namespace Spliwaca
 	std::shared_ptr<IfNode> Parser::ConstructIf()
 	{
 		std::shared_ptr<IfNode> node = std::make_shared<IfNode>();
+		node->lineNumbers.push_back(m_Tokens->at(m_TokenIndex)->GetLineNumber());
 		IncIndex();
 
 		node->conditions.push_back(ConstructList());
@@ -199,6 +204,7 @@ namespace Spliwaca
 
 		while (m_Tokens->at(m_TokenIndex)->GetType() == TokenType::Else)
 		{
+			node->lineNumbers.push_back(m_Tokens->at(m_TokenIndex)->GetLineNumber());
 			if (node->elsePresent)
 			{
 				//We cannot have more than one else
@@ -366,6 +372,7 @@ namespace Spliwaca
 	std::shared_ptr<ForNode> Parser::ConstructFor()
 	{
 		std::shared_ptr<ForNode> node = std::make_shared<ForNode>();
+		node->lineNumber = m_Tokens->at(m_TokenIndex)->GetLineNumber();
 		IncIndex();
 
 		//m_ScopeStack.push_back(m_CurrentScope->AddSubScope("FOR_line_" + std::to_string(m_Tokens->at(m_TokenIndex)->GetLineNumber()), m_Tokens->at(m_TokenIndex)->GetLineNumber(), ScopeType::For));
@@ -412,6 +419,7 @@ namespace Spliwaca
 	std::shared_ptr<WhileNode> Parser::ConstructWhile()
 	{
 		std::shared_ptr<WhileNode> node = std::make_shared<WhileNode>();
+		node->lineNumber = m_Tokens->at(m_TokenIndex)->GetLineNumber();
 		IncIndex();
 
 		//m_ScopeStack.push_back(m_CurrentScope->AddSubScope("WHILE_line_" + std::to_string(m_Tokens->at(m_TokenIndex)->GetLineNumber()), m_Tokens->at(m_TokenIndex)->GetLineNumber(), ScopeType::While));
@@ -496,6 +504,7 @@ namespace Spliwaca
 	std::shared_ptr<FuncNode> Parser::ConstructFunction()
 	{
 		std::shared_ptr<FuncNode> node = std::make_shared<FuncNode>();
+		node->lineNumber = m_Tokens->at(m_TokenIndex)->GetLineNumber();
 		IncIndex();
 
 		node->id = ConstructIdentNode();
@@ -563,6 +572,7 @@ namespace Spliwaca
 	std::shared_ptr<ProcNode> Parser::ConstructProcedure()
 	{
 		std::shared_ptr<ProcNode> node = std::make_shared<ProcNode>();
+		node->lineNumber = m_Tokens->at(m_TokenIndex)->GetLineNumber();
 		IncIndex();
 
 		node->id = ConstructIdentNode();
@@ -625,6 +635,7 @@ namespace Spliwaca
 	std::shared_ptr<StructNode> Parser::ConstructStruct()
 	{
 		std::shared_ptr<StructNode> node = std::make_shared<StructNode>();
+		node->lineNumber = m_Tokens->at(m_TokenIndex)->GetLineNumber();
 		IncIndex();
 
 		node->id = ConstructIdentNode();
@@ -908,7 +919,7 @@ namespace Spliwaca
 		{
 			std::vector<TokenType> acceptedAtomTokenTypes = { TokenType::String, TokenType::Raw, TokenType::Int, TokenType::Float, TokenType::Complex, TokenType::Identifier, TokenType::None };
 			TokenType type = m_Tokens->at(m_TokenIndex)->GetType();
-			if (!itemInVect(acceptedAtomTokenTypes, type) && (m_Tokens->at(m_TokenIndex)->GetContents()[0] & ~0x20) >= 'A' && (m_Tokens->at(m_TokenIndex)->GetContents()[0] & ~0x20) <= 'Z')
+			if (!itemInVect(acceptedAtomTokenTypes, type) && !(((m_Tokens->at(m_TokenIndex)->GetContents()[0] & ~0x20) >= 'A') && ((m_Tokens->at(m_TokenIndex)->GetContents()[0] & ~0x20) <= 'Z')))
 			{
 				//If it doesn't start with a valid ident, then it isn't an identifier, and if it isn't any of the others, then it must be an error
 				if (quit)
@@ -937,11 +948,14 @@ namespace Spliwaca
 					node->type = 0;
 				}*/
 			}
-			else
+			else if (itemInVect(acceptedAtomTokenTypes, type))
 			{
 				node->token = m_Tokens->at(m_TokenIndex);
 				node->type = 1;
 				IncIndex();
+			}
+			else {
+				SPLW_CRITICAL("We shouldn't be here!");
 			}
 		}
 
@@ -982,7 +996,7 @@ namespace Spliwaca
 		IncIndex();
 		node->createType = ConstructTypeNode();
 
-		if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::With)
+		if (m_Tokens->at(m_TokenIndex)->GetType() == TokenType::With)
 		{
 			node->args.push_back(ConstructExpr());
 			while (m_Tokens->at(m_TokenIndex)->GetType() == TokenType::Comma)

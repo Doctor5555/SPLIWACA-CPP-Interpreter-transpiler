@@ -175,7 +175,7 @@ int main(int argc, char** argv)
 	#endif
 
 	LOG_INIT();
-	bool printTokenList = false;
+	bool printTokenList = true;
 
 	Transpiler transpiler = Transpiler(ifile, ofile, state, printTokenList);
 	std::string output = transpiler.Run();

@@ -35,10 +35,10 @@ namespace Spliwaca
 		m_Code = "import libsplw\nscope_vars = libsplw.default_scope.copy()\n\n";
 
 		if (m_EntryPoint->require && m_EntryPoint->require->requireType->GetContents() == "transpiler_py"){
-			m_AllowPyAndPipImports = true;
+			m_ScopeImportConfigs.push_back(new ImportConfig(true, true, true, true));
 		}
 		else if (m_EntryPoint->requirePresent == false || m_EntryPoint->require->requireType->GetContents() == "transpiler") {
-
+			m_ScopeImportConfigs.push_back(new ImportConfig(true, false, false, true));
 		}
 		else if (m_EntryPoint->require) {
 			SPLW_CRITICAL("This generator is not compatible with the specified require statement, exiting.");
@@ -59,25 +59,31 @@ namespace Spliwaca
 	{
 		for (std::shared_ptr<Statement> s : statements->statements)
 		{
+			ImportConfig *importConfig = getCurrentImportConfig();
+			SPLW_INFO("{0}, {1}, {2}, {3}", importConfig->allowImport, importConfig->allowPyImport, importConfig->allowPyImport, importConfig->allowBare);
 			switch (s->statementType)
 			{
-			case 0:  GenerateIf(s->ifNode); break;
-			case 1:  GenerateSet(s->setNode); break;
-			case 2:  GenerateInput(s->inputNode); break;
-			case 3:  GenerateOutput(s->outputNode); break;
-			case 4:  GenerateInc(s->incNode); break;
-			case 5:  GenerateDec(s->decNode); break;
-			case 6:  GenerateFor(s->forNode); break;
-			case 7:  GenerateWhile(s->whileNode); break;
-			case 8:  GenerateQuit(s->quitNode); break;
-			case 9:  GenerateCall(s->callNode, true); break;
-			case 10: GenerateFunc(s->funcNode); break;
-			case 11: GenerateProc(s->procNode); break;
-			case 12: GenerateStruct(s->structNode); break;
-			case 13: GenerateReturn(s->returnNode); break;
-			case 14: GenerateImport(s->importNode); break;
+			case 0:  GenerateIf(s->ifNode); break; //Line numbers done
+			case 1:  GenerateSet(s->setNode); m_Code += "  # Source line " + std::to_string(s->lineNumber+1) + "\n"; break;
+			case 2:  GenerateInput(s->inputNode); m_Code += "  # Source line " + std::to_string(s->lineNumber+1) + "\n"; break;
+			case 3:  GenerateOutput(s->outputNode); m_Code += "  # Source line " + std::to_string(s->lineNumber+1) + "\n"; break;
+			case 4:  GenerateInc(s->incNode); m_Code += "  # Source line " + std::to_string(s->lineNumber+1) + "\n"; break;
+			case 5:  GenerateDec(s->decNode); m_Code += "  # Source line " + std::to_string(s->lineNumber+1) + "\n"; break;
+			case 6:  GenerateFor(s->forNode); break; // Line numbers done
+			case 7:  GenerateWhile(s->whileNode); break; // Line numbers done
+			case 8:  GenerateQuit(s->quitNode); m_Code += "  # Source line " + std::to_string(s->lineNumber+1) + "\n"; break;
+			case 9:  GenerateCall(s->callNode, true); m_Code += "  # Source line " + std::to_string(s->lineNumber+1) + "\n"; break;
+			case 10: GenerateFunc(s->funcNode); break; // Line numbers done
+			case 11: GenerateProc(s->procNode); break; // Line numbers done
+			case 12: GenerateStruct(s->structNode); m_Code += "  # Source line " + std::to_string(s->lineNumber+1) + "\n"; break;
+			case 13: GenerateReturn(s->returnNode); m_Code += "  # Source line " + std::to_string(s->lineNumber+1) + "\n"; break;
+			case 14: GenerateImport(s->importNode); m_Code += "  # Source line " + std::to_string(s->lineNumber+1) + "\n"; break;
+			case 15: m_ScopeImportConfigs.at(m_ScopeImportConfigs.size() - 1)->allowImport = false;
+			case 16: m_ScopeImportConfigs.at(m_ScopeImportConfigs.size() - 1)->allowInstall = false;
+			case 17: m_ScopeImportConfigs.at(m_ScopeImportConfigs.size() - 1)->allowBare = false;
 			}
 			m_Code += "\n";
+			m_InterpreterCall = false;
 		}
 	}
 
@@ -95,7 +101,7 @@ namespace Spliwaca
 			}
 
 			GenerateList(node->conditions.at(i));
-			m_Code += ":\n";
+			m_Code += ":   # Source line " + std::to_string(node->lineNumbers[i] + 1) + "\n";
 
 			m_Tabs += "    ";
 
@@ -106,7 +112,7 @@ namespace Spliwaca
 
 		if (node->elsePresent)
 		{
-			m_Code += m_Tabs + "else:\n";
+			m_Code += m_Tabs + "else: # Source line " + std::to_string(node->lineNumbers[node->lineNumbers.size() - 1] + 1) + "\n";
 
 			m_Tabs += "    ";
 
@@ -120,7 +126,7 @@ namespace Spliwaca
 	{
 		if (node->id->accessPresent) {
 			bool interpreter_var = false;
-			std::string getattrTree = node->id->GenerateGetattrTree(interpreter_var, true);
+			std::string getattrTree = node->id->GenerateGetattrTree(getCurrentImportConfig(), interpreter_var, true);
 			if (!interpreter_var) {
 				m_Code += m_Tabs + "setattr(" + getattrTree + ", \"" + node->id->GetFinalId() + "\", "; GenerateList(node->list); m_Code += ")";
 			}
@@ -137,7 +143,7 @@ namespace Spliwaca
 	{
 		if (node->id->accessPresent) {
 			bool interpreter_var = false;
-			std::string getattrTree = node->id->GenerateGetattrTree(interpreter_var, true);
+			std::string getattrTree = node->id->GenerateGetattrTree(getCurrentImportConfig(), interpreter_var, true);
 			if (!interpreter_var) {
 				m_Code += m_Tabs + "setattr(" + getattrTree + ", \"" + node->id->GetFinalId() + "\", libsplw.handle_input('";
 			}
@@ -166,12 +172,12 @@ namespace Spliwaca
 	{
 		if (node->id->accessPresent) {
 			bool interpreter_var = false;
-			std::string getAttrTree = node->id->GenerateGetattrTree(interpreter_var, true);
+			std::string getAttrTree = node->id->GenerateGetattrTree(getCurrentImportConfig(), interpreter_var, true);
 			if (interpreter_var) {
 				m_Code += m_Tabs + getAttrTree + " += 1";
 			}
 			else {
-				m_Code += m_Tabs + "setattr(" + getAttrTree + ", \"" + node->id->GetFinalId() + "\", " + node->id->GenerateGetattrTree() + " + 1)";
+				m_Code += m_Tabs + "setattr(" + getAttrTree + ", \"" + node->id->GetFinalId() + "\", " + node->id->GenerateGetattrTree(getCurrentImportConfig()) + " + 1)";
 			}
 		} else {
 			m_Code += m_Tabs + "scope_vars[\"" + node->id->GetContents() + "\"] += 1";
@@ -182,11 +188,11 @@ namespace Spliwaca
 	{
 		if (node->id->accessPresent) {
 			bool interpreter_var = false;
-			std::string getAttrTree = node->id->GenerateGetattrTree(interpreter_var, true);
+			std::string getAttrTree = node->id->GenerateGetattrTree(getCurrentImportConfig(), interpreter_var, true);
 			if (interpreter_var) {
 				m_Code += m_Tabs + getAttrTree + " -= 1";
 			} else {
-				m_Code += m_Tabs + "setattr(" + getAttrTree + ", \"" + node->id->GetFinalId() + "\", " + node->id->GenerateGetattrTree() + " - 1)";
+				m_Code += m_Tabs + "setattr(" + getAttrTree + ", \"" + node->id->GetFinalId() + "\", " + node->id->GenerateGetattrTree(getCurrentImportConfig()) + " - 1)";
 			}
 		} else {
 			m_Code += m_Tabs + "scope_vars[\"" + node->id->GetContents() + "\"] -= 1";
@@ -197,19 +203,22 @@ namespace Spliwaca
 	{
 		if (node->id->accessPresent) {
 			bool interpreter_var = false;
-			std::string getAttrTree = node->id->GenerateGetattrTree(interpreter_var, true);
+			std::string getAttrTree = node->id->GenerateGetattrTree(getCurrentImportConfig(), interpreter_var, true);
 			if (interpreter_var) {
-				m_Code += m_Tabs + "for " + getAttrTree + " in "; GenerateList(node->iterableExpr); m_Code += ":\n";
+				m_Code += m_Tabs + "for " + getAttrTree + " in "; GenerateList(node->iterableExpr); m_Code += ": # Source line " + std::to_string(node->lineNumber + 1) + "\n";
 			} else {
 				std::string for_var = "__for_var_line_" + std::to_string(node->id->GetLineNumber()) + "_char_" + std::to_string(node->id->GetColumnNumber());
-				m_Code += m_Tabs + "for " + for_var + " in "; GenerateList(node->iterableExpr); m_Code += ":\n";
+				m_Code += m_Tabs + "for " + for_var + " in "; GenerateList(node->iterableExpr); m_Code += ": # Source line " + std::to_string(node->lineNumber + 1) + "\n";
 				m_Code += m_Tabs + "    setattr(" + getAttrTree + ", " + node->id->GetFinalId() + ", " + for_var + ")";
 			}
 		}
 		else {
 			std::string for_var = "__for_var_line_" + std::to_string(node->id->GetLineNumber()) + "_char_" + std::to_string(node->id->GetColumnNumber());
-			m_Code += m_Tabs + "for " + for_var + " in "; GenerateList(node->iterableExpr); m_Code += ":\n";
+			m_Code += m_Tabs + "for " + for_var + " in "; GenerateList(node->iterableExpr); m_Code += ": # Source line " + std::to_string(node->lineNumber + 1) + "\n";
 			m_Code += m_Tabs + "    scope_vars[\"" + node->id->GetContents() + "\"] = " + for_var;
+=======
+			m_Code += m_Tabs + "    scope_vars[\"" + node->id->GetContents() + "\"] = " + for_var + "\n";
+>>>>>>> Stashed changes
 		}
 		m_Tabs += "    ";
 
@@ -220,7 +229,7 @@ namespace Spliwaca
 
 	void Generator::GenerateWhile(std::shared_ptr<WhileNode> node)
 	{
-		m_Code += m_Tabs + "while "; GenerateBinOp(node->condition); m_Code += ":\n";
+		m_Code += m_Tabs + "while "; GenerateBinOp(node->condition); m_Code += ": # Source line " + std::to_string(node->lineNumber + 1) + "\n";
 		m_Tabs += "    ";
 
 		GenerateStatements(node->body);
@@ -240,14 +249,23 @@ namespace Spliwaca
 	{
 		if (statement)
 			m_Code += m_Tabs;
-		GenerateExpr(node->function); m_Code += "(scope_vars";
+		GenerateExpr(node->function); 
+		if (!m_InterpreterCall) {
+			m_Code += "(scope_vars";
 
-		if (node->args.size() != 0)
-		{
-			for (uint32_t i = 0; i < node->args.size(); i++)
-			{
+			if (node->args.size() != 0) {
+				for (uint32_t i = 0; i < node->args.size(); i++) {
+					m_Code += ", "; GenerateExpr(node->args.at(i));
+				}
+			}
+		}
+		else if (node->args.size() != 0){
+			m_Code += "("; GenerateExpr(node->args.at(0));
+
+			for (uint32_t i = 1; i < node->args.size(); i++) {
 				m_Code += ", "; GenerateExpr(node->args.at(i));
 			}
+		
 		}
 		m_Code += ")";
 	}
@@ -268,9 +286,13 @@ namespace Spliwaca
 
 		m_Code += ") -> ";
 		GenerateType(node->returnType);
-		m_Code += ":\n";
+		m_Code += ": # Source line " + std::to_string(node->lineNumber + 1) + "\n";
 
 		m_Tabs += "    ";
+		ImportConfig *oldConfig = getCurrentImportConfig();
+		ImportConfig *newConfig = new ImportConfig(true, true, true, true);
+		m_ScopeImportConfigs.push_back(newConfig);
+		SPLW_INFO("Current allow bare state: {0}", getCurrentImportConfig()->allowBare);
 
 		m_Code += m_Tabs + "scope_vars = prev_scope_vars.copy()\n";
 		for (uint32_t i = 0; i < node->argNames.size(); i++) {
@@ -293,6 +315,7 @@ namespace Spliwaca
 		else {
 			m_Code += m_Tabs + "scope_vars['" + node->id->GetContents() + "'] = " + func_name + "\n";
 		}
+		m_ScopeImportConfigs.pop_back();
 	}
 
 	void Generator::GenerateProc(std::shared_ptr<ProcNode> node)
@@ -309,9 +332,10 @@ namespace Spliwaca
 			//node->argNames.at(i)->GetContents()
 		}
 
-		m_Code += ") -> None:\n";
+		m_Code += ") -> None: # Source line " + std::to_string(node->lineNumber + 1) + "\n";
 
 		m_Tabs += "    ";
+		m_ScopeImportConfigs.push_back(getCurrentImportConfig());
 
 		m_Code += m_Tabs + "scope_vars = prev_scope_vars.copy()\n";
 		for (uint32_t i = 0; i < node->argNames.size(); i++) {
@@ -334,6 +358,7 @@ namespace Spliwaca
 		else {
 			m_Code += m_Tabs + "scope_vars['" + node->id->GetContents() + "'] = " + func_name + "\n";
 		}
+		m_ScopeImportConfigs.pop_back();
 	}
 
 	void Generator::GenerateStruct(std::shared_ptr<StructNode> node)
@@ -583,7 +608,7 @@ namespace Spliwaca
 			break;
 		}
 		case 2: GenerateList(node->list, true); break;
-		case 3: m_Code += node->ident->GenerateGetattrTree(); break;
+		case 3: m_Code += node->ident->GenerateGetattrTree(getCurrentImportConfig(), m_InterpreterCall, false); break;
 		}
 
 		if (node->listAccessPresent)
@@ -599,11 +624,13 @@ namespace Spliwaca
 
 	void Generator::GenerateCreate(std::shared_ptr<CreateNode> node)
 	{
-		GenerateType(node->createType); m_Code += "("; GenerateExpr(node->args.at(0));
-
-		for (uint32_t i = 1; i < node->args.size(); i++)
-		{
-			m_Code += ", "; GenerateExpr(node->args.at(i));
+		GenerateType(node->createType); m_Code += "("; 
+		
+		if (node->args.size() > 0) {
+			GenerateExpr(node->args.at(0));
+			for (uint32_t i = 1; i < node->args.size(); i++) {
+				m_Code += ", "; GenerateExpr(node->args.at(i));
+			}
 		}
 
 		m_Code += ")";
@@ -642,6 +669,7 @@ namespace Spliwaca
 		m_Code += ":\n";
 
 		m_Tabs += "    ";
+		m_ScopeImportConfigs.push_back(getCurrentImportConfig());
 
 		m_Code += m_Tabs + "scope_vars = prev_scope_vars.copy()\n";
 		for (uint32_t i = 0; i < node->argNames.size(); i++) {
@@ -659,6 +687,7 @@ namespace Spliwaca
 		m_Tabs = m_Tabs.substr(0, m_Tabs.size() - 4);
 		
 		m_Code += code + anonf_name;
+		m_ScopeImportConfigs.pop_back();
 	}
 
 	void Generator::GenerateAnonp(std::shared_ptr<AnonpNode> node)
@@ -687,6 +716,7 @@ namespace Spliwaca
 		m_Code += ") -> None:\n";
 
 		m_Tabs += "    ";
+		m_ScopeImportConfigs.push_back(getCurrentImportConfig());
 
 		m_Code += m_Tabs + "scope_vars = prev_scope_vars.copy()\n";
 		for (uint32_t i = 0; i < node->argNames.size(); i++) {
@@ -704,17 +734,13 @@ namespace Spliwaca
 		m_Tabs = m_Tabs.substr(0, m_Tabs.size() - 4);
 		
 		m_Code += code + anonp_name;
+		m_ScopeImportConfigs.pop_back();
 	}
 
 	void Generator::GenerateType(std::shared_ptr<TypeNode> node)
 	{
 		if (node->type == 1) {
-			if (node->ident->accessPresent) {
-				m_Code += node->ident->GenerateGetattrTree();
-			}
-			else {
-				m_Code += node->ident->GetContents();
-			}
+			m_Code += node->ident->GenerateGetattrTree(getCurrentImportConfig());
 		}
 		else {
 			//m_Code += "__builtins__.";
@@ -796,7 +822,7 @@ namespace Spliwaca
 				if (c == ' ') {
 					if (validIdentifier(ident)) {
 						identNode->ids.push_back(std::make_shared<Token>(TokenType::Identifier, ident.c_str(), token->GetLineNumber(), token->GetCharacterNumber()));
-						code += identNode->GenerateGetattrTree();
+						code += identNode->GenerateGetattrTree(getCurrentImportConfig());
 					}
 					else {
 						SPLW_ERROR("Invalid identifier in RAW token, line {0}, char {1}", token->GetLineNumber(), token->GetCharacterNumber());
@@ -830,7 +856,7 @@ namespace Spliwaca
 		if (inIdent) {
 			if (validIdentifier(ident)) {
 				identNode->ids.push_back(std::make_shared<Token>(TokenType::Identifier, ident.c_str(), token->GetLineNumber(), token->GetCharacterNumber()));
-				code += identNode->GenerateGetattrTree();
+				code += identNode->GenerateGetattrTree(getCurrentImportConfig());
 			} else {
 				SPLW_ERROR("Invalid identifier in RAW token, line {0}, char {1}", token->GetLineNumber(), token->GetCharacterNumber());
 				m_AbortPrint = true;

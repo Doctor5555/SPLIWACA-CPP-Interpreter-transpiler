@@ -85,7 +85,7 @@ files = []
 # r=root, d=directories, f = files
 for r, d, f in os.walk(path):
     for dir in d:
-        if "vendor" in dir:
+        if "vendor" in dir or "Notes" in dir:
             d.remove(dir)
     for file in f:
         if file[-2:] == ".h":

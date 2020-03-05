@@ -234,7 +234,10 @@ namespace Spliwaca
 			{":",                   TokenType::DictEquator},
 			{"\n",                  TokenType::Newline},
 			{",",                   TokenType::Comma},
-			{".",                   TokenType::VarAccessOp}
+			{".",                   TokenType::VarAccessOp},
+			{"NOIMPORT",            TokenType::NoImport},
+			{"NOINSTALL",           TokenType::NoInstall},
+			{"NOBARE",              TokenType::NoBare}
 			/*{"\f",                  TokenType::Whitespace},
 			//{"\u200b",              TokenType::Whitespace},
 			{"\t",                  TokenType::Whitespace},

@@ -1,0 +1,84 @@
+IMPORT os
+IMPORT re
+
+STRUCT File AS
+    int lines,
+    int includes,
+    int comments,
+    int whitespace,
+    int actualLines,
+    string l_lines,
+    string l_includes,
+    string l_comments,
+    string l_whitespace,
+    string filename
+END STRUCT
+
+FUNCTION makeFile TAKES int lines, int includes, int comments, int whitespace, string l_lines, string l_includes, string l_comments, string l_whitespace, string filename RETURNS File AS
+    RETURN CREATE File WITH CAST str lines, CAST str includes, CAST str comments, CAST str whitespace, CAST str (lines - whitespace - comments), l_lines, l_includes, l_comments, l_whitespace, filename
+END FUNCTION
+
+FUNCTION calculateMetrics TAKES string lines, string filename AS
+    SET includes TO CREATE list
+    SET comments TO CREATE list
+    SET whitespace TO CREATE list
+    SET multi_line_comment TO false
+
+    FOR line OF lines DO
+        SET line_no_tabs TO CALL _INTERPRETER.re.sub WITH "[\t]", "", line)
+        IF (CALL line_no_tabs.startswith WITH "//") && !multi_line_comment DO
+            CALL comments.append WITH line
+        END IF
+        IF "/*" MEMBER OF line_no_tabs && !multi_line_comment DO
+            SET multi_line_comment TO true
+            IF (CALL line_no_tabs.startswith WITH "/*") && !("*/" MEMBER OF line_no_tabs) DO
+                CALL comments.append WITH line
+            END IF
+        END IF
+        IF "*/" MEMBER OF line_no_tabs && multi_line_comment DO
+            SET multi_line_comment TO false
+            IF (CALL line_no_tabs.endswith WITH "*/") && ((CALL line_no_tabs.startswith "/*") || NOT ("/*" MEMBER OF line_no_tabs)) DO
+                CALL comments.append WITH line
+            END IF
+        ELSE IF multi_line_comment DO
+            CALL comments.append WITH line
+        END IF
+
+        IF NOT (line MEMBER OF comments) DO
+            IF (CALL line.startswith WITH "#include") DO
+                CALL includes.append WITH line
+            ELSE IF NOT (CALL _INTERPRETER.re.search WITH "[a-zA-Z]", line) OR line = "#pragma once" DO
+                CALL whitespace.append WITH line
+            END IF
+        END IF
+    END FOR
+
+    SET file TO CALL makeFile WITH lines.length, includes.length, comments.length, whitespace.length, lines, includes, comments, whitespace, filename
+
+    RETURN file
+END FUNCTION
+
+FUNCTION Str TAKES INT int, INT len AS
+    SET Str TO CREATE String WITH int
+    FOR _ OF 0 TO Len - len(Str) DO
+        SET Str TO " " + Str
+    END IF
+    RETURN Str
+END FUNCTION
+
+SET path TO "c:\\dev\\SPLIWACA-CPP-interpreter-transpiler"
+
+SET files TO CREATE list
+
+FOR res OF (CALL _INTERPRETER.os.walk WITH path) DO
+    SET r TO res[0]
+    SET d TO res[1]
+    SET f TO res[2]
+    FOR dir OF d DO
+        IF "vendor" MEMBER OF dir OR "Notes" MEMBER OF dir DO
+            CALL d.remove WITH dir
+        END IF
+    END FOR
+
+    FOR file OF f DO
+        IF file[-2:]
