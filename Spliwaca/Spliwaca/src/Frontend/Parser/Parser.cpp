@@ -311,7 +311,7 @@ namespace Spliwaca
 
 		IncIndex();
 		auto type = m_Tokens->at(m_TokenIndex)->GetType();
-		if (type == TokenType::PositiveTypeMod && type == TokenType::NegativeTypeMod && type == TokenType::NonZeroTypeMod && type == TokenType::Type)
+		if (type == TokenType::PositiveTypeMod || type == TokenType::NegativeTypeMod || type == TokenType::NonZeroTypeMod)
 		{
 			node->signSpec = m_Tokens->at(m_TokenIndex);
 			IncIndex();
