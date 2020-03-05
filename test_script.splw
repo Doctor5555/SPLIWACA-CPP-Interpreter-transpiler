@@ -1,9 +1,15 @@
-﻿FUNCTION fahrenheit_to_celsius <- FLOAT fahrenheit -> FLOAT AS
+﻿REQUIRE transpiler_py
+NOINSTALL
+
+FUNCTION fahrenheit_to_celsius <- FLOAT fahrenheit -> FLOAT AS
+    NOIMPORT
     RETURN (fahrenheit - 32) * 5 / 9
 END FUNCTION
+
 FUNCTION celsius_to_fahrenheit <- FLOAT celsius -> FLOAT AS
     RETURN (celsius * 9 / 5) + 32
 END FUNCTION
+
 FUNCTION tempConvert <- FLOAT temperature, STRING CorF -> FLOAT AS
     IF CorF = 'C' DO
         RETURN CALL celsius_to_fahrenheit WITH temperature

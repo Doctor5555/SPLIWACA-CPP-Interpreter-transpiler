@@ -26,8 +26,6 @@ namespace Spliwaca
 
 		std::vector<ImportConfig*> m_ScopeImportConfigs;
 
-		std::vector<ImportConfig*> m_ScopeImportConfigs;
-
 	private:
 		ImportConfig *getCurrentImportConfig() const { return m_ScopeImportConfigs.at(m_ScopeImportConfigs.size() - 1); };
 		void GenerateStatements(std::shared_ptr<Statements> s);

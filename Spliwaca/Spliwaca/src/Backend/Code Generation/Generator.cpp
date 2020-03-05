@@ -78,9 +78,9 @@ namespace Spliwaca
 			case 12: GenerateStruct(s->structNode); m_Code += "  # Source line " + std::to_string(s->lineNumber+1) + "\n"; break;
 			case 13: GenerateReturn(s->returnNode); m_Code += "  # Source line " + std::to_string(s->lineNumber+1) + "\n"; break;
 			case 14: GenerateImport(s->importNode); m_Code += "  # Source line " + std::to_string(s->lineNumber+1) + "\n"; break;
-			case 15: m_ScopeImportConfigs.at(m_ScopeImportConfigs.size() - 1)->allowImport = false;
-			case 16: m_ScopeImportConfigs.at(m_ScopeImportConfigs.size() - 1)->allowInstall = false;
-			case 17: m_ScopeImportConfigs.at(m_ScopeImportConfigs.size() - 1)->allowBare = false;
+			case 15: importConfig->allowImport = false; break;
+			case 16: importConfig->allowInstall = false; break;
+			case 17: importConfig->allowBare = false; break;
 			}
 			m_Code += "\n";
 			m_InterpreterCall = false;
@@ -215,10 +215,7 @@ namespace Spliwaca
 		else {
 			std::string for_var = "__for_var_line_" + std::to_string(node->id->GetLineNumber()) + "_char_" + std::to_string(node->id->GetColumnNumber());
 			m_Code += m_Tabs + "for " + for_var + " in "; GenerateList(node->iterableExpr); m_Code += ": # Source line " + std::to_string(node->lineNumber + 1) + "\n";
-			m_Code += m_Tabs + "    scope_vars[\"" + node->id->GetContents() + "\"] = " + for_var;
-=======
 			m_Code += m_Tabs + "    scope_vars[\"" + node->id->GetContents() + "\"] = " + for_var + "\n";
->>>>>>> Stashed changes
 		}
 		m_Tabs += "    ";
 

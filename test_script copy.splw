@@ -1,20 +1,34 @@
-﻿REQUIRE python
+﻿REQUIRE transpiler_py
+NOINSTALL
 
-OUTPUT "Enter a base 10 number: "
-INPUT float base10
-SET integer_part TO CALL _INTERPRETER.math.floor WITH base10
-SET float_part TO base10 - integer_part
-SET integer_part TO (CALL _INTERPRETER.bin WITH integer_part)
-SET integer_part TO CALL integer_part.substr WITH 2, 0
-SET after_point TO ""
-FOR i OF (CALL _INTERPRETER.range WITH 8) DO
-	SET float_part TO float_part * 2
-	IF float_part > 1 DO
-		SET float_part TO float_part - 1
-		SET after_point TO after_point + "1"
-	ELSE DO
-		SET after_point TO after_point + "0"
-	END IF
-END FOR
+FUNCTION fahrenheit_to_celsius <- FLOAT fahrenheit -> FLOAT AS
+    NOIMPORT
+    RETURN (fahrenheit - 32) * 5 / 9
+END FUNCTION
 
-OUTPUT $integer_part . $after_point
+FUNCTION celsius_to_fahrenheit <- FLOAT celsius -> FLOAT AS
+    RETURN (celsius * 9 / 5) + 32
+END FUNCTION
+
+FUNCTION tempConvert <- FLOAT temperature, STRING CorF -> FLOAT AS
+    IF CorF = 'C' DO
+        RETURN CALL celsius_to_fahrenheit WITH temperature
+    ELSE DO
+        RETURN CALL fahrenheit_to_celsius WITH temperature
+    END IF
+END FUNCTION
+
+PROCEDURE main AS
+    INPUT FLOAT temp
+    INPUT STRING c_or_f
+    IF c_or_f_in = 'C' DO
+        SET c_or_f TO C
+    ELSE IF c_or_f_in = 'F' DO
+        SET c_or_f TO F
+    ELSE DO
+        OUTPUT $c_or_f_in is not 'C' or 'F'
+        QUIT 1
+    END IF
+    SET temp TO CALL tempConvert WITH user_temp, c_or_f
+    OUTPUT $temp ⁰ $c_or_f
+END PROCEDURE
