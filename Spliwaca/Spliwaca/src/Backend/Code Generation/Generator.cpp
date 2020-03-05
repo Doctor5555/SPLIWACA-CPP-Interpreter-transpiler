@@ -264,13 +264,16 @@ namespace Spliwaca
 			}
 		
 		}
+		else {
+			m_Code += "(";
+		}
 		m_Code += ")";
 	}
 
 	void Generator::GenerateFunc(std::shared_ptr<FuncNode> node)
 	{
 		std::string func_name = "__func_name_line_" + std::to_string(node->id->GetLineNumber()) + "_char_" + std::to_string(node->id->GetColumnNumber());
-		m_Code += m_Tabs + "@libsplw.type_check\ndef " + func_name + "(prev_scope_vars: dict";
+		m_Code += m_Tabs + "@libsplw.type_check()\ndef " + func_name + "(prev_scope_vars: dict";
 
 		assert(node->argNames.size() == node->argTypes.size());
 
@@ -318,7 +321,7 @@ namespace Spliwaca
 	void Generator::GenerateProc(std::shared_ptr<ProcNode> node)
 	{
 		std::string func_name = "__func_name_line_" + std::to_string(node->id->GetLineNumber()) + "_char_" + std::to_string(node->id->GetColumnNumber());
-		m_Code += m_Tabs + "@libsplw.type_check\ndef " + func_name + "(prev_scope_vars: dict";
+		m_Code += m_Tabs + "@libsplw.type_check()\ndef " + func_name + "(prev_scope_vars: dict";
 
 		assert(node->argNames.size() == node->argTypes.size());
 
@@ -651,7 +654,7 @@ namespace Spliwaca
 		}
 
 		std::string anonf_name = "__anonf_line_" + std::to_string(node->argNames.at(0)->GetLineNumber()) + "_" + std::to_string(node->argNames[0]->GetColumnNumber());
-		m_Code += m_Tabs + "@libsplw.type_check\ndef " + anonf_name + "(prev_scope_vars: dict";
+		m_Code += m_Tabs + "@libsplw.type_check()\ndef " + anonf_name + "(prev_scope_vars: dict";
 
 		assert(node->argNames.size() == node->argTypes.size());
 
@@ -702,7 +705,7 @@ namespace Spliwaca
 		}
 
 		std::string anonp_name = "__anonp_line_" + std::to_string(node->argNames.at(0)->GetLineNumber()) + "_" + std::to_string(node->argNames[0]->GetColumnNumber());
-		m_Code += m_Tabs + "@libsplw.type_check\ndef " + anonp_name + "(prev_scope_vars: dict";
+		m_Code += m_Tabs + "@libsplw.type_check()\ndef " + anonp_name + "(prev_scope_vars: dict";
 
 		assert(node->argNames.size() == node->argTypes.size());
 
