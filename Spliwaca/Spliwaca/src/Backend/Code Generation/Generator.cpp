@@ -60,7 +60,7 @@ namespace Spliwaca
 		for (std::shared_ptr<Statement> s : statements->statements)
 		{
 			ImportConfig *importConfig = getCurrentImportConfig();
-			SPLW_INFO("{0}, {1}, {2}, {3}", importConfig->allowImport, importConfig->allowPyImport, importConfig->allowPyImport, importConfig->allowBare);
+			//SPLW_INFO("{0}, {1}, {2}, {3}", importConfig->allowImport, importConfig->allowPyImport, importConfig->allowPyImport, importConfig->allowBare);
 			switch (s->statementType)
 			{
 			case 0:  GenerateIf(s->ifNode); break; //Line numbers done
@@ -289,7 +289,7 @@ namespace Spliwaca
 		ImportConfig *oldConfig = getCurrentImportConfig();
 		ImportConfig *newConfig = new ImportConfig(true, true, true, true);
 		m_ScopeImportConfigs.push_back(newConfig);
-		SPLW_INFO("Current allow bare state: {0}", getCurrentImportConfig()->allowBare);
+		//SPLW_INFO("Current allow bare state: {0}", getCurrentImportConfig()->allowBare);
 
 		m_Code += m_Tabs + "scope_vars = prev_scope_vars.copy()\n";
 		for (uint32_t i = 0; i < node->argNames.size(); i++) {
@@ -332,7 +332,9 @@ namespace Spliwaca
 		m_Code += ") -> None: # Source line " + std::to_string(node->lineNumber + 1) + "\n";
 
 		m_Tabs += "    ";
-		m_ScopeImportConfigs.push_back(getCurrentImportConfig());
+		ImportConfig *oldConfig = getCurrentImportConfig();
+		ImportConfig *newConfig = new ImportConfig(true, true, true, true);
+		m_ScopeImportConfigs.push_back(newConfig);
 
 		m_Code += m_Tabs + "scope_vars = prev_scope_vars.copy()\n";
 		for (uint32_t i = 0; i < node->argNames.size(); i++) {
@@ -666,7 +668,9 @@ namespace Spliwaca
 		m_Code += ":\n";
 
 		m_Tabs += "    ";
-		m_ScopeImportConfigs.push_back(getCurrentImportConfig());
+		ImportConfig *oldConfig = getCurrentImportConfig();
+		ImportConfig *newConfig = new ImportConfig(true, true, true, true);
+		m_ScopeImportConfigs.push_back(newConfig);
 
 		m_Code += m_Tabs + "scope_vars = prev_scope_vars.copy()\n";
 		for (uint32_t i = 0; i < node->argNames.size(); i++) {
@@ -713,7 +717,9 @@ namespace Spliwaca
 		m_Code += ") -> None:\n";
 
 		m_Tabs += "    ";
-		m_ScopeImportConfigs.push_back(getCurrentImportConfig());
+		ImportConfig *oldConfig = getCurrentImportConfig();
+		ImportConfig *newConfig = new ImportConfig(true, true, true, true);
+		m_ScopeImportConfigs.push_back(newConfig);
 
 		m_Code += m_Tabs + "scope_vars = prev_scope_vars.copy()\n";
 		for (uint32_t i = 0; i < node->argNames.size(); i++) {

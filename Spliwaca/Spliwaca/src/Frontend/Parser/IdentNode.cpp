@@ -44,7 +44,7 @@ namespace Spliwaca {
             interpreter_var = true;
             return GetContents();
         }
-        SPLW_INFO("{0}, {1}, {2}, {3}", importConfig->allowImport, importConfig->allowPyImport, importConfig->allowPyImport, importConfig->allowBare);
+        //SPLW_INFO("{0}, {1}, {2}, {3}", importConfig->allowImport, importConfig->allowPyImport, importConfig->allowPyImport, importConfig->allowBare);
         std::string rv = "libsplw.get_safe(scope_vars, '" + ids.at(0)->GetContents() + "', " + boolToString(importConfig->allowImport) + ", " + boolToString(importConfig->allowPyImport) + ", " + boolToString(importConfig->allowInstall) + ", " + boolToString(importConfig->allowBare) + ")";
 
         if (accessPresent) {
