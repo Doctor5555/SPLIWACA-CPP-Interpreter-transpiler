@@ -1,14 +1,23 @@
 
 
 SET continue TO true
-SET dice TO 7
-SET attempts TO 0
-WHILE continue == true DO 
-WHILE dice != 6 DO 
-SET dice TO (CALL random WITH 1, 6) 
-OUTPUT $dice
-		 INC attempts END WHILE 
+WHILE continue == true DO
+	SET dice TO 7
+	SET attempts TO 0 
+	WHILE dice != 6 DO 
+		SET dice TO (CALL random WITH 1, 6) 
+		OUTPUT $dice
+		INC attempts 
+	END WHILE 
 	OUTPUT that took $attempts attempts
-OUTPUT do you want to rerun 	
-INPUT BOOL continue
+	OUTPUT do you want to rerun 	
+	INPUT BOOL continue
 END WHILE
+
+IF True DO
+	OUTPUT IF line test
+ELSE IF False DO
+	OUTPUT This should not OUTPUT
+END IF
+
+SET _INTERPRETER TO a

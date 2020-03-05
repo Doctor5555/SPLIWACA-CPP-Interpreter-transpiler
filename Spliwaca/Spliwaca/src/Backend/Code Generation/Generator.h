@@ -3,6 +3,14 @@
 
 namespace Spliwaca
 {
+	struct ImportConfig {
+		ImportConfig(bool allowImport, bool allowInstall, bool allowBare)
+			: allowImport(allowImport), allowInstall(allowInstall), allowBare(allowBare) {}
+		bool allowImport;
+		bool allowInstall;
+		bool allowBare;
+	};
+
 	class Generator
 	{
 	public:
@@ -21,10 +29,12 @@ namespace Spliwaca
 		std::string m_Code;
 		std::string m_CurrentFuncNameLine;
 
-		bool m_AllowPyAndPipImports = false;
 		bool m_AbortPrint = false;
 
+		std::vector<ImportConfig> m_ScopeImportConfigs;
+
 	private:
+		inline ImportConfig getCurrentImportConfig() const { return m_ScopeImportConfigs[m_ScopeImportConfigs.size() - 1]; };
 		void GenerateStatements(std::shared_ptr<Statements> s);
 		
 		void GenerateIf(std::shared_ptr<IfNode> node);

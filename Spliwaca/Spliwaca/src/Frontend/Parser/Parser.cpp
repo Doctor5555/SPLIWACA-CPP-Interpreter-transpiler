@@ -150,6 +150,7 @@ namespace Spliwaca
 	std::shared_ptr<Statement> Parser::ConstructStatement()
 	{
 		std::shared_ptr<Statement> s = std::make_shared<Statement>();
+		s->lineNumber = m_Tokens->at(m_TokenIndex)->GetLineNumber();
 		switch (m_Tokens->at(m_TokenIndex)->GetType())
 		{
 		case TokenType::If: s->ifNode = ConstructIf(); s->statementType = 0; break;
@@ -177,6 +178,7 @@ namespace Spliwaca
 	std::shared_ptr<IfNode> Parser::ConstructIf()
 	{
 		std::shared_ptr<IfNode> node = std::make_shared<IfNode>();
+		node->lineNumbers.push_back(m_Tokens->at(m_TokenIndex)->GetLineNumber());
 		IncIndex();
 
 		node->conditions.push_back(ConstructList());
@@ -199,6 +201,7 @@ namespace Spliwaca
 
 		while (m_Tokens->at(m_TokenIndex)->GetType() == TokenType::Else)
 		{
+			node->lineNumbers.push_back(m_Tokens->at(m_TokenIndex)->GetLineNumber());
 			if (node->elsePresent)
 			{
 				//We cannot have more than one else
@@ -366,6 +369,7 @@ namespace Spliwaca
 	std::shared_ptr<ForNode> Parser::ConstructFor()
 	{
 		std::shared_ptr<ForNode> node = std::make_shared<ForNode>();
+		node->lineNumber = m_Tokens->at(m_TokenIndex)->GetLineNumber();
 		IncIndex();
 
 		//m_ScopeStack.push_back(m_CurrentScope->AddSubScope("FOR_line_" + std::to_string(m_Tokens->at(m_TokenIndex)->GetLineNumber()), m_Tokens->at(m_TokenIndex)->GetLineNumber(), ScopeType::For));
@@ -412,6 +416,7 @@ namespace Spliwaca
 	std::shared_ptr<WhileNode> Parser::ConstructWhile()
 	{
 		std::shared_ptr<WhileNode> node = std::make_shared<WhileNode>();
+		node->lineNumber = m_Tokens->at(m_TokenIndex)->GetLineNumber();
 		IncIndex();
 
 		//m_ScopeStack.push_back(m_CurrentScope->AddSubScope("WHILE_line_" + std::to_string(m_Tokens->at(m_TokenIndex)->GetLineNumber()), m_Tokens->at(m_TokenIndex)->GetLineNumber(), ScopeType::While));
@@ -496,6 +501,7 @@ namespace Spliwaca
 	std::shared_ptr<FuncNode> Parser::ConstructFunction()
 	{
 		std::shared_ptr<FuncNode> node = std::make_shared<FuncNode>();
+		node->lineNumber = m_Tokens->at(m_TokenIndex)->GetLineNumber();
 		IncIndex();
 
 		node->id = ConstructIdentNode();
@@ -563,6 +569,7 @@ namespace Spliwaca
 	std::shared_ptr<ProcNode> Parser::ConstructProcedure()
 	{
 		std::shared_ptr<ProcNode> node = std::make_shared<ProcNode>();
+		node->lineNumber = m_Tokens->at(m_TokenIndex)->GetLineNumber();
 		IncIndex();
 
 		node->id = ConstructIdentNode();
@@ -625,6 +632,7 @@ namespace Spliwaca
 	std::shared_ptr<StructNode> Parser::ConstructStruct()
 	{
 		std::shared_ptr<StructNode> node = std::make_shared<StructNode>();
+		node->lineNumber = m_Tokens->at(m_TokenIndex)->GetLineNumber();
 		IncIndex();
 
 		node->id = ConstructIdentNode();
