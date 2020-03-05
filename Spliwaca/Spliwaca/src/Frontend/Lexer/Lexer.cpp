@@ -42,6 +42,7 @@ namespace Spliwaca
     Lexer::Lexer(std::string fileLocation)
         : m_Tokens(new std::vector<std::shared_ptr<Token>>()), m_FileLocation(fileLocation)
     {
+        SPLW_INFO("Beginning file open");
         std::ifstream file;
         file.open(m_FileLocation);
         //char* fileContents;
@@ -64,6 +65,7 @@ namespace Spliwaca
         }
 
         file.close();
+        SPLW_INFO("Closed file");
 
         //std::shared_ptr<Token> token;
         //token.reset(new Token(TokenType::UnfinishedToken, fileContents.c_str(), 0, 0));
@@ -292,6 +294,7 @@ namespace Spliwaca
         int i = 0;
         while (true)
         {
+            //SPLW_INFO("Starting char {0}", s[i]);
             if ((s[i] & 0xffff) == 0xffef || (s[i] & 0xffff) == 0xffbb || (s[i] & 0xffff) == 0xffbf) {
                 i++;
                 continue;

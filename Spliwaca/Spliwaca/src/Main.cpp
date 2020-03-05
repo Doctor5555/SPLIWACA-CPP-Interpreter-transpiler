@@ -13,6 +13,8 @@
 
 using namespace Spliwaca;
 
+std::shared_ptr<TranspilerState> state = std::make_shared<TranspilerState>();
+
 //------------------------------------- UtilFunctions utility function definitions -------------------------------
 class MissingVariable
 {
@@ -27,8 +29,6 @@ public:
 	uint32_t GetColumnNumber() const { return columnNumber; }
 	uint32_t GetColumnSpan() const { return 1; }
 };
-
-std::shared_ptr<TranspilerState> state = std::make_shared<TranspilerState>();
 
 int RegisterLexicalError(uint8_t errorCode, uint32_t lineNumber, uint32_t columnNumber, uint16_t columnSpan)
 {
@@ -145,28 +145,41 @@ private:
 
 //------------------------------------- End UtilFunctions utility function definitions -------------------------------
 
-int main(int argc, char** argv)
-{
-	std::string ifile, ofile;
+struct transpilerOptions {
+	std::string ifile;
+	std::string ofile;
+	bool recursive_transpile;
+};
+
+transpilerOptions *parseCommandLineArgs(int argc, char **argv) {
+	transpilerOptions *options = new transpilerOptions();
 	if (argc < 2) {
 		std::cout << "Usage: transpiler FILE [-o OUTFILE]\n";
-		return -1;
+		exit(-1);
 	}
 	else if (argc > 2 && argc != 4) {
 		std::cout << "Usage: transpiler FILE [-o OUTFILE]\n";
-		return -1;
+		exit(-1);
 	}
 	else if (argc == 4 && strcmp(argv[2], "-o")) {
 		std::cout << "Usage: transpiler FILE [-o OUTFILE]\n";
-		return -1;
+		exit(-1);
 	}
 	else if (argc == 4) {
-		ofile = argv[3];
+		options->ofile = argv[3];
 	}
 	else {
-		ofile = "";
+		options->ofile = "";
 	}
-	ifile = argv[1];
+	options->ifile = argv[1];
+	return options;
+}
+
+int main(int argc, char** argv)
+{
+	transpilerOptions *options = parseCommandLineArgs(argc, argv);
+	std::string inFile = options->ifile, outFile = options->ofile;
+	
 	Timer totalTimer = Timer();
 
 	#ifdef SPLW_WINDOWS
@@ -177,47 +190,12 @@ int main(int argc, char** argv)
 	LOG_INIT();
 	bool printTokenList = false;
 
-	Transpiler transpiler = Transpiler(ifile, ofile, state, printTokenList);
+	Transpiler transpiler = Transpiler(inFile, outFile, state, printTokenList);
 	std::string output = transpiler.Run();
 
 	//std::cout << "\nLexer took: " << lexerTime << " seconds\nParser took: " << parseTime << " seconds\nGenerator took: " << generateTime << " seconds" << std::endl;
 	std::cout << "#Total time taken: " << totalTimer.elapsed() << std::endl;
 
-	/*
-	ROOT
-	┝BRANCH
-	│┝LEAF
-	│┝LEAF
-	┝BRANCH
-	 ┝LEAF
-	 ┝LEAF
-	
-	//std::cout << "ROOT\n┝BRANCH\n│┝LEAF\n│┝LEAF\n┝BRANCH\n ┝LEAF\n ┝LEAF" << "\n";
-	SPLW_INFO(u8R"(ROOT
-		       ┝BRANCH
-		       │┝LEAF
-		       │┕LEAF
-		       ┕BRANCH
-		        ┝LEAF
-		        ┕LEAF)");
-	//std::cout << test << std::endl;
-	*/
-
-	/*for (MissingVariable m : state->MissingVariables)
-	{
-		SPLW_CRITICAL("Missing variable at line {0}, column {1}", m.GetLineNumber(), m.GetColumnNumber());
-		SPLW_WARN("{0}", lexer->GetSplitFileString().at(m.GetLineNumber()));
-		SPLW_WARN("{0}{1}", mulString(" ", m.GetColumnNumber() - 1), mulString("^", m.GetColumnSpan()));
-		std::cout << "\n";
-	}
-
-	if (state->MissingVariables.size() > 0)
-	{
-		SPLW_ERROR("Missing variables present: cannot continue to next stage.");
-		system("PAUSE");
-		return -1;
-	}
-	*/
 	#ifdef SPLW_WINDOWS
 	system("PAUSE");
 	#else
