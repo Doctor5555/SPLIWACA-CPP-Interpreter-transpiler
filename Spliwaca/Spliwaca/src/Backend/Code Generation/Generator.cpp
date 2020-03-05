@@ -78,7 +78,7 @@ namespace Spliwaca
 			case 12: GenerateStruct(s->structNode); m_Code += "  # Source line " + std::to_string(s->lineNumber+1) + "\n"; break;
 			case 13: GenerateReturn(s->returnNode); m_Code += "  # Source line " + std::to_string(s->lineNumber+1) + "\n"; break;
 			case 14: GenerateImport(s->importNode); m_Code += "  # Source line " + std::to_string(s->lineNumber+1) + "\n"; break;
-			case 15: importConfig->allowImport = false; break;
+			case 15: importConfig->allowImport = false; importConfig->allowPyImport = false; break;
 			case 16: importConfig->allowInstall = false; break;
 			case 17: importConfig->allowBare = false; break;
 			}
@@ -287,7 +287,7 @@ namespace Spliwaca
 
 		m_Tabs += "    ";
 		ImportConfig *oldConfig = getCurrentImportConfig();
-		ImportConfig *newConfig = new ImportConfig(true, true, true, true);
+		ImportConfig *newConfig = new ImportConfig(oldConfig->allowImport, oldConfig->allowPyImport, oldConfig->allowInstall, oldConfig->allowBare);
 		m_ScopeImportConfigs.push_back(newConfig);
 		//SPLW_INFO("Current allow bare state: {0}", getCurrentImportConfig()->allowBare);
 
@@ -333,8 +333,7 @@ namespace Spliwaca
 
 		m_Tabs += "    ";
 		ImportConfig *oldConfig = getCurrentImportConfig();
-		ImportConfig *newConfig = new ImportConfig(true, true, true, true);
-		m_ScopeImportConfigs.push_back(newConfig);
+		ImportConfig *newConfig = new ImportConfig(oldConfig->allowImport, oldConfig->allowPyImport, oldConfig->allowInstall, oldConfig->allowBare);		m_ScopeImportConfigs.push_back(newConfig);
 
 		m_Code += m_Tabs + "scope_vars = prev_scope_vars.copy()\n";
 		for (uint32_t i = 0; i < node->argNames.size(); i++) {
@@ -669,7 +668,7 @@ namespace Spliwaca
 
 		m_Tabs += "    ";
 		ImportConfig *oldConfig = getCurrentImportConfig();
-		ImportConfig *newConfig = new ImportConfig(true, true, true, true);
+		ImportConfig *newConfig = new ImportConfig(oldConfig->allowImport, oldConfig->allowPyImport, oldConfig->allowInstall, oldConfig->allowBare);
 		m_ScopeImportConfigs.push_back(newConfig);
 
 		m_Code += m_Tabs + "scope_vars = prev_scope_vars.copy()\n";
@@ -718,7 +717,7 @@ namespace Spliwaca
 
 		m_Tabs += "    ";
 		ImportConfig *oldConfig = getCurrentImportConfig();
-		ImportConfig *newConfig = new ImportConfig(true, true, true, true);
+		ImportConfig *newConfig = new ImportConfig(oldConfig->allowImport, oldConfig->allowPyImport, oldConfig->allowInstall, oldConfig->allowBare);
 		m_ScopeImportConfigs.push_back(newConfig);
 
 		m_Code += m_Tabs + "scope_vars = prev_scope_vars.copy()\n";

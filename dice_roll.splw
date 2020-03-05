@@ -9,7 +9,7 @@ SET continue TO true
 WHILE continue == true DO
 	SET dice TO 7
 	SET attempts TO 0 
-	WHILE dice != 6 DO 
+	WHILE dice ≠ 6 DO 
 		SET dice TO (CALL random WITH 1, 6) 
 		OUTPUT $dice
 		INC attempts 
