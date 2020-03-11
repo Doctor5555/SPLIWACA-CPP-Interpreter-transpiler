@@ -7,7 +7,7 @@ FUNCTION fahrenheit_to_celsius <- FLOAT fahrenheit -> FLOAT AS
 END FUNCTION
 
 FUNCTION celsius_to_fahrenheit <- FLOAT celsius -> FLOAT AS
-    RETURN (celsius * 9 / 5) + 32
+    RETURN (celsius * 9 / 5) + 32.0
 END FUNCTION
 
 FUNCTION tempConvert <- FLOAT temperature, STRING CorF -> FLOAT AS

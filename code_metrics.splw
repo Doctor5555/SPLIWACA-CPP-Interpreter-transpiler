@@ -81,4 +81,15 @@ FOR res OF (CALL _INTERPRETER.os.walk WITH path) DO
     END FOR
 
     FOR file OF f DO
-        IF file[-2:]
+        IF (CALL file.endswith WITH ".h") OR (CALL file.endswith WITH ".cpp") DO
+            CALL files.append WITH CALL _INTERPRETER.os.path.join WITH r, file
+        END IF
+    END FOR
+END FOR
+
+SET data TO CREATE list
+
+SET longest_file_name_length TO 0
+FOR f OF files DO
+    SET open_file TO CALL _INTERPRETER.eval WITH "open(scope_vars['f'], encoding='utf-8')"
+    
