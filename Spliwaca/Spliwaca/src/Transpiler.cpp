@@ -57,8 +57,15 @@ namespace Spliwaca
 		SPLW_INFO("Created Parser.");
 		std::shared_ptr<Spliwaca::EntryPoint> ast = parser->ConstructAST();
 
+		uint32_t prevLineNumber = 0, prevColNumber = 0;
 		for (SyntaxError s : m_State->SyntaxErrors)
 		{
+			if (s.GetLineNumber() == prevLineNumber && s.GetColumnNumber() == prevColNumber)
+				continue;
+			else {
+				prevLineNumber = s.GetLineNumber();
+				prevColNumber = s.GetColumnNumber();
+			}
 			SPLW_ERROR("Syntax Error code {2} at line {0}, column {1}", s.GetLineNumber(), s.GetColumnNumber(), s.GetErrorCode());
 			SPLW_ERROR(GetSyntaxErrorMessage(s.GetErrorCode()), TokenTypeName(s.GetTokenType()));
 			if (s.GetLineNumber() >= lexer->GetSplitFileString().size())
@@ -77,7 +84,7 @@ namespace Spliwaca
 			#ifdef SPLW_WINDOWS
 			system("PAUSE");
 			#else
-			system("read -n 1 -s -p \"Press any key to continue...\n\"");
+			//system("read -n 1 -s -p \"Press any key to continue...\n\"");
 			#endif
 			return "";
 		}
