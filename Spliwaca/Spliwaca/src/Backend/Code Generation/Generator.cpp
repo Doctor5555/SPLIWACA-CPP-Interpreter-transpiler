@@ -332,7 +332,7 @@ namespace Spliwaca
 			//node->argNames.at(i)->GetContents()
 		}
 
-		m_Code += ") -> None: # Source line " + std::to_string(node->lineNumber + 1) + "\n";
+		m_Code += "): # Source line " + std::to_string(node->lineNumber + 1) + "\n";
 
 		m_Tabs += "    ";
 		ImportConfig *oldConfig = getCurrentImportConfig();
@@ -715,7 +715,7 @@ namespace Spliwaca
 			//node->argNames.at(i)->GetContents()
 		}
 
-		m_Code += ") -> None:\n";
+		m_Code += "):\n";
 
 		m_Tabs += "    ";
 		ImportConfig *oldConfig = getCurrentImportConfig();
