@@ -1,4 +1,4 @@
-﻿REQUIRE transpiler_py
+﻿REQUIRE transpiler
 NOINSTALL
 
 FUNCTION fahrenheit_to_celsius <- FLOAT fahrenheit -> FLOAT AS
@@ -18,9 +18,13 @@ FUNCTION tempConvert <- FLOAT temperature, STRING CorF -> FLOAT AS
     END IF
 END FUNCTION
 
-PROCEDURE main AS
+PROCEDURE DoSomething <- string a AS
+    OUTPUT $a is a string
+END PROCEDURE
+
+FUNCTION main -> int AS
     INPUT FLOAT temp
-    INPUT STRING c_or_f
+    INPUT STRING c_or_f_in
     IF c_or_f_in = 'C' DO
         SET c_or_f TO C
     ELSE IF c_or_f_in = 'F' DO
@@ -29,6 +33,10 @@ PROCEDURE main AS
         OUTPUT $c_or_f_in is not 'C' or 'F'
         QUIT 1
     END IF
-    SET temp TO CALL tempConvert WITH user_temp, c_or_f
+    SET temp TO CALL tempConvert WITH temp, c_or_f
     OUTPUT $temp ⁰ $c_or_f
-END PROCEDURE
+    CALL DoSomething WITH "Hello World"
+    RETURN 0
+END FUNCTION
+
+CALL main

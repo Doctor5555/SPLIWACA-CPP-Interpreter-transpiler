@@ -350,7 +350,6 @@ namespace Spliwaca
 		}
 
 		GenerateStatements(node->body);
-		m_Code += m_Tabs + "raise libsplw.FunctionEndError\n";
 		m_Tabs = m_Tabs.substr(0, m_Tabs.size() - 4);
 		if (node->id->accessPresent) {
 			SPLW_ERROR("Attempting to define a procedure with an access in the procedure name. This is not allowed. Line: {0}, Name: {1}", node->id->GetLineNumber(), node->id->GetContents());
@@ -735,7 +734,6 @@ namespace Spliwaca
 		}
 
 		GenerateStatements(node->body);
-		m_Code += m_Tabs + "raise libsplw.FunctionEndError\n";
 		m_Tabs = m_Tabs.substr(0, m_Tabs.size() - 4);
 		
 		m_Code += code + anonp_name;
