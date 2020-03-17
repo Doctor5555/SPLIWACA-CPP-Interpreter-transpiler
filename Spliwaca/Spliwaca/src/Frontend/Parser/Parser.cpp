@@ -476,14 +476,9 @@ namespace Spliwaca
 
 			node->args.push_back(ConstructExpr());
 
-			while (!itemInVect({ TokenType::Newline, TokenType::RParen }, m_Tokens->at(m_TokenIndex)->GetType()))
+			while (m_Tokens->at(m_TokenIndex)->GetType() == TokenType::Comma)
 			{
-				if (m_Tokens->at(m_TokenIndex)->GetType() != TokenType::Comma)
-				{
-					RegisterSyntaxError(SyntaxErrorType::expComma, m_Tokens->at(m_TokenIndex));
-				}
-				else
-					IncIndex();
+				IncIndex();
 
 				node->args.push_back(ConstructExpr());
 			}

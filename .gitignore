@@ -16,3 +16,9 @@ transpiler
 \.test\.*
 *.vcxproj
 *.filters
+
+*.spec
+
+utils.py
+
+__pycache__/
