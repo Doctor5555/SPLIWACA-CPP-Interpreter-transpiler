@@ -19,6 +19,7 @@ FUNCTION tempConvert <- FLOAT temperature, STRING CorF -> FLOAT AS
 END FUNCTION
 
 PROCEDURE main AS
+    SET 9ifghsd9 TO 32
     INPUT FLOAT temp
     INPUT STRING c_or_f
     IF c_or_f_in = 'C' DO

@@ -177,6 +177,8 @@ transpilerOptions *parseCommandLineArgs(int argc, char **argv) {
 
 int main(int argc, char** argv)
 {
+	SN_PROFILE_BEGIN_SESSION("Run", "splw-run.json");
+	SN_PROFILE_FUNCTION();
 	transpilerOptions *options = parseCommandLineArgs(argc, argv);
 	std::string inFile = options->ifile, outFile = options->ofile;
 	
@@ -197,9 +199,11 @@ int main(int argc, char** argv)
 	std::cout << "#Total time taken: " << totalTimer.elapsed() << std::endl;
 
 	#ifdef SPLW_WINDOWS
-	system("PAUSE");
+	//system("PAUSE");
 	#else
 		//system("read -n 1 -s -p \"Press any key to continue...\n\"");
 	#endif
+	timer_181.Stop();
+	SN_PROFILE_END_SESSION();
 	return 0;
 }
