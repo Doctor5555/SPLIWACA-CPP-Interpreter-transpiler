@@ -5,7 +5,15 @@ IMPORT time
 FUNCTION Main RETURNS int AS
 	OUTPUT Enter a number: 
 	INPUT INT n
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 	OUTPUT
+=======
+	OUTPUT \n
+>>>>>>> Stashed changes
+=======
+	OUTPUT \n
+>>>>>>> Stashed changes
 	
 	SET sumSequential TO CREATE INT
 	

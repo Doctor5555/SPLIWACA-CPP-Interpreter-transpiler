@@ -1,9 +1,23 @@
 import libsplw
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 scope_vars = {}
 
 import time  # Source line 3
 
 @libsplw.type_check()
+=======
+=======
+>>>>>>> Stashed changes
+scope_vars = {} #libsplw.default_scope.copy()
+
+import time  # Source line 3
+
+@libsplw.type_check
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 def __func_name_line_4_char_9(prev_scope_vars: dict) -> int: # Source line 5
     scope_vars = prev_scope_vars.copy()
     print(fr"Enter a number: ")  # Source line 6
@@ -16,13 +30,23 @@ def __func_name_line_4_char_9(prev_scope_vars: dict) -> int: # Source line 5
 
     scope_vars["sumGaussian"] = int()  # Source line 11
 
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
     scope_vars["timeStartSequential"] = time.time()  # Source line 13
+=======
+    scope_vars["timeStartSequential"] = time)  # Source line 13
+>>>>>>> Stashed changes
+=======
+    scope_vars["timeStartSequential"] = time)  # Source line 13
+>>>>>>> Stashed changes
 
     for __for_var_line_14_char_5 in (range(libsplw.get_safe(scope_vars, 'n', True, True, True, True))): # Source line 15
         scope_vars["i"] = __for_var_line_14_char_5
         scope_vars["sumSequential"] = libsplw.get_safe(scope_vars, 'sumSequential', True, True, True, True) + libsplw.get_safe(scope_vars, 'i', True, True, True, True) + 1  # Source line 16
 
 
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
     scope_vars["timeEndSequential"] = time.time()  # Source line 19
 
     scope_vars["timeStartGaussian"] = time.time()  # Source line 21
@@ -33,6 +57,23 @@ def __func_name_line_4_char_9(prev_scope_vars: dict) -> int: # Source line 5
 
     if libsplw.get_safe(scope_vars, 'sumGaussian', True, True, True, True) != libsplw.get_safe(scope_vars, 'sumSequential', True, True, True, True):   # Source line 27
         print(fr"Sums are not equal. Something is wrong! Gaussian result: {libsplw.get_safe(scope_vars, 'sumGaussian', True, True, True, True)} , sequential result: {libsplw.get_safe(scope_vars, 'sumSequential', True, True, True, True)}")  # Source line 28
+=======
+=======
+>>>>>>> Stashed changes
+    scope_vars["timeEndSequential"] = time)  # Source line 19
+
+    scope_vars["timeStartGaussian"] = time)  # Source line 21
+
+    scope_vars["sumGaussian"] = libsplw.get_safe(scope_vars, 'sumGaussian', True, True, True, True) * (libsplw.get_safe(scope_vars, 'sumGaussian', True, True, True, True) + 1)  # Source line 23
+
+    scope_vars["timeEndGaussian"] = time)  # Source line 25
+
+    if libsplw.get_safe(scope_vars, 'sumGaussian', True, True, True, True) != libsplw.get_safe(scope_vars, 'sumSequential', True, True, True, True):   # Source line 27
+        print(fr"" + "\"" + fr"Sums are not equal. Something is wrong!" + "\"" + fr"")  # Source line 28
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 
         scope_vars["rv"] =  - 1  # Source line 29
 
