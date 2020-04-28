@@ -643,7 +643,7 @@ namespace Spliwaca
 
 	void Generator::GenerateAnonf(std::shared_ptr<AnonfNode> node)
 	{
-		uint32_t charIndex = m_Code.size() - 1;
+		uint32_t charIndex = (uint32_t)m_Code.size() - 1;
 		std::string code = "";
 		while (m_Code.at(charIndex) != '\n' && charIndex != -1)
 		{
@@ -694,7 +694,7 @@ namespace Spliwaca
 
 	void Generator::GenerateAnonp(std::shared_ptr<AnonpNode> node)
 	{
-		uint32_t charIndex = m_Code.size() - 1;
+		uint32_t charIndex = (uint32_t)m_Code.size() - 1;
 		std::string code = "";
 		while (m_Code.at(charIndex) != '\n' && charIndex != -1)
 		{

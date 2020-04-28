@@ -54,7 +54,7 @@ int RegisterSemanticsError(uint32_t lineNumber, uint32_t columnNumber)
 	return 1;
 }
 
-std::string mulString(std::string s, int i)
+std::string mulString(std::string s, uint32_t i)
 {
 	if (i <= 0)
 		return "";

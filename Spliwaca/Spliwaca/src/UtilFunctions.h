@@ -6,7 +6,7 @@ int RegisterLexicalError(uint8_t errorCode, uint32_t lineNumber, uint32_t column
 int RegisterSyntaxError(Spliwaca::SyntaxErrorType type, std::shared_ptr<Spliwaca::Token> token);
 int RegisterSyntaxError(Spliwaca::SyntaxErrorType errorCode, uint32_t lineNumber, uint32_t columnNumber, size_t columnSpan, Spliwaca::TokenType type);
 int RegisterSemanticsError(uint32_t lineNumber, uint32_t columnNumber);
-std::string mulString(std::string s, int i);
+std::string mulString(std::string s, uint32_t i);
 
 int numDigits(int32_t x);
 

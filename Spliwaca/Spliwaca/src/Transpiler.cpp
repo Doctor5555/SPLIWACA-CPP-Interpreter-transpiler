@@ -72,7 +72,7 @@ namespace Spliwaca
 				SPLW_WARN("Line {0} out of range!", s.GetLineNumber());
 			else
 				SPLW_WARN("{0}", lexer->GetSplitFileString().at(s.GetLineNumber()));
-			SPLW_WARN("{0}{1}", mulString(" ", s.GetColumnNumber() - 1), mulString("^", s.GetColumnSpan()));
+			SPLW_WARN("{0}{1}", mulString(" ", (uint32_t)s.GetColumnNumber() - 1), mulString("^", (uint32_t)s.GetColumnSpan()));
 			std::cout << "\n";
 		}
 		if (m_State->SyntaxErrors.size() > 0)

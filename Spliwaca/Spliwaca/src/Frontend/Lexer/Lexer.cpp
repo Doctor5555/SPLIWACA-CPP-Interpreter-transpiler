@@ -200,7 +200,7 @@ namespace Spliwaca
                     else {
                         //Error unexpected characters.
                         SPLW_ERROR("Lexical Error: Unexpected character {0} in string: {1}", tokenContents[index], tokenContents);
-                        RegisterLexicalError(0, m_LineNumber, m_ColumnNumber, tokenContents.size());
+                        RegisterLexicalError(0, m_LineNumber, m_ColumnNumber, (uint32_t)tokenContents.size());
                     }
                 }
             }
@@ -279,7 +279,7 @@ namespace Spliwaca
             m_ColumnNumber = 0;
         }
         else
-            m_ColumnNumber += tokenContents.size();
+            m_ColumnNumber += (uint32_t)tokenContents.size();
     }
 
     std::shared_ptr<std::vector<std::shared_ptr<Token>>> Lexer::MakeTokens()
