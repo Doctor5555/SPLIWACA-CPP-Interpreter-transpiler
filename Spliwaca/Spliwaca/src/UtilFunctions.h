@@ -164,22 +164,30 @@ namespace Supernova
 		{
 			auto endTimepoint = std::chrono::steady_clock::now();
 			auto highResStart = FloatingPointMicroseconds{ m_StartTimepoint.time_since_epoch() };
-			auto elapsed = std::chrono::time_point_cast<std::chrono::microseconds>(endTimepoint).time_since_epoch() -
+			m_Elapsed = std::chrono::time_point_cast<std::chrono::microseconds>(endTimepoint).time_since_epoch() -
 				std::chrono::time_point_cast<std::chrono::microseconds>(m_StartTimepoint).time_since_epoch();
 
-			Instrumentor::Get().WriteProfile({ m_Name, highResStart, elapsed, std::this_thread::get_id() });
+			Instrumentor::Get().WriteProfile({ m_Name, highResStart, m_Elapsed, std::this_thread::get_id() });
 
 			m_Stopped = true;
+		}
+
+		float Elapsed()
+		{
+			if (!m_Stopped)
+				Stop();
+			return m_Elapsed.count() * 0.001f;
 		}
 
 	private:
 		const char* m_Name;
 		std::chrono::time_point<std::chrono::steady_clock> m_StartTimepoint;
+		std::chrono::microseconds m_Elapsed;
 		bool m_Stopped;
 	};
 }
 
-#define SN_ENABLE_PROFILING 1
+#define SN_ENABLE_PROFILING 0
 #if SN_ENABLE_PROFILING
 #define _TOKEN_PASTE2(x, y) x##y
 #define _TOKEN_PASTE(x, y) _TOKEN_PASTE2(x, y)

@@ -120,6 +120,7 @@ namespace Spliwaca
 
 			if (m_Output != "")
 			{
+				SN_PROFILE_SCOPE("Generator file output");
 				std::ofstream outputFile;
 				outputFile.open(m_Output, std::ios::trunc);
 				outputFile << finalCode << "\n";
@@ -127,6 +128,7 @@ namespace Spliwaca
 			}
 			else
 			{
+				SN_PROFILE_SCOPE("Generator cout output");
 				std::cout << finalCode << std::endl;
 			}
 		}

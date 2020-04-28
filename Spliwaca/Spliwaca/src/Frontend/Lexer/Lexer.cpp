@@ -42,6 +42,7 @@ namespace Spliwaca
     Lexer::Lexer(std::string fileLocation)
         : m_Tokens(new std::vector<std::shared_ptr<Token>>()), m_FileLocation(fileLocation)
     {
+        SN_PROFILE_FUNCTION();
         SPLW_INFO("Beginning file open");
         std::ifstream file;
         file.open(m_FileLocation);
@@ -159,47 +160,62 @@ namespace Spliwaca
             }
             else
             {
+                SN_PROFILE_SCOPE("Catch idents and numbers");
                 std::smatch m;
                 //Use regexes
-                if (std::regex_search(tokenContents, m, std::regex("(\\d|_)+(\\.\\d+)?i")) && m[0] == tokenContents) // Matches complex regex
+                bool number = false;
+                if ((tokenContents[tokenContents.size() - 1] == 'i' || tokenContents[tokenContents.size() - 1] <= '9' && tokenContents[tokenContents.size() - 1] >= '0') && tokenContents[0] <= '9' && tokenContents[0] >= '0')
                 {
-                    if (std::regex_search(tokenContents, m, std::regex("(\\d{1,3}(_\\d{3})+|\\d+)(\\.[0-9]+)?i")) && m[0] != tokenContents)
-                        SPLW_WARN("Style Warning, line {0}, char {1}: Complex literals should have underscores treated as commas.");
-                    m_Tokens->push_back(std::make_shared<Token>(Token(TokenType::Complex, tokenContents.c_str(), m_LineNumber, m_ColumnNumber)));
+                    SN_PROFILE_SCOPE("Check for number");
+                    
+                    if (std::regex_search(tokenContents, m, std::regex("(\\d+_*)+")) && m[0] == tokenContents) // Matches int regex
+                    {
+                        if (std::regex_search(tokenContents, m, std::regex("\\d{1,3}(_\\d{3})+|\\d+")) && m[0] != tokenContents)
+                        {
+                            SPLW_WARN("Style Warning, line {0}, char {1}: Integer literals should have underscores treated as commas.");
+                        }
+                        m_Tokens->push_back(std::make_shared<Token>(Token(TokenType::Int, tokenContents.c_str(), m_LineNumber, m_ColumnNumber)));
+                        number = true;
+                    }
+                    else if (std::regex_search(tokenContents, m, std::regex("(\\d|_)+\\.\\d+")) && m[0] == tokenContents) // Matches float regex
+                    {
+                        if (std::regex_search(tokenContents, m, std::regex("(\\d{1,3}(_\\d{3})+|\\d+)\\.[0-9]+")) && m[0] != tokenContents)
+                        {
+                            SPLW_WARN("Style Warning, line {0}, char {1}: Float literals should have underscores treated as commas.");
+                        }
+                        m_Tokens->push_back(std::make_shared<Token>(Token(TokenType::Float, tokenContents.c_str(), m_LineNumber, m_ColumnNumber)));
+                        number = true;
+                    }
+                    else if (std::regex_search(tokenContents, m, std::regex("(\\d|_)+(\\.\\d+)?i")) && m[0] == tokenContents) // Matches complex regex
+                    {
+                        if (std::regex_search(tokenContents, m, std::regex("(\\d{1,3}(_\\d{3})+|\\d+)(\\.[0-9]+)?i")) && m[0] != tokenContents)
+                        {
+                            SPLW_WARN("Style Warning, line {0}, char {1}: Complex literals should have underscores treated as commas.");
+                        }
+                        m_Tokens->push_back(std::make_shared<Token>(Token(TokenType::Complex, tokenContents.c_str(), m_LineNumber, m_ColumnNumber)));
+                        number = true;
+                    }
                 }
-                else if (std::regex_search(tokenContents, m, std::regex("(\\d|_)+\\.\\d+")) && m[0] == tokenContents) // Matches float regex
-                {
-                    if (std::regex_search(tokenContents, m, std::regex("(\\d{1,3}(_\\d{3})+|\\d+)\\.[0-9]+")) && m[0] != tokenContents)
-                        SPLW_WARN("Style Warning, line {0}, char {1}: Float literals should have underscores treated as commas.");
-                    m_Tokens->push_back(std::make_shared<Token>(Token(TokenType::Float, tokenContents.c_str(), m_LineNumber, m_ColumnNumber)));
-                }
-                else if (std::regex_search(tokenContents, m, std::regex("(\\d+_*)+")) && m[0] == tokenContents) // Matches int regex
-                {
-                    if (std::regex_search(tokenContents, m, std::regex("\\d{1,3}(_\\d{3})+|\\d+")) && m[0] != tokenContents)
-                        SPLW_WARN("Style Warning, line {0}, char {1}: Integer literals should have underscores treated as commas.");
-                    m_Tokens->push_back(std::make_shared<Token>(Token(TokenType::Int, tokenContents.c_str(), m_LineNumber, m_ColumnNumber)));
-                }
-                else
-                {
+                if (!number) {
+                    SN_PROFILE_SCOPE("Check ident validity");
                     char invalidChars[] = { '~', '\\', ';', '#', '$', '@', '`', ',', '?', '!', '%', '^', '<', '|', '\'', '&', ')', '*', '/', '+', '[', ']', '.', '"', '=', '{', '}', ':', '>', '(', '-'};
-                    bool valid = true;
-                    int index = 0;
+                    int i = -1;
                     for (char c : tokenContents) {
+                        i++;
                         for (char d : invalidChars) {
                             if (c == d) {
-                                valid = false;
-                                break;
+                                goto invalid;
                             }
                         }
-                        if (valid == false)
-                            break;
-                        index++;
                     }
-                    if (valid)
+                    {
                         m_Tokens->push_back(std::make_shared<Token>(Token(TokenType::Identifier, tokenContents.c_str(), m_LineNumber, m_ColumnNumber)));
-                    else {
+                        return;
+                    }
+                    {
+                    invalid:
                         //Error unexpected characters.
-                        SPLW_ERROR("Lexical Error: Unexpected character {0} in string: {1}", tokenContents[index], tokenContents);
+                        SPLW_ERROR("Lexical Error: Unexpected character {0} in string: {1}", tokenContents[i], tokenContents);
                         RegisterLexicalError(0, m_LineNumber, m_ColumnNumber, (uint32_t)tokenContents.size());
                     }
                 }
@@ -292,23 +308,22 @@ namespace Spliwaca
         std::vector<std::string> splitTrioStrings = { "=/=", "===" };
 
         int i = 0;
+        while ((s[i] & 0xffff) == 0xffef || (s[i] & 0xffff) == 0xffbb || (s[i] & 0xffff) == 0xffbf)
+        {
+            i++;
+        }
+
         while (true)
         {
-            //SPLW_INFO("Starting char {0}", s[i]);
-            if ((s[i] & 0xffff) == 0xffef || (s[i] & 0xffff) == 0xffbb || (s[i] & 0xffff) == 0xffbf) {
-                i++;
-                continue;
-            }
-
             std::string c = std::string(1, s[i]);
             std::string duo = c; (i < s.size() - 1) ? duo += s[i + 1] : duo += "";
             std::string trio = duo; (i < s.size() - 2) ? trio += s[i + 2] : trio += "";
 
-            if (trio == "=/=")//itemInVect(splitTrioStrings, trio))
+            if (trio == "=/=" || trio == "===")//itemInVect(splitTrioStrings, trio))
             {
                 if (intermediate != "")
                     makeToken(intermediate);
-                intermediate = c + s[i + 1] + s[i+2];
+                intermediate = c + s[i + 1] + s[i + 2];
                 //intermediate += s[i + 1];
                 //intermediate += s[i + 2];
                 makeToken(intermediate);

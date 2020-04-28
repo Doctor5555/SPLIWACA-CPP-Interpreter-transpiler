@@ -17,14 +17,6 @@ namespace Spliwaca
 		return false;
 	}
 
-	/*	bool charInStr(const std::string& s, char c)
-		{
-			if (s.find(c) != std::string::npos)
-				return true;
-			else
-				return false;
-		}*/
-
 	std::shared_ptr<Generator> Generator::Create(std::shared_ptr<EntryPoint> entryPoint)
 	{
 		return std::make_shared<Generator>(entryPoint);
@@ -32,6 +24,7 @@ namespace Spliwaca
 
 	std::string Generator::GenerateCode(int& errorCode)
 	{
+		SN_PROFILE_FUNCTION();
 		m_Code = "import libsplw\nscope_vars = libsplw.default_scope.copy()\n\n";
 
 		if (m_EntryPoint->require && m_EntryPoint->require->requireType->GetContents() == "transpiler_py")
@@ -63,6 +56,7 @@ namespace Spliwaca
 	{
 		for (std::shared_ptr<Statement> s : statements->statements)
 		{
+			SN_PROFILE_SCOPE("Statement loop - Generator::GenerateStatements(std::shared_ptr<Statements>)");
 			ImportConfig* importConfig = getCurrentImportConfig();
 			switch (s->statementType)
 			{
@@ -884,20 +878,21 @@ namespace Spliwaca
 		SN_PROFILE_FUNCTION();
 		std::string code = "fr\"";
 		bool inIdent = false;
-		std::shared_ptr<IdentNode> identNode = std::make_shared<IdentNode>();
+		IdentNode identNode = IdentNode();
 		std::string ident = "";
-		for (char c : token->GetContents())
+		std::string contents = token->GetContents();
+		for (char c : contents)
 		{
-			if (!inIdent && !charInStr("$\"", c))
-				code += c;
-			else if (inIdent)
+			SN_PROFILE_SCOPE("Token contents loop - Generator::ParseRaw(std::shared_ptr<Token>)");
+			if (inIdent)
 			{
+				SN_PROFILE_SCOPE("inIdent - Generator::ParseRaw(std::shared_ptr<Token>)");
 				if (c == ' ')
 				{
 					if (validIdentifier(ident))
 					{
-						identNode->ids.push_back(std::make_shared<Token>(TokenType::Identifier, ident.c_str(), token->GetLineNumber(), token->GetCharacterNumber()));
-						code += identNode->GenerateGetattrTree(getCurrentImportConfig());
+						identNode.ids.push_back(std::make_shared<Token>(TokenType::Identifier, ident.c_str(), token->GetLineNumber(), token->GetCharacterNumber()));
+						code += identNode.GenerateGetattrTree(getCurrentImportConfig());
 					}
 					else
 					{
@@ -907,36 +902,54 @@ namespace Spliwaca
 					code += "} ";
 					inIdent = false;
 					ident = "";
-					identNode = std::make_shared<IdentNode>();
+					identNode = IdentNode();
+					continue;
 				}
 				else if (c == '.')
 				{
-					identNode->ids.push_back(std::make_shared<Token>(TokenType::Identifier, ident.c_str(), token->GetLineNumber(), token->GetCharacterNumber()));
-					identNode->accessPresent = true;
+					if (validIdentifier(ident))
+					{
+						identNode.ids.push_back(std::make_shared<Token>(TokenType::Identifier, ident.c_str(), token->GetLineNumber(), token->GetCharacterNumber()));
+						identNode.accessPresent = true;
+					}
+					else
+					{
+						SPLW_ERROR("Invalid identifier in RAW token, line {0}, char {1}", token->GetLineNumber(), token->GetCharacterNumber());
+						m_AbortPrint = true;
+					}
 					ident = "";
+					continue;
 				}
 				else
 				{
 					ident += c;
+					continue;
 				}
+			}
+			else if (c != '$' && c != '"')//!charInStr("$\"", c))
+				code += c;
+			else if (c == '$')
+			{
+				inIdent = true;
+				code += "{";
+				continue;
 			}
 			else if (c == '"')
 			{
 				code += "\" + \"\\\"\" + fr\"";
-				//code += "\\" + c;
+				continue;
 			}
 			else
 			{
-				inIdent = true;
-				code += "{";
+				SPLW_ERROR("We shouldn't be here: line 935, Generator.cpp!");
 			}
 		}
 		if (inIdent)
 		{
 			if (validIdentifier(ident))
 			{
-				identNode->ids.push_back(std::make_shared<Token>(TokenType::Identifier, ident.c_str(), token->GetLineNumber(), token->GetCharacterNumber()));
-				code += identNode->GenerateGetattrTree(getCurrentImportConfig());
+				identNode.ids.push_back(std::make_shared<Token>(TokenType::Identifier, ident.c_str(), token->GetLineNumber(), token->GetCharacterNumber()));
+				code += identNode.GenerateGetattrTree(getCurrentImportConfig());
 			}
 			else
 			{

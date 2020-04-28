@@ -12,9 +12,10 @@ FUNCTION FactRecursive TAKES int i RETURNS int AS
         SET i_1 TO CALL FactRecursive WITH (i-1)
         SET rv TO i * i_1
     END IF
-RETURN rv
+    RETURN rv
+END FUNCTION
 
-FUNCTION FactIterative Takes int i RETURNS int AS
+FUNCTION FactIterative TAKES int i RETURNS int AS
     IF i == 0 DO
         SET rv TO 1
     ELSE DO
@@ -23,7 +24,8 @@ FUNCTION FactIterative Takes int i RETURNS int AS
             SET rv TO rv * (i + 1)
         END FOR
     END IF
-RETURN rv
+    RETURN rv
+END FUNCTION
 
 OUTPUT Enter a number to calculate the factorial of: 
 INPUT int number
@@ -56,7 +58,6 @@ SET timeDiffIterative TO timeIterativeEnd - timeIterativeBegin
 OUTPUT Time difference recursive: $timeDiffRecursive \n
 OUTPUT Time difference iterative: $timeDiffIterative \n\n
 
-
 //////////////////////////////
 /// FIBONACCI ////////////////
 //////////////////////////////
@@ -71,9 +72,10 @@ FUNCTION FibonacciRecursive TAKES int iterations RETURNS int AS
         SET i_2 TO CALL FactRecursive WITH (iterations-2)
         SET rv TO i_1 + i_2
     END IF
-RETURN rv
+    RETURN rv
+END FUNCTION
 
-FUNCTION FibonacciIterative Takes int iterations RETURNS int AS
+FUNCTION FibonacciIterative TAKES int iterations RETURNS int AS
     IF i == 0 DO
         SET rv TO 0
     ELSE DO
@@ -85,7 +87,8 @@ FUNCTION FibonacciIterative Takes int iterations RETURNS int AS
             SET prev TO temp
         END FOR
     END IF
-RETURN rv
+    RETURN rv
+END FUNCTION
 
 OUTPUT Enter a index to calculate the number in the fibonacci sequence: 
 INPUT int number
