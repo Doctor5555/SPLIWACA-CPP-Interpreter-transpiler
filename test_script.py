@@ -37,7 +37,7 @@ def __func_name_line_12_char_9(prev_scope_vars: dict, arg0: float, arg1: str) ->
 scope_vars['tempConvert'] = __func_name_line_12_char_9
 
 @libsplw.type_check()
-def __func_name_line_20_char_10(prev_scope_vars: dict, arg0: str) -> None: # Source line 21
+def __func_name_line_20_char_10(prev_scope_vars: dict, arg0: str): # Source line 21
     scope_vars = prev_scope_vars.copy()
     scope_vars['a'] = arg0
     print(fr"{libsplw.get_safe(scope_vars, 'a', True, False, False, True)} is a string")  # Source line 22
@@ -68,6 +68,10 @@ def __func_name_line_24_char_9(prev_scope_vars: dict) -> int: # Source line 25
     print(fr"{libsplw.get_safe(scope_vars, 'temp', True, False, False, True)} ⁰ {libsplw.get_safe(scope_vars, 'c_or_f', True, False, False, True)}")  # Source line 37
 
     libsplw.get_safe(scope_vars, 'DoSomething', True, False, False, True)(scope_vars, "Hello World")  # Source line 38
+
+    scope_vars["b"] = 10  # Source line 38
+
+    print(fr"{libsplw.get_safe(scope_vars, 'b', True, False, False, True)} is ten if I did this right!")  # Source line 38
 
     return 0  # Source line 39
 

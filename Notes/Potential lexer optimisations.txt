@@ -1,0 +1,15 @@
+20 -> 22 ' ' -> '"'
+25 -> 2F '%' -> '/'
+3A ':'
+3C -> 3E '<' -> '>'
+5B '['
+5D -> 5E ']' -> '^'
+7B -> 7E '{' -> '~'
+10 -> 12 '\n' -> '\f'
+
+14 comparisons rather than 25. Should take roughly 60% the amount of time.
+
+51.007576 -> 51.024177
+0.016601 difference
+Total time 0.0201129
+This is 82.539% of the transpilation time.

@@ -35,7 +35,7 @@ FUNCTION main -> int AS
     END IF
     SET temp TO CALL tempConvert WITH temp, c_or_f
     OUTPUT $temp ⁰ $c_or_f
-    CALL DoSomething WITH "Hello World"
+    CALL DoSomething WITH "Hello World" SET b TO 10 OUTPUT $b is two if I did this right!
     RETURN 0
 END FUNCTION
 
