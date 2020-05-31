@@ -23,7 +23,8 @@ class MissingVariable
 
 public:
 	MissingVariable(uint32_t lineNumber, uint32_t columnNumber)
-		: lineNumber(lineNumber), columnNumber(columnNumber) {}
+		: lineNumber(lineNumber), columnNumber(columnNumber)
+	{}
 
 	uint32_t GetLineNumber() const { return lineNumber; }
 	uint32_t GetColumnNumber() const { return columnNumber; }
@@ -32,19 +33,19 @@ public:
 
 int RegisterLexicalError(uint8_t errorCode, uint32_t lineNumber, uint32_t columnNumber, uint16_t columnSpan)
 {
-	state->LexerErrors.push_back({errorCode, lineNumber, columnNumber, columnSpan});
+	state->LexerErrors.push_back({ errorCode, lineNumber, columnNumber, columnSpan });
 	return 1;
 }
 
 int RegisterSyntaxError(SyntaxErrorType type, std::shared_ptr<Token> token)
 {
-	state->SyntaxErrors.push_back({type, token});
+	state->SyntaxErrors.push_back({ type, token });
 	return 1;
 }
 
 int RegisterSyntaxError(SyntaxErrorType errorCode, uint32_t lineNumber, uint32_t columnNumber, size_t columnSpan, Spliwaca::TokenType type)
 {
-	state->SyntaxErrors.push_back({errorCode, lineNumber, columnNumber, columnSpan, type});
+	state->SyntaxErrors.push_back({ errorCode, lineNumber, columnNumber, columnSpan, type });
 	return 1;
 }
 
@@ -54,7 +55,7 @@ int RegisterSemanticsError(uint32_t lineNumber, uint32_t columnNumber)
 	return 1;
 }
 
-std::string mulString(std::string s, int i)
+std::string mulString(std::string s, uint32_t i)
 {
 	if (i <= 0)
 		return "";
@@ -101,7 +102,7 @@ int numDigits(int32_t x)
 	return 1;
 }
 
-bool charInStr(const std::string &s, char c)
+bool charInStr(const std::string& s, char c)
 {
 	//PROFILE_FUNC();
 	for (char ch : s)
@@ -115,7 +116,7 @@ bool charInStr(const std::string &s, char c)
 }
 
 template <typename T>
-bool itemInVect(const std::vector<T> &v, T t)
+bool itemInVect(const std::vector<T>& v, T t)
 {
 	for (T e : v)
 	{
@@ -127,6 +128,7 @@ bool itemInVect(const std::vector<T> &v, T t)
 	return false;
 }
 
+#if !SN_ENABLE_PROFILING
 class Timer
 {
 public:
@@ -142,33 +144,42 @@ private:
 	typedef std::chrono::duration<double, std::ratio<1>> second_;
 	std::chrono::time_point<clock_> beg_;
 };
+#endif
 
 //------------------------------------- End UtilFunctions utility function definitions -------------------------------
 
-struct transpilerOptions {
+struct transpilerOptions
+{
 	std::string ifile;
 	std::string ofile;
 	bool recursive_transpile;
 };
 
-transpilerOptions *parseCommandLineArgs(int argc, char **argv) {
-	transpilerOptions *options = new transpilerOptions();
-	if (argc < 2) {
+transpilerOptions* parseCommandLineArgs(int argc, char** argv)
+{
+	SN_PROFILE_FUNCTION();
+	transpilerOptions* options = new transpilerOptions();
+	if (argc < 2)
+	{
 		std::cout << "Usage: transpiler FILE [-o OUTFILE]\n";
 		exit(-1);
 	}
-	else if (argc > 2 && argc != 4) {
+	else if (argc > 2 && argc != 4)
+	{
 		std::cout << "Usage: transpiler FILE [-o OUTFILE]\n";
 		exit(-1);
 	}
-	else if (argc == 4 && strcmp(argv[2], "-o")) {
+	else if (argc == 4 && strcmp(argv[2], "-o"))
+	{
 		std::cout << "Usage: transpiler FILE [-o OUTFILE]\n";
 		exit(-1);
 	}
-	else if (argc == 4) {
+	else if (argc == 4)
+	{
 		options->ofile = argv[3];
 	}
-	else {
+	else
+	{
 		options->ofile = "";
 	}
 	options->ifile = argv[1];
@@ -177,29 +188,36 @@ transpilerOptions *parseCommandLineArgs(int argc, char **argv) {
 
 int main(int argc, char** argv)
 {
-	transpilerOptions *options = parseCommandLineArgs(argc, argv);
-	std::string inFile = options->ifile, outFile = options->ofile;
-	
-	Timer totalTimer = Timer();
-
-	#ifdef SPLW_WINDOWS
-	SetConsoleOutputCP(CP_UTF8);
-	setvbuf(stdout, nullptr, _IOFBF, 1000);
+	SN_PROFILE_BEGIN_SESSION("Run", "splw-run.json");
+	SN_PROFILE_FUNCTION();
+	#if !SN_ENABLE_PROFILING
+	Timer timer = Timer();
 	#endif
+	transpilerOptions* options = parseCommandLineArgs(argc, argv);
+
+
+	/*
+	{
+		SN_PROFILE_SCOPE("Set up unicode output");
+		#ifdef SPLW_WINDOWS
+		SetConsoleOutputCP(CP_UTF8);
+		setvbuf(stdout, nullptr, _IOFBF, 1000);
+		#endif
+	}
+	*/
 
 	LOG_INIT();
 	bool printTokenList = false;
 
-	Transpiler transpiler = Transpiler(inFile, outFile, state, printTokenList);
+	Transpiler transpiler = Transpiler(options->ifile, options->ofile, state, printTokenList);
 	std::string output = transpiler.Run();
 
-	//std::cout << "\nLexer took: " << lexerTime << " seconds\nParser took: " << parseTime << " seconds\nGenerator took: " << generateTime << " seconds" << std::endl;
-	std::cout << "#Total time taken: " << totalTimer.elapsed() << std::endl;
-
-	#ifdef SPLW_WINDOWS
-	system("PAUSE");
+	#if SN_ENABLE_PROFILING
+	timer_192.Stop();
+	std::cout << "#Total time taken: " << timer_192.Elapsed() << "ms" << std::endl;
 	#else
-		//system("read -n 1 -s -p \"Press any key to continue...\n\"");
+	std::cout << "#Total time taken: " << timer.elapsed() << "s" << std::endl;
 	#endif
+	SN_PROFILE_END_SESSION();
 	return 0;
 }

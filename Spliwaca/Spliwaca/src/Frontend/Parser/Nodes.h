@@ -40,7 +40,7 @@ namespace Spliwaca
 
 		inline uint32_t GetLineNumber() { return ids.at(0)->GetLineNumber(); }
 		inline uint32_t GetColumnNumber() { return ids.at(0)->GetCharacterNumber(); }
-		inline uint32_t GetIdentAccessNum() { return ids.size(); }
+		inline uint32_t GetIdentAccessNum() { return (uint32_t)ids.size(); }
 
 		IdentNode()
 		{
