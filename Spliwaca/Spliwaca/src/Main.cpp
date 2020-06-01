@@ -128,24 +128,6 @@ bool itemInVect(const std::vector<T>& v, T t)
 	return false;
 }
 
-#if !SN_ENABLE_PROFILING
-class Timer
-{
-public:
-	Timer() : beg_(clock_::now()) {}
-	void reset() { beg_ = clock_::now(); }
-	double elapsed() const
-	{
-		return std::chrono::duration_cast<second_>(clock_::now() - beg_).count();
-	}
-
-private:
-	typedef std::chrono::high_resolution_clock clock_;
-	typedef std::chrono::duration<double, std::ratio<1>> second_;
-	std::chrono::time_point<clock_> beg_;
-};
-#endif
-
 //------------------------------------- End UtilFunctions utility function definitions -------------------------------
 
 struct transpilerOptions
@@ -190,7 +172,7 @@ int main(int argc, char** argv)
 {
 	SN_PROFILE_BEGIN_SESSION("Run", "splw-run.json");
 	SN_PROFILE_FUNCTION();
-	#if !SN_ENABLE_PROFILING
+	#if SN_ENABLE_TIMERS
 	Timer timer = Timer();
 	#endif
 	transpilerOptions* options = parseCommandLineArgs(argc, argv);
@@ -215,7 +197,8 @@ int main(int argc, char** argv)
 	#if SN_ENABLE_PROFILING
 	timer_192.Stop();
 	std::cout << "#Total time taken: " << timer_192.Elapsed() << "ms" << std::endl;
-	#else
+	#endif
+	#if SN_ENABLE_TIMERS
 	std::cout << "#Total time taken: " << timer.elapsed() << "s" << std::endl;
 	#endif
 	SN_PROFILE_END_SESSION();

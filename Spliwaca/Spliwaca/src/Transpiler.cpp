@@ -9,9 +9,16 @@ namespace Spliwaca
 	{
 		SN_PROFILE_FUNCTION();
 		//Timer lexerTimer = Timer();
+		#if SN_ENABLE_TIMERS
+		double lexerTime, parserTime, generatorTime;
+		#endif
+
 		std::shared_ptr<Lexer> lexer = nullptr;
 		std::shared_ptr<std::vector<std::shared_ptr<Token>>> tokens = nullptr;
 		{
+			#if SN_ENABLE_TIMERS
+			Timer timer = Timer();
+			#endif
 			SN_PROFILE_SCOPE("Lexer - Transpiler::Run");
 			lexer = Lexer::Create(m_Filename);
 			SPLW_INFO("Created lexer.");
@@ -36,6 +43,9 @@ namespace Spliwaca
 			}
 			else
 				SPLW_INFO("Finished constructing tokens.");
+			#if SN_ENABLE_TIMERS
+			lexerTime = timer.elapsed();
+			#endif
 		}
 
 		//double lexerTime = lexerTimer.elapsed();
@@ -60,6 +70,9 @@ namespace Spliwaca
 		//Timer parseTimer = Timer();
 		std::shared_ptr<Spliwaca::EntryPoint> ast;
 		{
+			#if SN_ENABLE_TIMERS
+			Timer timer = Timer();
+			#endif
 			SN_PROFILE_SCOPE("Parser - Transpiler::Run");
 			std::shared_ptr<Parser> parser = Parser::Create(tokens);
 			SPLW_INFO("Created Parser.");
@@ -99,6 +112,9 @@ namespace Spliwaca
 			}
 			else
 				SPLW_INFO("Finished syntax analysis.");
+			#if SN_ENABLE_TIMERS
+			parserTime = timer.elapsed();
+			#endif
 		}
 
 		//double parseTime = parseTimer.elapsed();
@@ -106,6 +122,9 @@ namespace Spliwaca
 		//Timer generateTimer = Timer();
 		std::string finalCode;
 		{
+			#if SN_ENABLE_TIMERS
+			Timer timer = Timer();
+			#endif
 			SN_PROFILE_SCOPE("Generator");
 			std::shared_ptr<Generator> codeGenerator = Generator::Create(ast);
 			SPLW_INFO("Created Generator");
@@ -131,6 +150,9 @@ namespace Spliwaca
 				SN_PROFILE_SCOPE("Generator cout output");
 				std::cout << finalCode << std::endl;
 			}
+			#if SN_ENABLE_TIMERS
+			generatorTime = timer.elapsed();
+			#endif
 		}
 
 		//double generateTime = generateTimer.elapsed();
@@ -138,6 +160,10 @@ namespace Spliwaca
 		//std::cout << finalCode << std::endl;
 
 		SPLW_INFO("Finished code output!");
+
+		#if SN_ENABLE_TIMERS
+		std::cout << "Lexer time: " << lexerTime << ", Parser time: " << parserTime << ", Generator time: " << generatorTime << std::endl;
+		#endif
 
 		return finalCode;
 	}
