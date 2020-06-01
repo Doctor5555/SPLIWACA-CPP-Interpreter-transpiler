@@ -164,7 +164,7 @@ namespace Spliwaca
                 std::smatch m;
                 //Use regexes
                 bool number = false;
-                if ((tokenContents[tokenContents.size() - 1] == 'i' || tokenContents[tokenContents.size() - 1] <= '9' && tokenContents[tokenContents.size() - 1] >= '0') && tokenContents[0] <= '9' && tokenContents[0] >= '0')
+                if ((tokenContents[tokenContents.size() - 1] == 'i' || (tokenContents[tokenContents.size() - 1] <= '9' && tokenContents[tokenContents.size() - 1] >= '0')) && tokenContents[0] <= '9' && tokenContents[0] >= '0')
                 {
                     SN_PROFILE_SCOPE("Check for number");
                     

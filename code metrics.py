@@ -79,8 +79,7 @@ def Str(Int: int, Len: int):
     return Str
 
 
-path = "c:\\dev\\SPLIWACA-CPP-interpreter-transpiler"
-path = "X:\splw-master"
+path = "~/Dev/splw-master"
 
 files = []
 # r=root, d=directories, f = files
