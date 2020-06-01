@@ -1,7 +1,7 @@
 import libsplw
 scope_vars = libsplw.default_scope.copy()
 
-@libsplw.type_check
+@libsplw.type_check()
 def __func_name_line_1_char_9(prev_scope_vars: dict, arg0: int, arg1: int) -> int: # Source line 2
     scope_vars = prev_scope_vars.copy()
     scope_vars['a'] = arg0
