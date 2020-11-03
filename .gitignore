@@ -22,3 +22,5 @@ transpiler
 utils.py
 
 __pycache__/
+
+*.o

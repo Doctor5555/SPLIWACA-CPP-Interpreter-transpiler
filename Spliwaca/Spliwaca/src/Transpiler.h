@@ -3,7 +3,7 @@
 #include "Frontend/Lexer/LexicalError.h"
 #include "Frontend/Parser/Parser.h"
 #include "Frontend/Parser/SyntaxError.h"
-#include "Backend/Code Generation/Generator.h"
+#include "Backend/Generation/Python/Generator.h"
 #include "Frontend/Parser/SemanticError.h"
 #include "UtilFunctions.h"
 

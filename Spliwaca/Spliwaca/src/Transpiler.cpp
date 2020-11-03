@@ -126,7 +126,7 @@ namespace Spliwaca
 			Timer timer = Timer();
 			#endif
 			SN_PROFILE_SCOPE("Generator");
-			std::shared_ptr<Generator> codeGenerator = Generator::Create(ast);
+			std::shared_ptr<PythonGenerator> codeGenerator = PythonGenerator::Create(ast);
 			SPLW_INFO("Created Generator");
 
 			int errorCode = 0;

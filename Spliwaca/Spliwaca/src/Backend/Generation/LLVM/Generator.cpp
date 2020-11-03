@@ -852,7 +852,7 @@ namespace Spliwaca
 		//If the last character is 'i' or a digit, then check regexes. Otherwise, just do the loop.
 		SN_PROFILE_FUNCTION();
 		std::smatch m;
-		if (id[id.size() - 1] == 'i' || id[id.size() - 1] >= '0' && id[id.size() - 1] <= '9')
+		if (id[id.size() - 1] == 'i' || (id[id.size() - 1] >= '0' && id[id.size() - 1] <= '9'))
 		{
 			if (std::regex_search(id, m, std::regex("(\\d+_*)+(\\.\\d+)?i?")) && m[0] == id) // Matches complex regex
 			{
